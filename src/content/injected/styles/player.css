@@ -1,0 +1,423 @@
+/* ===========================================
+   SKIPIT BUTTONS - Positioned above Netflix's skip buttons
+   =========================================== */
+
+/* Skipit Wrapper - Contains both FAB and Mark buttons */
+#skipit-buttons-wrapper {
+  position: absolute;
+  bottom: 140px;
+  right: 26px;
+  z-index: 2147483646;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease, bottom 0.25s ease;
+  pointer-events: none;
+}
+#skipit-buttons-wrapper.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Shift up when Netflix's Skip Intro/Recap button is visible */
+#skipit-buttons-wrapper.netflix-skip-visible {
+  bottom: 200px;
+}
+
+/* Mark Button - Subtle dark pill */
+.skipit-mark-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(26, 26, 26, 0.85);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 10px 16px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.skipit-mark-btn:hover {
+  background: rgba(26, 26, 26, 0.95);
+}
+.skipit-mark-btn .skipit-mark-icon {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+.skipit-mark-btn.recording {
+  background: rgba(255, 110, 79, 0.9);
+  color: white;
+}
+.skipit-mark-btn.recording .skipit-mark-icon {
+  animation: skipit-pulse 1s ease-in-out infinite;
+  color: white;
+}
+@keyframes skipit-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* FAB Button - Primary skip pill with red accent */
+.skipit-fab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  background: rgba(26, 26, 26, 0.9);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 12px 16px;
+  color: white;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-align: left;
+  min-width: 180px;
+}
+.skipit-fab:hover {
+  background: rgba(26, 26, 26, 0.95);
+  transform: translateX(-2px);
+}
+.skipit-fab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-left-color: #666;
+}
+.skipit-fab.disabled:hover {
+  transform: none;
+}
+.skipit-fab.active {
+  background: rgba(255, 110, 79, 1);
+  border-left-color: white;
+}
+.skipit-fab.active:hover {
+  background: rgba(255, 110, 79, 1);
+}
+
+/* FAB Label - "Skipit" branding */
+.skipit-fab-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ff6f4f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.skipit-fab.active .skipit-fab-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* FAB Types - Main CTA text */
+.skipit-fab-types {
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+}
+
+/* Timeline Segment Styles - positioned above the timeline bar */
+.skipit-timeline-segments {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-bottom: 2px;
+  z-index: 10;
+}
+.skipit-segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  opacity: 0.9;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.skipit-segment:hover {
+  opacity: 1;
+  transform: scaleY(1.5);
+  transform-origin: bottom;
+}
+/* Tooltip */
+.skipit-segment::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 11px;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+.skipit-segment:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scaleY(0.667); /* Counteract parent's scaleY(1.5) */
+}
+.skipit-segment--nudity {
+  background: linear-gradient(180deg, #EC4899 0%, #DB2777 100%);
+}
+.skipit-segment--sex {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+}
+.skipit-segment--gore {
+  background: linear-gradient(180deg, #F97316 0%, #EA580C 100%);
+}
+.skipit-segment--default {
+  background: linear-gradient(180deg, #EC4899 0%, #DB2777 100%);
+}
+
+/* Skip Notification Styles */
+.skipit-notification {
+  position: absolute;
+  bottom: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 2147483645;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.skipit-notification.visible {
+  opacity: 1;
+}
+.skipit-notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.skipit-notification-icon svg {
+  width: 14px;
+  height: 14px;
+}
+.skipit-notification-icon--nudity {
+  background: #EC4899;
+}
+.skipit-notification-icon--sex {
+  background: #EF4444;
+}
+.skipit-notification-icon--gore {
+  background: #F97316;
+}
+.skipit-notification-icon--default {
+  background: #EC4899;
+}
+.skipit-notification-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.skipit-notification-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+.skipit-notification-time {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Voting notification styles */
+.skipit-notification.voting {
+  pointer-events: auto;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 280px;
+  max-width: 360px;
+  padding: 12px 16px;
+}
+.skipit-notification-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.skipit-vote-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.skipit-vote-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+}
+.skipit-vote-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.skipit-vote-btn.upvote:hover {
+  background: rgba(34, 197, 94, 0.3);
+  border-color: rgb(34, 197, 94);
+}
+.skipit-vote-btn.downvote:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgb(239, 68, 68);
+}
+.skipit-vote-btn.wrong-type:hover {
+  background: rgba(251, 191, 36, 0.3);
+  border-color: rgb(251, 191, 36);
+}
+.skipit-type-selector {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  justify-content: center;
+  margin-top: 10px;
+}
+.skipit-type-option {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+}
+.skipit-type-option:hover {
+  transform: scale(1.05);
+}
+.skipit-type-option--nudity {
+  background: rgba(236, 72, 153, 0.2);
+  color: #EC4899;
+  border-color: #EC4899;
+}
+.skipit-type-option--sex {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+  border-color: #EF4444;
+}
+.skipit-type-option--gore {
+  background: rgba(249, 115, 22, 0.2);
+  color: #F97316;
+  border-color: #F97316;
+}
+.skipit-type-option--cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.skipit-countdown {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-top: 8px;
+}
+.skipit-countdown-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.skipit-countdown-progress {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: width 0.1s linear;
+}
+.skipit-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  line-height: 1;
+}
+.skipit-close-btn:hover {
+  color: white;
+}
+.skipit-vote-confirmation {
+  text-align: center;
+  padding: 8px 0;
+  color: #22C55E;
+  font-size: 14px;
+}
+
+/* Locked state for buttons when not authenticated */
+.skipit-mark-btn.locked,
+.skipit-fab.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+}
+.skipit-mark-btn.locked:hover,
+.skipit-fab.locked:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.skipit-locked-icon {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.skipit-locked-icon svg {
+  width: 12px;
+  height: 12px;
+}
+/* Tooltip for locked buttons */
+.skipit-mark-btn.locked::after,
+.skipit-fab.locked::after {
+  content: 'Sign in to use';
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.skipit-mark-btn.locked:hover::after,
+.skipit-fab.locked:hover::after {
+  opacity: 1;
+}

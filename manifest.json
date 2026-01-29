@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Skipit",
+  "version": "1.0.0",
+  "description": "Skip unwanted content on streaming platforms",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA20ypep5qqKEiffovf+OMdBum5P/iN5Uqiey17IxZDi3aSRnglL5pi4BU9o1T1AxaglsYPahjyWVDNXgktwPV2zKbwRSpFP0Z+7dDXNOYiRkB3mTWEvgoQ652kS+X7/c09XsJQZLyGZMWCVWY6Z6lrIo62I2nlCTUsZkTpeiF/thylrHyA/UbLDSH8HR8LQ8AURYqNpjC1/O1uP5RXl3Aeo38IMyPyynzsMvbzSoH4PqPPHc56b7EFiOUZstLelNjELQ3YVgAij4Qr9Iikgs4TuDU2WgZVh6jEK+7FM6c3GqIbUL83s9IJCarAeg/JUhnIfOKGX2rcRJJDxTdA48ZSQIDAQAB",
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "cookies"],
+  "host_permissions": [
+    "https://netflix.com/*",
+    "https://*.netflix.com/*",
+    "https://getskipit.com/*",
+    "https://*.getskipit.com/*",
+    "http://localhost:3000/*",
+    "https://*.clerk.accounts.dev/*",
+    "https://proud-tahr-95.clerk.accounts.dev/*"
+  ],
+  "background": {
+    "service_worker": "src/background/background.ts",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "public/icons/icon16.png",
+      "32": "public/icons/icon32.png",
+      "48": "public/icons/icon48.png",
+      "128": "public/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "32": "public/icons/icon32.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.netflix.com/*"],
+      "js": ["src/content/content.ts"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/netflix-injected.js",
+        "src/content/styles/*.css"
+      ],
+      "matches": ["https://*.netflix.com/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
