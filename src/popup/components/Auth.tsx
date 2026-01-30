@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useClerk } from "../../lib/clerk";
-import { SYNC_HOST } from "../../lib/config";
+import { APP_URL } from "../../lib/config";
 import type { AutoDetectedContent } from "../../lib/types";
 
 export const Auth = () => {
@@ -66,10 +66,10 @@ export const Auth = () => {
   // Build the URL for the Skipit web app
   const getSkipitUrl = (content: AutoDetectedContent): string => {
     if (content.mediaType === "movie") {
-      return `${SYNC_HOST}/movie/${content.tmdbId}`;
+      return `${APP_URL}/movie/${content.tmdbId}`;
     } else {
       // TV show episode
-      return `${SYNC_HOST}/tvshow/${content.tmdbId}/${content.seasonNumber}/${content.episodeNumber}`;
+      return `${APP_URL}/tvshow/${content.tmdbId}/${content.seasonNumber}/${content.episodeNumber}`;
     }
   };
 
@@ -81,7 +81,7 @@ export const Auth = () => {
 
   const handleSignIn = () => {
     chrome.windows.create({
-      url: `${SYNC_HOST}/extension-auth`,
+      url: `${APP_URL}/extension-auth`,
       type: "popup",
       width: 650,
       height: 800,

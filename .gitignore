@@ -7,7 +7,7 @@ build/
 
 # Environment variables
 .env
-.env.local
+.env.*
 .env.*.local
 
 # IDE

@@ -3,7 +3,7 @@
  * Manages auth state checking and propagation to injected script
  */
 
-import { SYNC_HOST } from "../../lib/config";
+import { APP_URL } from "../../lib/config";
 import { state } from "../utils/state";
 
 /**
@@ -61,7 +61,7 @@ export function openAuthPopup(): void {
     if (chrome.runtime.lastError || !response?.success) {
       // Fallback: Open the web app auth page
       console.log("[Content] Opening web auth page as fallback");
-      window.open(`${SYNC_HOST}/extension-auth`, "_blank");
+      window.open(`${APP_URL}/extension-auth`, "_blank");
     }
   });
 }

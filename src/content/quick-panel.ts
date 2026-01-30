@@ -3,7 +3,7 @@
  * Shows when user clicks the Skipit FAB button on Netflix
  */
 
-import { SYNC_HOST } from "../lib/config";
+import { APP_URL } from "../lib/config";
 import type {
   NetflixMetadata,
   TimestampCounts,
@@ -227,7 +227,7 @@ export class QuickPanel {
     authDiv.appendChild(authText);
 
     const signInLink = document.createElement("a");
-    signInLink.href = `${SYNC_HOST}/extension-auth`;
+    signInLink.href = `${APP_URL}/extension-auth`;
     signInLink.target = "_blank";
     signInLink.className = "skipit-quick-signin";
     signInLink.textContent = "Sign in on getskipit.com";

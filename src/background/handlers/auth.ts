@@ -4,7 +4,7 @@
  */
 
 import { createClerkClient } from "@clerk/chrome-extension/background";
-import { CLERK_PUBLISHABLE_KEY, SYNC_HOST } from "../../lib/config";
+import { CLERK_PUBLISHABLE_KEY, CLERK_SYNC_HOST } from "../../lib/config";
 
 /**
  * Get a fresh Clerk token using createClerkClient
@@ -16,7 +16,7 @@ export async function getAuthToken(): Promise<string | null> {
 
     const clerk = await createClerkClient({
       publishableKey: CLERK_PUBLISHABLE_KEY,
-      syncHost: SYNC_HOST,
+      syncHost: CLERK_SYNC_HOST,
     });
 
     if (!clerk.session) {

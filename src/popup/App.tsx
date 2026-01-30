@@ -1,5 +1,5 @@
 import { ClerkProvider } from "../lib/clerk";
-import { CLERK_PUBLISHABLE_KEY, SYNC_HOST } from "../lib/config";
+import { CLERK_PUBLISHABLE_KEY, CLERK_SYNC_HOST } from "../lib/config";
 import { useAuth } from "./hooks/useAuth";
 import { Auth } from "./components/Auth";
 
@@ -37,7 +37,7 @@ function App() {
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
-      syncHost={SYNC_HOST}
+      syncHost={CLERK_SYNC_HOST}
       afterSignOutUrl={redirectUrl}
       signInFallbackRedirectUrl={redirectUrl}
       signUpFallbackRedirectUrl={redirectUrl}
