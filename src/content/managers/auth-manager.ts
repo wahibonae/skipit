@@ -27,7 +27,6 @@ export async function checkAndPropagateAuthState(): Promise<void> {
       }
     );
 
-    console.log("[Content] Auth state:", response.isAuthenticated);
     state.lastKnownAuthState = response.isAuthenticated;
 
     // Send auth state to injected script
@@ -54,13 +53,10 @@ export async function checkAndPropagateAuthState(): Promise<void> {
  * Open authentication popup or fallback to web app
  */
 export function openAuthPopup(): void {
-  console.log("[Content] Opening auth popup requested");
-
   // Try to open the extension popup via background
   chrome.runtime.sendMessage({ type: "OPEN_AUTH_POPUP" }, (response) => {
     if (chrome.runtime.lastError || !response?.success) {
       // Fallback: Open the web app auth page
-      console.log("[Content] Opening web auth page as fallback");
       window.open(`${APP_URL}/extension-auth`, "_blank");
     }
   });
@@ -90,7 +86,6 @@ export function startAuthStateWatcher(): void {
 
       // Only propagate if state changed
       if (response.isAuthenticated !== state.lastKnownAuthState) {
-        console.log("[Content] Auth state changed:", response.isAuthenticated);
         state.lastKnownAuthState = response.isAuthenticated;
 
         window.postMessage(

@@ -8,7 +8,6 @@
 function startVideoChangeWatcher() {
   // Prevent duplicate watchers (memory leak prevention)
   if (videoChangeWatcherInitialized) {
-    console.log("[Netflix Injected] Video change watcher already initialized, skipping");
     return;
   }
   videoChangeWatcherInitialized = true;
@@ -21,21 +20,13 @@ function startVideoChangeWatcher() {
 
     // Detect video change
     if (lastNetflixId !== null && currentNetflixId !== lastNetflixId) {
-      console.log(
-        `[Netflix Injected] Video changed: ${lastNetflixId} \u2192 ${currentNetflixId}`
-      );
-
       // Video changed - stop any active skipping
       if (skippingForVideoIdFromUrl !== null) {
-        console.log(
-          "[Netflix Injected] Stopping skipping due to video change"
-        );
         stopSkipChecking();
       }
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
-        console.log("[Netflix Injected] Resetting marking state due to video change");
         resetMarkingState();
       }
 

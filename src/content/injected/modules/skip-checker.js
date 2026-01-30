@@ -7,11 +7,6 @@
  * This is the ONLY function that should activate skipping state
  */
 function startSkipChecking(timestamps) {
-  console.log(
-    "[Netflix Injected] Starting skip checking with timestamps:",
-    timestamps
-  );
-
   // Get current video ID from URL and metadata
   const videoIdFromUrl = getVideoIdFromUrl();
   const metadata = extractNetflixMetadata();
@@ -81,9 +76,6 @@ function startSkipChecking(timestamps) {
 
         if (currentTime >= start && currentTime < end) {
           // Auto-skip the content
-          console.log(
-            `[Netflix Injected] Skipping from ${start}ms to ${end}ms (current: ${currentTime}ms)`
-          );
           seek(end);
           lastSkipTime = now;
 
@@ -97,8 +89,6 @@ function startSkipChecking(timestamps) {
       console.error("[Netflix Injected] Error in skip check:", error);
     }
   }, 50); // Check every 50ms
-
-  console.log("[Netflix Injected] Skip checking started");
 }
 
 /**
@@ -106,8 +96,6 @@ function startSkipChecking(timestamps) {
  * This is the ONLY function that should deactivate skipping state
  */
 function stopSkipChecking() {
-  console.log("[Netflix Injected] Stopping skip checking");
-
   // Clear interval
   if (skipCheckInterval) {
     clearInterval(skipCheckInterval);

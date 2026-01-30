@@ -27,7 +27,6 @@ function renderTimelineSegments(timestamps) {
   // GUARD: Don't render if skipping is not active
   // This prevents stale segments from setTimeout retries after stopSkipChecking()
   if (!fabSkippingActive || skippingForVideoIdFromUrl === null) {
-    console.log("[Netflix Injected] Skipping renderTimelineSegments - skipping not active");
     return;
   }
 
@@ -38,7 +37,6 @@ function renderTimelineSegments(timestamps) {
 
   const info = getTimelineInfo();
   if (!info) {
-    console.log("[Netflix Injected] Timeline not found, will retry...");
     // Retry after a short delay (Netflix may still be loading)
     setTimeout(() => renderTimelineSegments(timestamps), 500);
     return;
@@ -108,10 +106,6 @@ function renderTimelineSegments(timestamps) {
   timelineBar.style.position = "relative";
   timelineBar.appendChild(container);
 
-  console.log(
-    `[Netflix Injected] Rendered ${timestamps.length} timeline segments above the timeline`
-  );
-
   // Set up resize observer to update segments when bar size changes
   setupSegmentsResizeObserver(timelineBar);
 
@@ -126,7 +120,6 @@ function removeTimelineSegments() {
   const container = document.getElementById(SEGMENTS_CONTAINER_ID);
   if (container) {
     container.remove();
-    console.log("[Netflix Injected] Removed timeline segments");
   }
 
   // Clean up observers
@@ -149,14 +142,8 @@ function setupSegmentsResizeObserver(timelineBar) {
     segmentsResizeObserver.disconnect();
   }
 
-  segmentsResizeObserver = new ResizeObserver((entries) => {
-    const container = document.getElementById(SEGMENTS_CONTAINER_ID);
-    if (!container) return;
-
+  segmentsResizeObserver = new ResizeObserver(() => {
     // Segments use percentage positioning, so they auto-resize
-    // Log for debugging purposes
-    const newWidth = entries[0].contentRect.width;
-    console.log(`[Netflix Injected] Timeline resized to ${newWidth}px`);
   });
 
   segmentsResizeObserver.observe(timelineBar);
@@ -183,18 +170,12 @@ function setupTimelineObserver(timestamps) {
 
       if (currentVideoId !== skippingForVideoIdFromUrl) {
         // Video changed - user navigated away. Stop skipping immediately.
-        console.log(
-          `[Netflix Injected] Video ID changed: ${skippingForVideoIdFromUrl} \u2192 ${currentVideoId}, stopping skipping`
-        );
         stopSkipChecking();
         return;
       }
 
       // Same video, safe to re-render using current activeTimestamps (not closure)
       if (activeTimestamps.length > 0) {
-        console.log(
-          "[Netflix Injected] Timeline segments removed, re-rendering (same video)"
-        );
         renderTimelineSegments(activeTimestamps);
       }
     }

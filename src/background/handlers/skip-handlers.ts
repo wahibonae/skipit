@@ -13,8 +13,6 @@ import { extractNetflixVideoId } from "../utils/netflix-utils";
 export async function handleActivateSkip(
   message: ExtensionMessage & { type: "ACTIVATE_SKIP" }
 ) {
-  console.log("[Background] Activating skip for:", message.contentTitle);
-
   // Find active Netflix tab
   const tabs = await chrome.tabs.query({
     url: "https://*.netflix.com/*",
@@ -65,10 +63,6 @@ export async function handleActivateSkip(
       contentTitle: message.contentTitle,
       netflixVideoId,
     });
-    console.log(
-      "[Background] Skip activated successfully for tab",
-      netflixTab.id
-    );
     return { success: true };
   } catch (error) {
     // Content script not loaded - clear the state we just set
@@ -97,11 +91,8 @@ export async function handleStopSkip(specificTabId?: number) {
   }
 
   if (!tabId) {
-    console.log("[Background] No tab to stop skipping on");
     return { success: true };
   }
-
-  console.log("[Background] Stopping skip for tab", tabId);
 
   // Clear tab state
   await clearTabState(tabId);
@@ -167,10 +158,6 @@ export async function handleContentReady(
     return { success: false };
   }
 
-  console.log(
-    `[Background] Content ready on tab ${tabId}, video ID: ${netflixVideoId}`
-  );
-
   const existingState = await getTabState(tabId);
 
   // Check if we have existing state for this tab with the SAME video ID
@@ -180,11 +167,6 @@ export async function handleContentReady(
     existingState.netflixVideoId === netflixVideoId &&
     existingState.timestamps
   ) {
-    console.log(
-      `[Background] Restoring skip state for tab ${tabId}:`,
-      existingState.contentTitle
-    );
-
     // Send timestamps to content script to resume skipping
     try {
       await chrome.tabs.sendMessage(tabId, {
@@ -202,9 +184,6 @@ export async function handleContentReady(
 
   // If video ID changed, clear the old state (user navigated to different content)
   if (existingState && existingState.netflixVideoId !== netflixVideoId) {
-    console.log(
-      `[Background] Video ID changed on tab ${tabId}: ${existingState.netflixVideoId} -> ${netflixVideoId}`
-    );
     await clearTabState(tabId);
   }
 

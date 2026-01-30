@@ -14,7 +14,6 @@ export function initializeQuickPanel() {
   if (state.quickPanel) return;
 
   state.quickPanel = new QuickPanel(handleQuickPanelStart, handleQuickPanelClose);
-  console.log("[Content] Quick panel initialized");
 }
 
 /**
@@ -28,8 +27,6 @@ export async function handleQuickPanelStart(
   seasonNumber?: number,
   episodeNumber?: number
 ): Promise<void> {
-  console.log("[Content] Quick panel start skipping:", contentTitle);
-
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       {
@@ -52,7 +49,6 @@ export async function handleQuickPanelStart(
         }
 
         if (response?.success) {
-          console.log("[Content] Quick skip activated successfully");
           resolve();
         } else {
           reject(new Error(response?.error || "Failed to activate skipping"));
@@ -66,7 +62,7 @@ export async function handleQuickPanelStart(
  * Handle quick panel close
  */
 function handleQuickPanelClose() {
-  console.log("[Content] Quick panel closed");
+  // Panel closed
 }
 
 /**

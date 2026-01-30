@@ -7,10 +7,6 @@
  * New 3-line structure: label, types, content
  */
 function createSkipitFAB() {
-  console.log(
-    "[Netflix Injected] Creating FAB button, isAuthenticated:",
-    isAuthenticated
-  );
   const button = document.createElement("button");
   button.id = FAB_BUTTON_ID;
   button.className =
@@ -19,7 +15,6 @@ function createSkipitFAB() {
     "aria-label",
     isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
   );
-  console.log("[Netflix Injected] FAB button className:", button.className);
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -54,30 +49,20 @@ function handleSkipitFABClick(event) {
 
   // Check authentication first (but allow stopping if already skipping)
   if (!isAuthenticated && !fabSkippingActive) {
-    console.log("[Netflix Injected] FAB clicked but not authenticated");
     window.postMessage({ type: "SKIPIT_OPEN_AUTH_POPUP" }, "*");
     return;
   }
 
   // If no skips available and not currently skipping, don't proceed (disabled state)
   if (availableSkipTypes.length === 0 && !fabSkippingActive) {
-    console.log(
-      "[Netflix Injected] FAB clicked but no skips available (disabled)"
-    );
     return;
   }
 
   const metadata = extractNetflixMetadata();
   lastMetadata = metadata;
 
-  console.log(
-    "[Netflix Injected] FAB clicked, isSkipping:",
-    fabSkippingActive
-  );
-
   if (fabSkippingActive) {
     // Currently skipping - stop it (toggle behavior)
-    console.log("[Netflix Injected] Stopping skipping via FAB toggle");
     window.postMessage(
       {
         type: "SKIPIT_STOP_REQUEST",
@@ -89,10 +74,6 @@ function handleSkipitFABClick(event) {
     if (availableSkipTypes.length === 1) {
       // Single category available - auto-start skipping immediately (no quick panel)
       const singleType = availableSkipTypes[0];
-      console.log(
-        "[Netflix Injected] Single skip type available, auto-starting:",
-        singleType
-      );
       window.postMessage(
         {
           type: "SKIPIT_AUTO_START_SKIPPING",
@@ -107,10 +88,6 @@ function handleSkipitFABClick(event) {
       wasFullscreenBeforeModal = !!document.fullscreenElement;
       pauseVideo();
       exitFullscreenIfActive().then(() => {
-        console.log(
-          "[Netflix Injected] Opening quick panel, metadata:",
-          metadata
-        );
         window.postMessage(
           {
             type: "SKIPIT_FAB_CLICKED",
@@ -176,10 +153,6 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
  */
 function updateButtonsAuthState(authenticated) {
   isAuthenticated = authenticated;
-  console.log(
-    "[Netflix Injected] Updating button auth states:",
-    authenticated
-  );
 
   // Update Mark Scene button
   const markButton = document.getElementById(BUTTON_ID);
@@ -225,9 +198,6 @@ function updateButtonsAuthState(authenticated) {
             data: { metadata },
           },
           "*"
-        );
-        console.log(
-          "[Netflix Injected] Auth changed to true, re-fetching skip types"
         );
       } else {
         updateSkipitFAB(null, fabSkippingActive);

@@ -13,8 +13,6 @@ import { matchContent } from "../utils/content-matcher";
  */
 export function setupChromeMessageHandlers() {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    console.log("[Content] Received message:", message.type);
-
     if (message.type === "START_SKIPPING") {
       startSkipping(
         message.timestamps,
@@ -49,21 +47,13 @@ export function setupChromeMessageHandlers() {
 
     // Get detected content for popup auto-detection
     if (message.type === "GET_DETECTED_CONTENT") {
-      console.log("[Content] Handling GET_DETECTED_CONTENT request");
-
       // Request fresh metadata from injected script
       requestNetflixMetadata()
         .then(async (metadata) => {
-          console.log(
-            "[Content] requestNetflixMetadata resolved with:",
-            metadata
-          );
           if (metadata) {
-            console.log("[Content] Got metadata, matching content:", metadata);
             try {
               // Use the matchContent function to resolve TMDB ID
               const resolved = await matchContent(metadata);
-              console.log("[Content] matchContent resolved with:", resolved);
               sendResponse({
                 success: !!resolved,
                 content: resolved,
@@ -74,7 +64,6 @@ export function setupChromeMessageHandlers() {
               sendResponse({ success: false, error: String(matchError) });
             }
           } else {
-            console.log("[Content] No metadata available");
             sendResponse({ success: false, content: null });
           }
         })

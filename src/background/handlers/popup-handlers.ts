@@ -15,8 +15,6 @@ export async function handleGetDetectedContent(
   metadata?: unknown;
   error?: string;
 }> {
-  console.log("[Background] Getting detected content for tab:", tabId);
-
   // Find the tab to query
   let targetTabId = tabId;
 
@@ -41,7 +39,6 @@ export async function handleGetDetectedContent(
       type: "GET_DETECTED_CONTENT",
     });
 
-    console.log("[Background] Got detected content response:", response);
     return response;
   } catch (error) {
     console.error("[Background] Error getting detected content:", error);
@@ -58,7 +55,6 @@ export async function handleOpenAuthPopup(): Promise<{ success: boolean }> {
     // chrome.action.openPopup() may not work in all contexts
     // It requires a user gesture and the popup may not open from content script context
     await chrome.action.openPopup();
-    console.log("[Background] Opened auth popup successfully");
     return { success: true };
   } catch (error) {
     console.warn("[Background] Could not open popup:", error);

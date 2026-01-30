@@ -25,7 +25,6 @@ export function getCachedContent(netflixId: string): AutoDetectedContent | null 
     contentCache = null;
     return null;
   }
-  console.log("[Content] Using cached TMDB match for:", netflixId);
   return contentCache.result;
 }
 
@@ -38,7 +37,6 @@ export function setCachedContent(netflixId: string, result: AutoDetectedContent)
     result,
     timestamp: Date.now(),
   };
-  console.log("[Content] Cached TMDB match for:", netflixId);
 }
 
 /**

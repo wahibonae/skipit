@@ -34,16 +34,11 @@ import {
   handleVoteSkip,
 } from "./handlers/voting-handlers";
 
-console.log("[Background] Service worker started");
-
 // ============================================================================
 // MESSAGE ROUTER
 // ============================================================================
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("[Background] Received message:", message.type, {
-    sender: sender.tab?.id,
-  });
 
   // Skip activation and control
   if (message.type === "ACTIVATE_SKIP") {
@@ -239,11 +234,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     // User navigated away from watch page or to different video
     if (!newVideoId || newVideoId !== existingState.netflixVideoId) {
-      console.log(
-        `[Background] Tab ${tabId} navigated away from ${
-          existingState.netflixVideoId
-        } to ${newVideoId || "non-watch page"}`
-      );
       await clearTabState(tabId);
 
       // Try to notify content script to stop
@@ -258,5 +248,3 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // When page finishes loading on a watch page, content script will report CONTENT_READY
   // and we'll restore state if video ID matches (handled in handleContentReady)
 });
-
-console.log("[Background] Service worker initialized successfully");

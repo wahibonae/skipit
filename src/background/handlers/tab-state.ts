@@ -36,10 +36,6 @@ export async function getTabState(tabId: number): Promise<TabSkipState | undefin
     if (state) {
       // Restore to memory cache
       tabStates.set(tabId, state);
-      console.log(
-        `[Background] Restored state from storage for tab ${tabId}:`,
-        state.contentTitle
-      );
     }
 
     return state;
@@ -64,11 +60,6 @@ export async function setTabState(state: TabSkipState): Promise<void> {
   } catch (error) {
     console.warn("[Background] Error writing to storage:", error);
   }
-
-  console.log(
-    `[Background] Set state for tab ${state.tabId}:`,
-    state.contentTitle
-  );
 }
 
 /**
@@ -76,7 +67,6 @@ export async function setTabState(state: TabSkipState): Promise<void> {
  * Removes from both memory and storage
  */
 export async function clearTabState(tabId: number): Promise<void> {
-  const hadState = tabStates.has(tabId);
   tabStates.delete(tabId);
 
   // Remove from storage
@@ -85,9 +75,5 @@ export async function clearTabState(tabId: number): Promise<void> {
     await chrome.storage.session.remove(key);
   } catch (error) {
     console.warn("[Background] Error removing from storage:", error);
-  }
-
-  if (hadState) {
-    console.log(`[Background] Cleared state for tab ${tabId}`);
   }
 }

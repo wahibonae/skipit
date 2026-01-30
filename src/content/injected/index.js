@@ -8,7 +8,6 @@
 function notifyPlayerReady() {
   if (isNetflixPlayerReady()) {
     window.postMessage({ type: "SKIPIT_NETFLIX_READY" }, "*");
-    console.log("[Netflix Injected] Netflix player is ready");
 
     // Request auth state check immediately so buttons show correct state
     window.postMessage({ type: "SKIPIT_REQUEST_AUTH_CHECK" }, "*");

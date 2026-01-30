@@ -13,7 +13,6 @@ function injectSkipitButtons() {
   // Only inject on watch pages (not browse page with auto-playing trailers)
   const videoIdFromUrl = getVideoIdFromUrl();
   if (!videoIdFromUrl) {
-    console.log("[Netflix Injected] Not on a /watch/ page, skipping button injection");
     return;
   }
 
@@ -55,7 +54,6 @@ function injectSkipitButtons() {
 
   // Append to player container (positioned above Netflix's skip buttons via CSS)
   playerContainer.appendChild(wrapper);
-  console.log("[Netflix Injected] Skipit buttons injected");
 
   // Update FAB with metadata if available
   const metadata = extractNetflixMetadata();
@@ -171,7 +169,6 @@ function watchButtonsVisibility() {
 function startButtonWatcher() {
   // Prevent duplicate watchers (memory leak prevention)
   if (buttonWatcherInitialized) {
-    console.log("[Netflix Injected] Button watcher already initialized, skipping");
     return;
   }
   buttonWatcherInitialized = true;

@@ -19,8 +19,6 @@ export async function handleSaveTimestamp(message: {
   seasonNumber?: number;
   episodeNumber?: number;
 }) {
-  console.log("[Background] Saving timestamp:", message);
-
   const token = await getAuthToken();
   if (!token) {
     throw new Error("Please sign in via the Skipit popup first.");
@@ -36,7 +34,6 @@ export async function handleSaveTimestamp(message: {
 
   await saveTimestamp(message.contentType, message.contentId, data, token);
 
-  console.log("[Background] Timestamp saved successfully");
   return { success: true };
 }
 
@@ -44,10 +41,7 @@ export async function handleSaveTimestamp(message: {
  * Search for content (movies/TV shows)
  */
 export async function handleSearchContent(query: string) {
-  console.log("[Background] Searching content:", query);
-
   const token = await getAuthToken();
-  console.log("[Background] Got token:", token ? "yes" : "no");
 
   if (!token) {
     throw new Error("Please sign in via the Skipit popup first.");
@@ -55,7 +49,6 @@ export async function handleSearchContent(query: string) {
 
   try {
     const response = await searchContent(query, token);
-    console.log("[Background] Search results:", response.results.length);
     return { success: true, results: response.results };
   } catch (error) {
     console.error("[Background] Search API error:", error);
@@ -67,8 +60,6 @@ export async function handleSearchContent(query: string) {
  * Get episodes for a TV show (from TMDB - for Mark Scene modal)
  */
 export async function handleGetEpisodes(tvShowId: number) {
-  console.log("[Background] Getting episodes for TV show:", tvShowId);
-
   const token = await getAuthToken();
   if (!token) {
     throw new Error("Please sign in via the Skipit popup first.");
@@ -76,7 +67,6 @@ export async function handleGetEpisodes(tvShowId: number) {
 
   // Use 'tmdb' source to get ALL episodes (for contributing new timestamps)
   const response = await getTVShowEpisodes(tvShowId, token, "tmdb");
-  console.log("[Background] Got seasons:", response.seasons.length);
 
   return { success: true, seasons: response.seasons };
 }

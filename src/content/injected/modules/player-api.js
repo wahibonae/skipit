@@ -58,8 +58,6 @@ function seek(milliseconds) {
     const playerSessionId = videoPlayer.getAllPlayerSessionIds()[0];
     const player = videoPlayer.getVideoPlayerBySessionId(playerSessionId);
     player.seek(milliseconds);
-
-    console.log(`[Netflix Injected] Seeked to ${milliseconds}ms`);
   } catch (error) {
     console.error("[Netflix Injected] Error seeking:", error);
     throw error;
@@ -82,7 +80,6 @@ function pauseVideo() {
   const video = document.querySelector("video");
   if (video && !video.paused) {
     video.pause();
-    console.log("[Netflix Injected] Video paused");
   }
 }
 
@@ -92,7 +89,6 @@ function pauseVideo() {
  */
 function exitFullscreenIfActive() {
   if (document.fullscreenElement) {
-    console.log("[Netflix Injected] Exiting fullscreen");
     return document.exitFullscreen().catch((err) => {
       console.warn("[Netflix Injected] Exit fullscreen error:", err);
     });
@@ -111,7 +107,6 @@ function playVideo() {
       .catch((err) =>
         console.warn("[Netflix Injected] Could not play video:", err)
       );
-    console.log("[Netflix Injected] Video resumed");
   }
 }
 
@@ -130,7 +125,6 @@ function enterFullscreen() {
       .catch((err) =>
         console.warn("[Netflix Injected] Could not enter fullscreen:", err)
       );
-    console.log("[Netflix Injected] Entering fullscreen");
   }
 }
 
@@ -201,7 +195,6 @@ function extractNetflixMetadata() {
       netflixId: sessionKey,
     };
 
-    console.log("[Netflix Injected] Extracted metadata:", result);
     return result;
   } catch (error) {
     console.error("[Netflix Injected] Error extracting metadata:", error);

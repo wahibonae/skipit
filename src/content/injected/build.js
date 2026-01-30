@@ -62,15 +62,11 @@ function build() {
 if (!window.skipitNetflixInjected) {
   window.skipitNetflixInjected = true;
 
-  console.log("[Netflix Injected] Script loaded");
-
 ${stylesJs}
 
 ${modules.join('\n\n')}
 
 ${index}
-
-  console.log("[Netflix Injected] Initialized successfully");
 }
 `;
 

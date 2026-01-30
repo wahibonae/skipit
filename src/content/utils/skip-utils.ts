@@ -12,12 +12,9 @@ import { matchContent } from "./content-matcher";
  * Called when injected script notifies us that metadata is available
  */
 export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetadata) {
-  console.log("[Content] Checking available skips for:", metadata.title);
-
   // Match to TMDB
   const resolved = await matchContent(metadata);
   if (!resolved) {
-    console.log("[Content] Could not match content to TMDB");
     window.postMessage(
       {
         type: "SKIPIT_SET_AVAILABLE_SKIP_TYPES",
@@ -27,12 +24,6 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
     );
     return;
   }
-
-  console.log(
-    "[Content] Matched to TMDB:",
-    resolved.tmdbId,
-    resolved.mediaType
-  );
 
   // Check available skips in database
   chrome.runtime.sendMessage(
@@ -60,7 +51,6 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
       }
 
       const skipTypes = response?.skipTypes || [];
-      console.log("[Content] Available skip types from DB:", skipTypes);
 
       // Send to injected script to update FAB
       window.postMessage(

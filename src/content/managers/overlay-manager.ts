@@ -15,8 +15,6 @@ export function initializeOverlay() {
   if (state.timestampOverlay) return;
 
   state.timestampOverlay = new TimestampOverlay(handleSaveTimestamp, handleCancelMarking);
-
-  console.log("[Content] Timestamp overlay initialized");
 }
 
 /**
@@ -30,7 +28,6 @@ export function showMarkingOverlay(
 ) {
   initializeOverlay();
 
-  console.log("[Content] Showing overlay with auto-detected:", autoDetected, "loading:", isLoading);
   state.timestampOverlay?.show(startTime, endTime, autoDetected, isLoading);
 }
 
@@ -54,8 +51,6 @@ async function handleSaveTimestamp(data: {
   seasonNumber?: number;
   episodeNumber?: number;
 }): Promise<void> {
-  console.log("[Content] Saving timestamp:", data);
-
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       {
@@ -76,13 +71,11 @@ async function handleSaveTimestamp(data: {
         }
 
         if (response?.success) {
-          console.log("[Content] Timestamp saved successfully");
           // Reset marking state in injected script
           window.postMessage({ type: "SKIPIT_RESET_MARKING" }, "*");
 
           // Refresh available skip types so FAB updates immediately
           if (state.lastNetflixMetadata) {
-            console.log("[Content] Refreshing available skip types after save");
             checkAvailableSkipsForCurrentVideo(state.lastNetflixMetadata);
           }
 
@@ -99,7 +92,6 @@ async function handleSaveTimestamp(data: {
  * Handle cancel marking
  */
 function handleCancelMarking() {
-  console.log("[Content] Marking cancelled");
   // Reset marking state in injected script
   window.postMessage({ type: "SKIPIT_RESET_MARKING" }, "*");
 }

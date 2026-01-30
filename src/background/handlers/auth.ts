@@ -12,20 +12,16 @@ import { CLERK_PUBLISHABLE_KEY, CLERK_SYNC_HOST } from "../../lib/config";
  */
 export async function getAuthToken(): Promise<string | null> {
   try {
-    console.log("[Background] Getting fresh token via createClerkClient");
-
     const clerk = await createClerkClient({
       publishableKey: CLERK_PUBLISHABLE_KEY,
       syncHost: CLERK_SYNC_HOST,
     });
 
     if (!clerk.session) {
-      console.log("[Background] No active session");
       return null;
     }
 
     const token = await clerk.session.getToken();
-    console.log("[Background] Got fresh token:", token ? "yes" : "no");
 
     return token;
   } catch (error) {

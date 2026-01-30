@@ -33,7 +33,6 @@ export function injectNetflixScript(): Promise<void> {
       script.src = chrome.runtime.getURL("src/content/netflix-injected.js");
       script.onload = () => {
         state.netflixScriptInjected = true;
-        console.log("[Content] Netflix script injected successfully");
         resolve();
       };
       script.onerror = (error) => {
@@ -80,14 +79,8 @@ export function waitForNetflixReady(timeout = 10000): Promise<void> {
  */
 export function requestNetflixMetadata(): Promise<NetflixMetadata | null> {
   return new Promise((resolve) => {
-    console.log("[Content] Requesting Netflix metadata from injected script");
-
     // Set a timeout in case the injected script doesn't respond
     const timeout = setTimeout(() => {
-      console.log(
-        "[Content] Metadata request timed out after 2s, using cached value:",
-        state.lastNetflixMetadata
-      );
       window.removeEventListener("message", handler);
       resolve(state.lastNetflixMetadata);
     }, 2000);
@@ -98,7 +91,6 @@ export function requestNetflixMetadata(): Promise<NetflixMetadata | null> {
         clearTimeout(timeout);
         window.removeEventListener("message", handler);
         state.lastNetflixMetadata = event.data.metadata;
-        console.log("[Content] Received fresh metadata:", event.data.metadata);
         resolve(event.data.metadata);
       }
     };

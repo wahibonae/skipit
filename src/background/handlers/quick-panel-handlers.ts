@@ -17,8 +17,6 @@ import { handleActivateSkip } from "./skip-handlers";
  * Check if user is authenticated
  */
 export async function handleCheckAuthStatus(): Promise<CheckAuthResponse> {
-  console.log("[Background] Checking auth status");
-
   const token = await getAuthToken();
   return {
     isAuthenticated: !!token,
@@ -38,8 +36,6 @@ export async function handleGetUserPreferences(): Promise<{
   };
   error?: string;
 }> {
-  console.log("[Background] Getting user preferences");
-
   const token = await getAuthToken();
   if (!token) {
     return { success: false, error: "Not authenticated" };
@@ -67,8 +63,6 @@ export async function handleMatchContent(message: {
   seasonNumber?: number;
   episodeNumber?: number;
 }): Promise<MatchContentResponse> {
-  console.log("[Background] Matching content:", message.title);
-
   const token = await getAuthToken();
   if (!token) {
     return { success: false, error: "Not authenticated" };
@@ -87,8 +81,6 @@ export async function handleMatchContent(message: {
     const match =
       searchResponse.results.find((r) => r.media_type === expectedType) ||
       searchResponse.results[0];
-
-    console.log("[Background] Found match:", match.title, match.media_type);
 
     // Get timestamp counts for this content
     const counts = await getTimestampCounts(
@@ -157,7 +149,6 @@ async function getTimestampCounts(
       }
     }
 
-    console.log("[Background] Timestamp counts:", counts);
     return counts;
   } catch (error) {
     console.warn("[Background] Error getting timestamp counts:", error);
@@ -180,8 +171,6 @@ export async function handleQuickSkipActivate(message: {
   seasonNumber?: number;
   episodeNumber?: number;
 }): Promise<QuickSkipActivateResponse> {
-  console.log("[Background] Quick skip activate:", message.contentTitle);
-
   const token = await getAuthToken();
   if (!token) {
     return { success: false, error: "Not authenticated" };

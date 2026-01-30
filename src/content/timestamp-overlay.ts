@@ -73,7 +73,6 @@ export class TimestampOverlay {
 
     if (autoDetected) {
       this.state.isLoadingContent = false;
-      console.log("[Overlay] Using auto-detected content:", autoDetected);
     }
 
     this.injectStyles();
@@ -84,11 +83,8 @@ export class TimestampOverlay {
     this.state.isLoadingContent = false;
     this.state.autoDetectedContent = autoDetected;
 
-    if (autoDetected) {
-      console.log("[Overlay] Content loaded:", autoDetected);
-    } else {
+    if (!autoDetected) {
       this.state.error = "Could not detect content. Please try again.";
-      console.log("[Overlay] Content detection failed");
     }
 
     this.render();

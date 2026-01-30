@@ -12,7 +12,6 @@ import { extractNetflixVideoId, injectNetflixScript } from "../utils/netflix-det
 export function reportContentReady() {
   const videoId = extractNetflixVideoId(window.location.href);
   if (!videoId) {
-    console.log("[Content] Not on a watch page, not reporting ready");
     // Not on a watch page - ensure FAB shows not skipping
     window.postMessage(
       {
@@ -27,8 +26,6 @@ export function reportContentReady() {
   state.currentNetflixVideoId = videoId;
 
   // Note: Available skip types will be checked when injected script sends SKIPIT_METADATA_READY
-
-  console.log("[Content] Reporting ready to background, videoId:", videoId);
 
   chrome.runtime.sendMessage(
     {
@@ -54,14 +51,8 @@ export function reportContentReady() {
       }
 
       if (response?.restored) {
-        console.log(
-          "[Content] Background restored skip state - FAB should show active"
-        );
         // Background restored state, START_SKIPPING will be sent which updates FAB
       } else {
-        console.log(
-          "[Content] No skip state to restore - FAB should show inactive"
-        );
         // No state to restore - ensure FAB shows not skipping
         window.postMessage(
           {

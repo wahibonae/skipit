@@ -43,7 +43,6 @@ function setupMessageHandler() {
       availableSkipTypes = skipTypes;
       isLoadingSkipTypes = false; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
-      console.log("[Netflix Injected] Set available skip types:", skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {
       // Return current Netflix metadata
       const metadata = extractNetflixMetadata();
@@ -56,10 +55,6 @@ function setupMessageHandler() {
       );
     } else if (type === "SKIPIT_MODAL_CLOSED") {
       // Modal was closed - restore playback and fullscreen state
-      console.log(
-        "[Netflix Injected] Modal closed, restoring state. wasFullscreen:",
-        wasFullscreenBeforeModal
-      );
       playVideo();
       if (wasFullscreenBeforeModal) {
         enterFullscreen();
@@ -72,7 +67,6 @@ function setupMessageHandler() {
 
       // Stop skipping when user signs out
       if (!authenticated && fabSkippingActive) {
-        console.log("[Netflix Injected] User signed out - stopping skip checking");
         stopSkipChecking();
       }
     }

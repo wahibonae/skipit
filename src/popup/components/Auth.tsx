@@ -39,13 +39,8 @@ export const Auth = () => {
           { type: "GET_DETECTED_CONTENT" },
           (response) => {
             if (chrome.runtime.lastError) {
-              console.log(
-                "[Popup] Error getting detected content:",
-                chrome.runtime.lastError
-              );
               setDetectedContent(null);
             } else if (response?.success && response.content) {
-              console.log("[Popup] Detected content:", response.content);
               setDetectedContent(response.content);
             } else {
               setDetectedContent(null);

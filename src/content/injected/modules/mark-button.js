@@ -6,10 +6,6 @@
  * Create the mark button element
  */
 function createMarkButton() {
-  console.log(
-    "[Netflix Injected] Creating Mark button, isAuthenticated:",
-    isAuthenticated
-  );
   const button = document.createElement("button");
   button.id = BUTTON_ID;
   button.className = "skipit-mark-btn" + (isAuthenticated ? "" : " locked");
@@ -17,7 +13,6 @@ function createMarkButton() {
     "aria-label",
     isAuthenticated ? "Mark scene" : "Sign in to contribute"
   );
-  console.log("[Netflix Injected] Mark button className:", button.className);
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -52,9 +47,6 @@ function handleMarkButtonClick(event) {
 
   // Check authentication first
   if (!isAuthenticated) {
-    console.log(
-      "[Netflix Injected] Mark button clicked but not authenticated"
-    );
     window.postMessage({ type: "SKIPIT_OPEN_AUTH_POPUP" }, "*");
     return;
   }
@@ -68,10 +60,6 @@ function handleMarkButtonClick(event) {
     markingState.endTime = null;
 
     updateButtonState(true);
-    console.log(
-      "[Netflix Injected] Started marking at:",
-      formatTimeMs(currentTime)
-    );
 
     // Notify content script
     window.postMessage(
@@ -92,32 +80,16 @@ function handleMarkButtonClick(event) {
     // Handle edge cases
     if (startTime === endTime) {
       // Same time - ignore and reset
-      console.log(
-        "[Netflix Injected] Start and end time are the same, ignoring"
-      );
       resetMarkingState();
       return;
     }
 
     // If start > end, swap them
     if (startTime > endTime) {
-      console.log(
-        "[Netflix Injected] Swapping start/end times (start was after end)"
-      );
       [startTime, endTime] = [endTime, startTime];
     }
 
     updateButtonState(false);
-    console.log(
-      "[Netflix Injected] Ended marking at:",
-      formatTimeMs(currentTime)
-    );
-    console.log(
-      "[Netflix Injected] Marked range:",
-      formatTimeMs(startTime),
-      "\u2192",
-      formatTimeMs(endTime)
-    );
 
     // Track fullscreen state before exiting, pause video and exit fullscreen
     wasFullscreenBeforeModal = !!document.fullscreenElement;
@@ -127,10 +99,6 @@ function handleMarkButtonClick(event) {
       setTimeout(() => {
         // Get Netflix metadata for auto-detection
         const metadata = extractNetflixMetadata();
-        console.log(
-          "[Netflix Injected] Sending mark ended with metadata:",
-          metadata
-        );
 
         // Notify content script to show overlay
         window.postMessage(

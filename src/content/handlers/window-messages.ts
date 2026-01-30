@@ -23,7 +23,6 @@ export function setupWindowMessageHandlers() {
     const { type } = event.data;
 
     if (type === "SKIPIT_NETFLIX_READY") {
-      console.log("[Content] Netflix player is ready");
       state.isNetflixReady = true;
 
       // Start auth state watcher to detect sign-in and update buttons
@@ -35,30 +34,15 @@ export function setupWindowMessageHandlers() {
     }
 
     if (type === "SKIPIT_CURRENT_TIME") {
-      // We can use this for debugging or analytics
-      // For now, just log occasionally
-      if (Math.random() < 0.01) {
-        // Log 1% of the time
-        console.log("[Content] Current time:", event.data.currentTime);
-      }
+      // Available for analytics if needed
     }
 
     // Timestamp marking messages
     if (type === "SKIPIT_MARK_STARTED") {
-      console.log("[Content] Marking started at:", event.data.startTime);
       // Could show a toast/notification here if desired
     }
 
     if (type === "SKIPIT_MARK_ENDED") {
-      console.log(
-        "[Content] Marking ended:",
-        event.data.startTime,
-        "→",
-        event.data.endTime,
-        "metadata:",
-        event.data.metadata
-      );
-
       const { startTime, endTime, metadata } = event.data;
 
       // Store metadata for popup auto-detection
@@ -72,9 +56,6 @@ export function setupWindowMessageHandlers() {
 
         if (cached) {
           // We have cached content - show immediately with content
-          console.log(
-            "[Content] Using cached content, showing overlay immediately"
-          );
           const autoDetected = {
             ...cached,
             seasonNumber: metadata.seasonNumber,
@@ -83,13 +64,11 @@ export function setupWindowMessageHandlers() {
           showMarkingOverlay(startTime, endTime, autoDetected, false);
         } else {
           // Need to fetch from network - show loading state immediately
-          console.log("[Content] No cache, showing loading overlay");
           showMarkingOverlay(startTime, endTime, null, true);
 
           // Fetch content in background and update overlay
           matchContent(metadata)
             .then((autoDetected) => {
-              console.log("[Content] Auto-detection result:", autoDetected);
               updateOverlayContent(autoDetected);
             })
             .catch((error) => {
@@ -110,7 +89,6 @@ export function setupWindowMessageHandlers() {
 
     // Quick panel FAB button clicked
     if (type === "SKIPIT_FAB_CLICKED") {
-      console.log("[Content] FAB clicked, metadata:", event.data.metadata);
       // Store metadata for popup auto-detection
       if (event.data.metadata) {
         state.lastNetflixMetadata = event.data.metadata;
@@ -121,7 +99,6 @@ export function setupWindowMessageHandlers() {
     // Single-category auto-start skipping (bypasses quick panel)
     if (type === "SKIPIT_AUTO_START_SKIPPING") {
       const { metadata, skipType } = event.data;
-      console.log("[Content] Auto-starting skipping for single type:", skipType);
 
       // Store metadata
       if (metadata) {
@@ -133,7 +110,6 @@ export function setupWindowMessageHandlers() {
         matchContent(metadata)
           .then((resolved) => {
             if (!resolved) {
-              console.warn("[Content] Could not match content for auto-start");
               return;
             }
 
@@ -145,8 +121,6 @@ export function setupWindowMessageHandlers() {
             };
 
             const contentType = resolved.mediaType === "tv" ? "episode" : "movie";
-
-            console.log("[Content] Auto-starting with preferences:", preferences);
 
             // Start skipping directly (bypass quick panel)
             handleQuickPanelStart(
@@ -168,16 +142,13 @@ export function setupWindowMessageHandlers() {
 
     // FAB button clicked while skipping - stop request
     if (type === "SKIPIT_STOP_REQUEST") {
-      console.log("[Content] Stop request from FAB");
       // Tell background to stop skipping
-      chrome.runtime.sendMessage({ type: "STOP_SKIP" }, (response) => {
+      chrome.runtime.sendMessage({ type: "STOP_SKIP" }, () => {
         if (chrome.runtime.lastError) {
           console.warn(
             "[Content] Error stopping skip:",
             chrome.runtime.lastError
           );
-        } else {
-          console.log("[Content] Skip stopped via FAB:", response);
         }
       });
     }
@@ -189,7 +160,6 @@ export function setupWindowMessageHandlers() {
 
     // Auth check request from injected script (on player ready)
     if (type === "SKIPIT_REQUEST_AUTH_CHECK") {
-      console.log("[Content] Auth check requested, checking with background...");
       checkAndPropagateAuthState();
     }
 
@@ -197,10 +167,6 @@ export function setupWindowMessageHandlers() {
     if (type === "SKIPIT_METADATA_READY") {
       const metadata = event.data.data?.metadata;
       if (metadata) {
-        console.log(
-          "[Content] Metadata ready from injected script:",
-          metadata.title
-        );
         state.lastNetflixMetadata = metadata;
         checkAvailableSkipsForCurrentVideo(metadata);
       }
@@ -209,7 +175,6 @@ export function setupWindowMessageHandlers() {
     // Vote on skip group from injected script
     if (type === "SKIPIT_SKIP_VOTE") {
       const { skipGroupId, voteType } = event.data;
-      console.log("[Content] Vote request:", skipGroupId, voteType);
 
       chrome.runtime.sendMessage(
         {
@@ -230,7 +195,6 @@ export function setupWindowMessageHandlers() {
             return;
           }
 
-          console.log("[Content] Vote response:", response);
           window.postMessage(
             {
               type: "SKIPIT_VOTE_RESULT",

@@ -20,14 +20,6 @@ export async function startSkipping(
   netflixVideoId: string
 ) {
   try {
-    console.log(
-      "[Content] Starting skipping for:",
-      contentTitle,
-      "videoId:",
-      netflixVideoId
-    );
-    console.log("[Content] Timestamps:", timestamps);
-
     // Verify we're on the correct video
     const currentVideoId = extractNetflixVideoId(window.location.href);
     if (currentVideoId !== netflixVideoId) {
@@ -86,7 +78,6 @@ export async function startSkipping(
       "*"
     );
 
-    console.log("[Content] Skipping started successfully");
   } catch (error) {
     console.error("[Content] Error starting skipping:", error);
     state.isSkipping = false;
@@ -100,8 +91,6 @@ export async function startSkipping(
  * Stop skipping
  */
 export function stopSkipping() {
-  console.log("[Content] Stopping skipping");
-
   state.isSkipping = false;
   state.currentContentTitle = null;
   // Keep currentNetflixVideoId - might be useful for state tracking
@@ -124,6 +113,4 @@ export function stopSkipping() {
       "*"
     );
   }
-
-  console.log("[Content] Skipping stopped");
 }

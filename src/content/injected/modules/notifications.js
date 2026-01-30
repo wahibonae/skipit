@@ -248,8 +248,6 @@ function handleVote(voteType, currentType, suggestedType = null) {
     suggestedType: suggestedType,
   }, "*");
 
-  console.log(`[Netflix Injected] Vote sent: ${voteType} for skip group ${currentSkipGroupId}`);
-
   // Show confirmation
   showVoteConfirmation();
 }
@@ -303,7 +301,6 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
     lastNotifiedSegment.end === endMs &&
     now - lastNotifiedSegment.timestamp < SEGMENT_COOLDOWN
   ) {
-    console.log("[Netflix Injected] Skipping notification (cooldown active)");
     return;
   }
 
@@ -341,19 +338,6 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
   requestAnimationFrame(() => {
     notification.classList.add("visible");
   });
-
-  const typeLabels = {
-    nudity: "Nudity",
-    sex: "Sex",
-    gore: "Gore",
-    default: "Content",
-  };
-  console.log(
-    `[Netflix Injected] Showing skip notification: ${
-      typeLabels[skipType] || "Content"
-    } (${formatTimeMs(startMs)} \u2192 ${formatTimeMs(endMs)})` +
-    (showVoting ? ` [voting enabled, confidence: ${(confidence * 100).toFixed(0)}%]` : "")
-  );
 
   // Start countdown animation if voting is shown
   if (showVoting) {

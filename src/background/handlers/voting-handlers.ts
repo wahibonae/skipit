@@ -16,11 +16,8 @@ export async function handleCheckAvailableSkips(message: {
   seasonNumber?: number;
   episodeNumber?: number;
 }): Promise<{ success: boolean; skipTypes: string[] }> {
-  console.log("[Background] Checking available skips for:", message.tmdbId);
-
   const token = await getAuthToken();
   if (!token) {
-    console.log("[Background] Not authenticated, cannot check skips");
     return { success: false, skipTypes: [] };
   }
 
@@ -41,7 +38,6 @@ export async function handleCheckAvailableSkips(message: {
 
     // Extract unique skip types from all timestamps
     const skipTypes = [...new Set(timestamps.map((t) => t.type.toLowerCase()))];
-    console.log("[Background] Available skip types:", skipTypes);
 
     return { success: true, skipTypes };
   } catch (error) {
@@ -62,12 +58,6 @@ export async function handleVoteSkip(message: {
   newStatus?: string;
   error?: string;
 }> {
-  console.log(
-    "[Background] Voting on skip:",
-    message.skipGroupId,
-    message.voteType
-  );
-
   const token = await getAuthToken();
   if (!token) {
     return { success: false, error: "Not authenticated" };
@@ -80,7 +70,6 @@ export async function handleVoteSkip(message: {
       token
     );
 
-    console.log("[Background] Vote result:", result);
     return {
       success: true,
       newConfidence: result.newConfidence,

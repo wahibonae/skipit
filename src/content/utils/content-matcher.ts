@@ -26,7 +26,6 @@ export async function matchContent(
   }
 
   return new Promise((resolve) => {
-    console.log("[Content] Calling MATCH_CONTENT for:", metadata.title);
     chrome.runtime.sendMessage(
       {
         type: "MATCH_CONTENT",
@@ -46,7 +45,6 @@ export async function matchContent(
         }
 
         if (response?.success && response.tmdbId) {
-          console.log("[Content] Content matched:", response);
           const result: AutoDetectedContent = {
             tmdbId: response.tmdbId,
             title: response.contentTitle || metadata.title,
@@ -60,7 +58,6 @@ export async function matchContent(
           setCachedContent(metadata.netflixId, result);
           resolve(result);
         } else {
-          console.log("[Content] Content not matched:", response?.error);
           resolve(null);
         }
       }

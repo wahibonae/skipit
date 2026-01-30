@@ -6,8 +6,6 @@
 if (!window.skipitNetflixInjected) {
   window.skipitNetflixInjected = true;
 
-  console.log("[Netflix Injected] Script loaded");
-
 const BUTTON_STYLES = `
 /* ===========================================
    SKIPIT BUTTONS - Positioned above Netflix's skip buttons
@@ -651,8 +649,6 @@ function seek(milliseconds) {
     const playerSessionId = videoPlayer.getAllPlayerSessionIds()[0];
     const player = videoPlayer.getVideoPlayerBySessionId(playerSessionId);
     player.seek(milliseconds);
-
-    console.log(`[Netflix Injected] Seeked to ${milliseconds}ms`);
   } catch (error) {
     console.error("[Netflix Injected] Error seeking:", error);
     throw error;
@@ -675,7 +671,6 @@ function pauseVideo() {
   const video = document.querySelector("video");
   if (video && !video.paused) {
     video.pause();
-    console.log("[Netflix Injected] Video paused");
   }
 }
 
@@ -685,7 +680,6 @@ function pauseVideo() {
  */
 function exitFullscreenIfActive() {
   if (document.fullscreenElement) {
-    console.log("[Netflix Injected] Exiting fullscreen");
     return document.exitFullscreen().catch((err) => {
       console.warn("[Netflix Injected] Exit fullscreen error:", err);
     });
@@ -704,7 +698,6 @@ function playVideo() {
       .catch((err) =>
         console.warn("[Netflix Injected] Could not play video:", err)
       );
-    console.log("[Netflix Injected] Video resumed");
   }
 }
 
@@ -723,7 +716,6 @@ function enterFullscreen() {
       .catch((err) =>
         console.warn("[Netflix Injected] Could not enter fullscreen:", err)
       );
-    console.log("[Netflix Injected] Entering fullscreen");
   }
 }
 
@@ -794,7 +786,6 @@ function extractNetflixMetadata() {
       netflixId: sessionKey,
     };
 
-    console.log("[Netflix Injected] Extracted metadata:", result);
     return result;
   } catch (error) {
     console.error("[Netflix Injected] Error extracting metadata:", error);
@@ -819,10 +810,6 @@ window.skipitNetflixPlayer = {
  * New 3-line structure: label, types, content
  */
 function createSkipitFAB() {
-  console.log(
-    "[Netflix Injected] Creating FAB button, isAuthenticated:",
-    isAuthenticated
-  );
   const button = document.createElement("button");
   button.id = FAB_BUTTON_ID;
   button.className =
@@ -831,7 +818,6 @@ function createSkipitFAB() {
     "aria-label",
     isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
   );
-  console.log("[Netflix Injected] FAB button className:", button.className);
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -866,30 +852,20 @@ function handleSkipitFABClick(event) {
 
   // Check authentication first (but allow stopping if already skipping)
   if (!isAuthenticated && !fabSkippingActive) {
-    console.log("[Netflix Injected] FAB clicked but not authenticated");
     window.postMessage({ type: "SKIPIT_OPEN_AUTH_POPUP" }, "*");
     return;
   }
 
   // If no skips available and not currently skipping, don't proceed (disabled state)
   if (availableSkipTypes.length === 0 && !fabSkippingActive) {
-    console.log(
-      "[Netflix Injected] FAB clicked but no skips available (disabled)"
-    );
     return;
   }
 
   const metadata = extractNetflixMetadata();
   lastMetadata = metadata;
 
-  console.log(
-    "[Netflix Injected] FAB clicked, isSkipping:",
-    fabSkippingActive
-  );
-
   if (fabSkippingActive) {
     // Currently skipping - stop it (toggle behavior)
-    console.log("[Netflix Injected] Stopping skipping via FAB toggle");
     window.postMessage(
       {
         type: "SKIPIT_STOP_REQUEST",
@@ -901,10 +877,6 @@ function handleSkipitFABClick(event) {
     if (availableSkipTypes.length === 1) {
       // Single category available - auto-start skipping immediately (no quick panel)
       const singleType = availableSkipTypes[0];
-      console.log(
-        "[Netflix Injected] Single skip type available, auto-starting:",
-        singleType
-      );
       window.postMessage(
         {
           type: "SKIPIT_AUTO_START_SKIPPING",
@@ -919,10 +891,6 @@ function handleSkipitFABClick(event) {
       wasFullscreenBeforeModal = !!document.fullscreenElement;
       pauseVideo();
       exitFullscreenIfActive().then(() => {
-        console.log(
-          "[Netflix Injected] Opening quick panel, metadata:",
-          metadata
-        );
         window.postMessage(
           {
             type: "SKIPIT_FAB_CLICKED",
@@ -988,10 +956,6 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
  */
 function updateButtonsAuthState(authenticated) {
   isAuthenticated = authenticated;
-  console.log(
-    "[Netflix Injected] Updating button auth states:",
-    authenticated
-  );
 
   // Update Mark Scene button
   const markButton = document.getElementById(BUTTON_ID);
@@ -1038,9 +1002,6 @@ function updateButtonsAuthState(authenticated) {
           },
           "*"
         );
-        console.log(
-          "[Netflix Injected] Auth changed to true, re-fetching skip types"
-        );
       } else {
         updateSkipitFAB(null, fabSkippingActive);
       }
@@ -1065,10 +1026,6 @@ function updateButtonsAuthState(authenticated) {
  * Create the mark button element
  */
 function createMarkButton() {
-  console.log(
-    "[Netflix Injected] Creating Mark button, isAuthenticated:",
-    isAuthenticated
-  );
   const button = document.createElement("button");
   button.id = BUTTON_ID;
   button.className = "skipit-mark-btn" + (isAuthenticated ? "" : " locked");
@@ -1076,7 +1033,6 @@ function createMarkButton() {
     "aria-label",
     isAuthenticated ? "Mark scene" : "Sign in to contribute"
   );
-  console.log("[Netflix Injected] Mark button className:", button.className);
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -1111,9 +1067,6 @@ function handleMarkButtonClick(event) {
 
   // Check authentication first
   if (!isAuthenticated) {
-    console.log(
-      "[Netflix Injected] Mark button clicked but not authenticated"
-    );
     window.postMessage({ type: "SKIPIT_OPEN_AUTH_POPUP" }, "*");
     return;
   }
@@ -1127,10 +1080,6 @@ function handleMarkButtonClick(event) {
     markingState.endTime = null;
 
     updateButtonState(true);
-    console.log(
-      "[Netflix Injected] Started marking at:",
-      formatTimeMs(currentTime)
-    );
 
     // Notify content script
     window.postMessage(
@@ -1151,32 +1100,16 @@ function handleMarkButtonClick(event) {
     // Handle edge cases
     if (startTime === endTime) {
       // Same time - ignore and reset
-      console.log(
-        "[Netflix Injected] Start and end time are the same, ignoring"
-      );
       resetMarkingState();
       return;
     }
 
     // If start > end, swap them
     if (startTime > endTime) {
-      console.log(
-        "[Netflix Injected] Swapping start/end times (start was after end)"
-      );
       [startTime, endTime] = [endTime, startTime];
     }
 
     updateButtonState(false);
-    console.log(
-      "[Netflix Injected] Ended marking at:",
-      formatTimeMs(currentTime)
-    );
-    console.log(
-      "[Netflix Injected] Marked range:",
-      formatTimeMs(startTime),
-      "\u2192",
-      formatTimeMs(endTime)
-    );
 
     // Track fullscreen state before exiting, pause video and exit fullscreen
     wasFullscreenBeforeModal = !!document.fullscreenElement;
@@ -1186,10 +1119,6 @@ function handleMarkButtonClick(event) {
       setTimeout(() => {
         // Get Netflix metadata for auto-detection
         const metadata = extractNetflixMetadata();
-        console.log(
-          "[Netflix Injected] Sending mark ended with metadata:",
-          metadata
-        );
 
         // Notify content script to show overlay
         window.postMessage(
@@ -1258,7 +1187,6 @@ function injectSkipitButtons() {
   // Only inject on watch pages (not browse page with auto-playing trailers)
   const videoIdFromUrl = getVideoIdFromUrl();
   if (!videoIdFromUrl) {
-    console.log("[Netflix Injected] Not on a /watch/ page, skipping button injection");
     return;
   }
 
@@ -1300,7 +1228,6 @@ function injectSkipitButtons() {
 
   // Append to player container (positioned above Netflix's skip buttons via CSS)
   playerContainer.appendChild(wrapper);
-  console.log("[Netflix Injected] Skipit buttons injected");
 
   // Update FAB with metadata if available
   const metadata = extractNetflixMetadata();
@@ -1416,7 +1343,6 @@ function watchButtonsVisibility() {
 function startButtonWatcher() {
   // Prevent duplicate watchers (memory leak prevention)
   if (buttonWatcherInitialized) {
-    console.log("[Netflix Injected] Button watcher already initialized, skipping");
     return;
   }
   buttonWatcherInitialized = true;
@@ -1475,7 +1401,6 @@ function renderTimelineSegments(timestamps) {
   // GUARD: Don't render if skipping is not active
   // This prevents stale segments from setTimeout retries after stopSkipChecking()
   if (!fabSkippingActive || skippingForVideoIdFromUrl === null) {
-    console.log("[Netflix Injected] Skipping renderTimelineSegments - skipping not active");
     return;
   }
 
@@ -1486,7 +1411,6 @@ function renderTimelineSegments(timestamps) {
 
   const info = getTimelineInfo();
   if (!info) {
-    console.log("[Netflix Injected] Timeline not found, will retry...");
     // Retry after a short delay (Netflix may still be loading)
     setTimeout(() => renderTimelineSegments(timestamps), 500);
     return;
@@ -1556,10 +1480,6 @@ function renderTimelineSegments(timestamps) {
   timelineBar.style.position = "relative";
   timelineBar.appendChild(container);
 
-  console.log(
-    `[Netflix Injected] Rendered ${timestamps.length} timeline segments above the timeline`
-  );
-
   // Set up resize observer to update segments when bar size changes
   setupSegmentsResizeObserver(timelineBar);
 
@@ -1574,7 +1494,6 @@ function removeTimelineSegments() {
   const container = document.getElementById(SEGMENTS_CONTAINER_ID);
   if (container) {
     container.remove();
-    console.log("[Netflix Injected] Removed timeline segments");
   }
 
   // Clean up observers
@@ -1597,14 +1516,8 @@ function setupSegmentsResizeObserver(timelineBar) {
     segmentsResizeObserver.disconnect();
   }
 
-  segmentsResizeObserver = new ResizeObserver((entries) => {
-    const container = document.getElementById(SEGMENTS_CONTAINER_ID);
-    if (!container) return;
-
+  segmentsResizeObserver = new ResizeObserver(() => {
     // Segments use percentage positioning, so they auto-resize
-    // Log for debugging purposes
-    const newWidth = entries[0].contentRect.width;
-    console.log(`[Netflix Injected] Timeline resized to ${newWidth}px`);
   });
 
   segmentsResizeObserver.observe(timelineBar);
@@ -1631,18 +1544,12 @@ function setupTimelineObserver(timestamps) {
 
       if (currentVideoId !== skippingForVideoIdFromUrl) {
         // Video changed - user navigated away. Stop skipping immediately.
-        console.log(
-          `[Netflix Injected] Video ID changed: ${skippingForVideoIdFromUrl} \u2192 ${currentVideoId}, stopping skipping`
-        );
         stopSkipChecking();
         return;
       }
 
       // Same video, safe to re-render using current activeTimestamps (not closure)
       if (activeTimestamps.length > 0) {
-        console.log(
-          "[Netflix Injected] Timeline segments removed, re-rendering (same video)"
-        );
         renderTimelineSegments(activeTimestamps);
       }
     }
@@ -1665,11 +1572,6 @@ function setupTimelineObserver(timestamps) {
  * This is the ONLY function that should activate skipping state
  */
 function startSkipChecking(timestamps) {
-  console.log(
-    "[Netflix Injected] Starting skip checking with timestamps:",
-    timestamps
-  );
-
   // Get current video ID from URL and metadata
   const videoIdFromUrl = getVideoIdFromUrl();
   const metadata = extractNetflixMetadata();
@@ -1739,9 +1641,6 @@ function startSkipChecking(timestamps) {
 
         if (currentTime >= start && currentTime < end) {
           // Auto-skip the content
-          console.log(
-            `[Netflix Injected] Skipping from ${start}ms to ${end}ms (current: ${currentTime}ms)`
-          );
           seek(end);
           lastSkipTime = now;
 
@@ -1755,8 +1654,6 @@ function startSkipChecking(timestamps) {
       console.error("[Netflix Injected] Error in skip check:", error);
     }
   }, 50); // Check every 50ms
-
-  console.log("[Netflix Injected] Skip checking started");
 }
 
 /**
@@ -1764,8 +1661,6 @@ function startSkipChecking(timestamps) {
  * This is the ONLY function that should deactivate skipping state
  */
 function stopSkipChecking() {
-  console.log("[Netflix Injected] Stopping skip checking");
-
   // Clear interval
   if (skipCheckInterval) {
     clearInterval(skipCheckInterval);
@@ -2043,8 +1938,6 @@ function handleVote(voteType, currentType, suggestedType = null) {
     suggestedType: suggestedType,
   }, "*");
 
-  console.log(`[Netflix Injected] Vote sent: ${voteType} for skip group ${currentSkipGroupId}`);
-
   // Show confirmation
   showVoteConfirmation();
 }
@@ -2098,7 +1991,6 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
     lastNotifiedSegment.end === endMs &&
     now - lastNotifiedSegment.timestamp < SEGMENT_COOLDOWN
   ) {
-    console.log("[Netflix Injected] Skipping notification (cooldown active)");
     return;
   }
 
@@ -2136,19 +2028,6 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
   requestAnimationFrame(() => {
     notification.classList.add("visible");
   });
-
-  const typeLabels = {
-    nudity: "Nudity",
-    sex: "Sex",
-    gore: "Gore",
-    default: "Content",
-  };
-  console.log(
-    `[Netflix Injected] Showing skip notification: ${
-      typeLabels[skipType] || "Content"
-    } (${formatTimeMs(startMs)} \u2192 ${formatTimeMs(endMs)})` +
-    (showVoting ? ` [voting enabled, confidence: ${(confidence * 100).toFixed(0)}%]` : "")
-  );
 
   // Start countdown animation if voting is shown
   if (showVoting) {
@@ -2231,7 +2110,6 @@ function cleanupNotification() {
 function startVideoChangeWatcher() {
   // Prevent duplicate watchers (memory leak prevention)
   if (videoChangeWatcherInitialized) {
-    console.log("[Netflix Injected] Video change watcher already initialized, skipping");
     return;
   }
   videoChangeWatcherInitialized = true;
@@ -2244,21 +2122,13 @@ function startVideoChangeWatcher() {
 
     // Detect video change
     if (lastNetflixId !== null && currentNetflixId !== lastNetflixId) {
-      console.log(
-        `[Netflix Injected] Video changed: ${lastNetflixId} \u2192 ${currentNetflixId}`
-      );
-
       // Video changed - stop any active skipping
       if (skippingForVideoIdFromUrl !== null) {
-        console.log(
-          "[Netflix Injected] Stopping skipping due to video change"
-        );
         stopSkipChecking();
       }
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
-        console.log("[Netflix Injected] Resetting marking state due to video change");
         resetMarkingState();
       }
 
@@ -2351,7 +2221,6 @@ function setupMessageHandler() {
       availableSkipTypes = skipTypes;
       isLoadingSkipTypes = false; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
-      console.log("[Netflix Injected] Set available skip types:", skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {
       // Return current Netflix metadata
       const metadata = extractNetflixMetadata();
@@ -2364,10 +2233,6 @@ function setupMessageHandler() {
       );
     } else if (type === "SKIPIT_MODAL_CLOSED") {
       // Modal was closed - restore playback and fullscreen state
-      console.log(
-        "[Netflix Injected] Modal closed, restoring state. wasFullscreen:",
-        wasFullscreenBeforeModal
-      );
       playVideo();
       if (wasFullscreenBeforeModal) {
         enterFullscreen();
@@ -2380,7 +2245,6 @@ function setupMessageHandler() {
 
       // Stop skipping when user signs out
       if (!authenticated && fabSkippingActive) {
-        console.log("[Netflix Injected] User signed out - stopping skip checking");
         stopSkipChecking();
       }
     }
@@ -2398,7 +2262,6 @@ function setupMessageHandler() {
 function notifyPlayerReady() {
   if (isNetflixPlayerReady()) {
     window.postMessage({ type: "SKIPIT_NETFLIX_READY" }, "*");
-    console.log("[Netflix Injected] Netflix player is ready");
 
     // Request auth state check immediately so buttons show correct state
     window.postMessage({ type: "SKIPIT_REQUEST_AUTH_CHECK" }, "*");
@@ -2422,6 +2285,4 @@ if (document.readyState === "loading") {
   notifyPlayerReady();
 }
 
-
-  console.log("[Netflix Injected] Initialized successfully");
 }
