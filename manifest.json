@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Skipit",
+  "name": "Skipit: Skip Unwanted Scenes on Netflix Automatically",
   "version": "1.0.0",
-  "description": "Skip unwanted scenes on Netflix automatically",
+  "description": "Skip sex, nudity, and gore scenes on Netflix Movies and TV Shows automatically",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA20ypep5qqKEiffovf+OMdBum5P/iN5Uqiey17IxZDi3aSRnglL5pi4BU9o1T1AxaglsYPahjyWVDNXgktwPV2zKbwRSpFP0Z+7dDXNOYiRkB3mTWEvgoQ652kS+X7/c09XsJQZLyGZMWCVWY6Z6lrIo62I2nlCTUsZkTpeiF/thylrHyA/UbLDSH8HR8LQ8AURYqNpjC1/O1uP5RXl3Aeo38IMyPyynzsMvbzSoH4PqPPHc56b7EFiOUZstLelNjELQ3YVgAij4Qr9Iikgs4TuDU2WgZVh6jEK+7FM6c3GqIbUL83s9IJCarAeg/JUhnIfOKGX2rcRJJDxTdA48ZSQIDAQAB",
   "permissions": ["storage", "activeTab", "scripting", "tabs", "cookies"],
   "host_permissions": [
@@ -10,9 +10,7 @@
     "https://*.netflix.com/*",
     "https://getskipit.com/*",
     "https://*.getskipit.com/*",
-    "http://localhost:3000/*",
-    "https://*.clerk.accounts.dev/*",
-    "https://proud-tahr-95.clerk.accounts.dev/*"
+    "https://*.clerk.accounts.dev/*"
   ],
   "background": {
     "service_worker": "src/background/background.ts",

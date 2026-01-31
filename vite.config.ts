@@ -11,13 +11,14 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
 
   const buildManifest = isProduction
-    ? {
+    ? manifest
+    : {
         ...manifest,
-        host_permissions: manifest.host_permissions.filter(
-          (p) => !DEV_ONLY_HOST_PERMISSIONS.includes(p)
-        ),
-      }
-    : manifest;
+        host_permissions: [
+          ...manifest.host_permissions,
+          ...DEV_ONLY_HOST_PERMISSIONS,
+        ],
+      };
 
   return {
     plugins: [
