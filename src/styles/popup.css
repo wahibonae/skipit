@@ -199,7 +199,7 @@ textarea {
   font-weight: 600;
 }
 
-.welcome-tutorial {
+.action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,7 +216,7 @@ textarea {
   margin-bottom: 16px;
 }
 
-.welcome-tutorial:hover {
+.action-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
@@ -234,38 +234,13 @@ textarea {
 }
 
 .welcome-signout:hover:not(:disabled) {
-  color: var(--text-secondary);
-  text-decoration: underline;
+  background-color: rgba(255, 111, 79, 0.1);
+  color: var(--primary-orange);
 }
 
 .welcome-signout:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* View on Skipit Link (detected content) */
-.view-on-skipit-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: var(--primary-orange);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  margin-bottom: 16px;
-  padding: 4px 0;
-  transition: opacity 0.2s ease;
-}
-
-.view-on-skipit-link:hover {
-  opacity: 0.8;
-}
-
-.view-on-skipit-link svg {
-  flex-shrink: 0;
 }
 
 /* Detected content loading state */

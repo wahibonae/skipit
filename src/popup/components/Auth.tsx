@@ -157,16 +157,10 @@ export const Auth = () => {
       )}
 
       {!isLoadingContent && detectedContent && (
-        <button className="view-on-skipit-link" onClick={handleViewOnSkipit}>
-          View {detectedContent.title}
-          {detectedContent.mediaType === "tv" &&
-            detectedContent.seasonNumber &&
-            detectedContent.episodeNumber &&
-            ` S${detectedContent.seasonNumber}E${detectedContent.episodeNumber}`}{" "}
-          on Skipit
+        <button className="action-button" onClick={handleViewOnSkipit}>
           <svg
-            width="12"
-            height="12"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -178,10 +172,11 @@ export const Auth = () => {
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
+          View on Skipit
         </button>
       )}
 
-      <button className="welcome-tutorial" onClick={handleWatchTutorial}>
+      <button className="action-button" onClick={handleWatchTutorial}>
         <svg
           width="16"
           height="16"
