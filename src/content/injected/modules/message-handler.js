@@ -35,13 +35,21 @@ function setupMessageHandler() {
         data?.metadata || lastMetadata || extractNetflixMetadata();
       const skipTypes = data?.skipTypes || null;
       updateSkipitFAB(metadata, data?.isSkipping || false, skipTypes);
+    } else if (type === "SKIPIT_LOADING_STATUS") {
+      // Update loading status from content script
+      const status = data?.status;
+      if (status) {
+        loadingStatus = status;
+        const metadata = lastMetadata || extractNetflixMetadata();
+        updateSkipitFAB(metadata, fabSkippingActive, activeSkippingTypes);
+      }
     } else if (type === "SKIPIT_SET_AVAILABLE_SKIP_TYPES") {
       // Set available skip types before skipping starts (from content script)
       const skipTypes = data?.skipTypes || [];
       const metadata =
         data?.metadata || lastMetadata || extractNetflixMetadata();
       availableSkipTypes = skipTypes;
-      isLoadingSkipTypes = false; // Done loading, show actual state
+      loadingStatus = "ready"; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {
       // Return current Netflix metadata

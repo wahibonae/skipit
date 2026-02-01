@@ -61,7 +61,7 @@ function injectSkipitButtons() {
     lastMetadata = metadata;
     if (lastNetflixId === null) {
       lastNetflixId = metadata.netflixId;
-      isLoadingSkipTypes = true;
+      loadingStatus = "detecting";
       window.postMessage(
         {
           type: "SKIPIT_METADATA_READY",

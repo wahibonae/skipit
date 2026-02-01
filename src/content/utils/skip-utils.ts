@@ -25,6 +25,15 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
     return;
   }
 
+  // Send "loading" status when starting API call
+  window.postMessage(
+    {
+      type: "SKIPIT_LOADING_STATUS",
+      data: { status: "loading" }
+    },
+    "*"
+  );
+
   // Check available skips in database
   chrome.runtime.sendMessage(
     {

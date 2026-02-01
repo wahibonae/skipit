@@ -462,7 +462,7 @@ let lastMetadata = null;
 let lastNetflixId = null; // Track video ID to detect navigation
 let availableSkipTypes = []; // All skip types available in DB (for display when NOT skipping)
 let activeSkippingTypes = []; // Skip types currently being skipped (for display when skipping)
-let isLoadingSkipTypes = true; // Track whether we're waiting for skip types from DB
+let loadingStatus = "detecting"; // "detecting" | "loading" | "ready"
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
@@ -833,7 +833,7 @@ function createSkipitFAB() {
   // Skip types line (subtitle - bottom line)
   const typesLine = document.createElement("span");
   typesLine.className = "skipit-fab-types";
-  typesLine.textContent = isAuthenticated ? "Loading..." : "Sign in to skip";
+  typesLine.textContent = isAuthenticated ? "Detecting content..." : "Sign in to skip";
 
   button.appendChild(lockIcon);
   button.appendChild(label);
@@ -938,10 +938,14 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("active", "disabled");
     const typeText = formatSkipTypes(availableSkipTypes);
     typesLine.textContent = `Skip ${typeText} scenes`;
-  } else if (isLoadingSkipTypes) {
-    // Still loading skip types from database
+  } else if (loadingStatus !== "ready") {
+    // Still loading - show specific loading status
     button.classList.remove("active", "disabled");
-    typesLine.textContent = "Loading...";
+    const statusText = {
+      "detecting": "Detecting content...",
+      "loading": "Loading skips..."
+    };
+    typesLine.textContent = statusText[loadingStatus] || "Loading...";
   } else {
     // No skips available - disabled state
     button.classList.remove("active");
@@ -991,7 +995,7 @@ function updateButtonsAuthState(authenticated) {
       if (metadata) {
         // Reset to loading state and trigger fresh fetch
         availableSkipTypes = [];
-        isLoadingSkipTypes = true;
+        loadingStatus = "detecting";
         updateSkipitFAB(metadata, fabSkippingActive);
 
         // Notify content script to re-fetch skip types
@@ -1235,7 +1239,7 @@ function injectSkipitButtons() {
     lastMetadata = metadata;
     if (lastNetflixId === null) {
       lastNetflixId = metadata.netflixId;
-      isLoadingSkipTypes = true;
+      loadingStatus = "detecting";
       window.postMessage(
         {
           type: "SKIPIT_METADATA_READY",
@@ -2138,7 +2142,7 @@ function startVideoChangeWatcher() {
 
       // Reset skip types state for new video
       availableSkipTypes = [];
-      isLoadingSkipTypes = true;
+      loadingStatus = "detecting";
 
       // Notify content script that metadata is ready for new video
       window.postMessage(
@@ -2156,7 +2160,7 @@ function startVideoChangeWatcher() {
       lastNetflixId = currentNetflixId;
       lastMetadata = metadata;
 
-      isLoadingSkipTypes = true;
+      loadingStatus = "detecting";
 
       window.postMessage(
         {
@@ -2213,13 +2217,21 @@ function setupMessageHandler() {
         data?.metadata || lastMetadata || extractNetflixMetadata();
       const skipTypes = data?.skipTypes || null;
       updateSkipitFAB(metadata, data?.isSkipping || false, skipTypes);
+    } else if (type === "SKIPIT_LOADING_STATUS") {
+      // Update loading status from content script
+      const status = data?.status;
+      if (status) {
+        loadingStatus = status;
+        const metadata = lastMetadata || extractNetflixMetadata();
+        updateSkipitFAB(metadata, fabSkippingActive, activeSkippingTypes);
+      }
     } else if (type === "SKIPIT_SET_AVAILABLE_SKIP_TYPES") {
       // Set available skip types before skipping starts (from content script)
       const skipTypes = data?.skipTypes || [];
       const metadata =
         data?.metadata || lastMetadata || extractNetflixMetadata();
       availableSkipTypes = skipTypes;
-      isLoadingSkipTypes = false; // Done loading, show actual state
+      loadingStatus = "ready"; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {
       // Return current Netflix metadata

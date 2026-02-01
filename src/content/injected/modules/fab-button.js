@@ -30,7 +30,7 @@ function createSkipitFAB() {
   // Skip types line (subtitle - bottom line)
   const typesLine = document.createElement("span");
   typesLine.className = "skipit-fab-types";
-  typesLine.textContent = isAuthenticated ? "Loading..." : "Sign in to skip";
+  typesLine.textContent = isAuthenticated ? "Detecting content..." : "Sign in to skip";
 
   button.appendChild(lockIcon);
   button.appendChild(label);
@@ -135,10 +135,14 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("active", "disabled");
     const typeText = formatSkipTypes(availableSkipTypes);
     typesLine.textContent = `Skip ${typeText} scenes`;
-  } else if (isLoadingSkipTypes) {
-    // Still loading skip types from database
+  } else if (loadingStatus !== "ready") {
+    // Still loading - show specific loading status
     button.classList.remove("active", "disabled");
-    typesLine.textContent = "Loading...";
+    const statusText = {
+      "detecting": "Detecting content...",
+      "loading": "Loading skips..."
+    };
+    typesLine.textContent = statusText[loadingStatus] || "Loading...";
   } else {
     // No skips available - disabled state
     button.classList.remove("active");
@@ -188,7 +192,7 @@ function updateButtonsAuthState(authenticated) {
       if (metadata) {
         // Reset to loading state and trigger fresh fetch
         availableSkipTypes = [];
-        isLoadingSkipTypes = true;
+        loadingStatus = "detecting";
         updateSkipitFAB(metadata, fabSkippingActive);
 
         // Notify content script to re-fetch skip types
