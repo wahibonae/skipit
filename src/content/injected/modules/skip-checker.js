@@ -35,8 +35,8 @@ function startSkipChecking(timestamps) {
     clearInterval(skipCheckInterval);
   }
 
-  // Update FAB to show skipping is active with skip types
-  updateSkipitFAB(metadata, true, types);
+  // Update FAB to show skipping is active (uses activeSkippingTypes internally)
+  updateSkipitFAB(metadata, true);
 
   // Render timeline segments to visualize skip zones
   renderTimelineSegments(timestamps);
