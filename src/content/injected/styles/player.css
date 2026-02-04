@@ -129,7 +129,7 @@
   bottom: 100%;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 5px;
   margin-bottom: 2px;
   z-index: 10;
 }
@@ -138,14 +138,10 @@
   top: 0;
   height: 100%;
   border-radius: 2px;
-  opacity: 0.9;
   cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 .skipit-segment:hover {
-  opacity: 1;
-  transform: scaleY(1.5);
-  transform-origin: bottom;
 }
 /* Tooltip */
 .skipit-segment::after {
@@ -168,19 +164,32 @@
 }
 .skipit-segment:hover::after {
   opacity: 1;
-  transform: translateX(-50%) scaleY(0.667); /* Counteract parent's scaleY(1.5) */
+  transform: translateX(-50%);
 }
 .skipit-segment--nudity {
-  background: linear-gradient(180deg, #EC4899 0%, #DB2777 100%);
+  background: linear-gradient(180deg, #FF6EB4 0%, #FF1493 100%);
+  box-shadow: 0 0 6px 1px rgba(255, 20, 147, 0.6), 0 0 12px 2px rgba(255, 20, 147, 0.3);
+}
+.skipit-segment--nudity:hover {
+  box-shadow: 0 0 8px 2px rgba(255, 20, 147, 0.8), 0 0 18px 4px rgba(255, 20, 147, 0.4);
 }
 .skipit-segment--sex {
-  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+  background: linear-gradient(180deg, #FF4D4D 0%, #E60000 100%);
+  box-shadow: 0 0 6px 1px rgba(230, 0, 0, 0.6), 0 0 12px 2px rgba(230, 0, 0, 0.3);
+}
+.skipit-segment--sex:hover {
+  box-shadow: 0 0 8px 2px rgba(230, 0, 0, 0.8), 0 0 18px 4px rgba(230, 0, 0, 0.4);
 }
 .skipit-segment--gore {
-  background: linear-gradient(180deg, #F97316 0%, #EA580C 100%);
+  background: linear-gradient(180deg, #FFAA00 0%, #FF6600 100%);
+  box-shadow: 0 0 6px 1px rgba(255, 102, 0, 0.6), 0 0 12px 2px rgba(255, 102, 0, 0.3);
+}
+.skipit-segment--gore:hover {
+  box-shadow: 0 0 8px 2px rgba(255, 102, 0, 0.8), 0 0 18px 4px rgba(255, 102, 0, 0.4);
 }
 .skipit-segment--default {
-  background: linear-gradient(180deg, #EC4899 0%, #DB2777 100%);
+  background: linear-gradient(180deg, #FF6EB4 0%, #FF1493 100%);
+  box-shadow: 0 0 6px 1px rgba(255, 20, 147, 0.6), 0 0 12px 2px rgba(255, 20, 147, 0.3);
 }
 
 /* Skip Notification Styles */
