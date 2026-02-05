@@ -11,6 +11,7 @@ import type {
   CheckAuthResponse,
 } from "../lib/types";
 import { injectStylesheet } from "./utils/style-injector";
+import { getCachedContent, getCachedCounts } from "./utils/cache-manager";
 
 interface QuickPanelState {
   isOpen: boolean;
@@ -83,6 +84,20 @@ export class QuickPanel {
     this.state.matchedContent = null;
     this.state.isOpen = true;
 
+    // Try to use cached data from auto-detection phase
+    const cachedMatch = metadata?.netflixId ? getCachedContent(metadata.netflixId) : null;
+    const cachedCounts = cachedMatch ? getCachedCounts(cachedMatch.tmdbId) : null;
+
+    if (cachedMatch && cachedCounts) {
+      // We have cached TMDB match + counts — use them immediately
+      this.state.matchedContent = {
+        tmdbId: cachedMatch.tmdbId,
+        title: cachedMatch.title,
+        mediaType: cachedMatch.mediaType,
+        counts: cachedCounts,
+      };
+    }
+
     this.createPanel();
     this.render();
 
@@ -103,10 +118,11 @@ export class QuickPanel {
         return;
       }
 
-      // Fetch user preferences and match content in parallel
+      // Fetch user preferences (and match content only if not cached)
+      const needsContentMatch = !this.state.matchedContent && metadata?.title;
       const [prefsResponse] = await Promise.all([
         this.fetchUserPreferences(),
-        metadata?.title ? this.matchContent(metadata) : Promise.resolve(),
+        needsContentMatch ? this.matchContent(metadata!) : Promise.resolve(),
       ]);
 
       // Apply user preferences if fetched successfully
@@ -118,7 +134,7 @@ export class QuickPanel {
         };
       }
 
-      if (!metadata?.title) {
+      if (!metadata?.title && !this.state.matchedContent) {
         this.state.error = "Could not detect content. Try using the extension popup.";
       }
     } catch (error) {

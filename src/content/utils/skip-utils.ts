@@ -5,6 +5,7 @@
 
 import type { NetflixMetadata } from "../../lib/types";
 import { matchContent } from "./content-matcher";
+import { setCachedCounts } from "./cache-manager";
 
 /**
  * Check for available skip types when metadata is ready
@@ -60,6 +61,11 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
       }
 
       const skipTypes = response?.skipTypes || [];
+
+      // Cache timestamp counts if available (avoids re-fetching when quick panel opens)
+      if (response?.counts && resolved.tmdbId) {
+        setCachedCounts(resolved.tmdbId, response.counts);
+      }
 
       // Send to injected script to update FAB
       window.postMessage(
