@@ -55,13 +55,14 @@ export async function handleGetUserPreferences(): Promise<{
 }
 
 /**
- * Match Netflix content title to TMDB and get timestamp counts
+ * Match Netflix content title to TMDB and optionally get timestamp counts
  */
 export async function handleMatchContent(message: {
   title: string;
   contentType: "movie" | "episode";
   seasonNumber?: number;
   episodeNumber?: number;
+  includeCounts?: boolean;
 }): Promise<MatchContentResponse> {
   const token = await getAuthToken();
   if (!token) {
@@ -82,14 +83,19 @@ export async function handleMatchContent(message: {
       searchResponse.results.find((r) => r.media_type === expectedType) ||
       searchResponse.results[0];
 
-    // Get timestamp counts for this content
-    const counts = await getTimestampCounts(
-      match.media_type === "tv" ? "episode" : "movie",
-      match.id,
-      token,
-      message.seasonNumber,
-      message.episodeNumber
-    );
+    // Only fetch timestamp counts if requested (defaults to true for backwards compatibility)
+    const shouldIncludeCounts = message.includeCounts !== false;
+    let counts: TimestampCounts | undefined;
+
+    if (shouldIncludeCounts) {
+      counts = await getTimestampCounts(
+        match.media_type === "tv" ? "episode" : "movie",
+        match.id,
+        token,
+        message.seasonNumber,
+        message.episodeNumber
+      );
+    }
 
     return {
       success: true,

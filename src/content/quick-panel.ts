@@ -514,6 +514,7 @@ export class QuickPanel {
           contentType: metadata.type,
           seasonNumber: metadata.seasonNumber,
           episodeNumber: metadata.episodeNumber,
+          includeCounts: true, // Quick panel needs counts for display
         },
         (response: MatchContentResponse) => {
           if (chrome.runtime.lastError) {
