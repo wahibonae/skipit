@@ -41,7 +41,7 @@ function setupMessageHandler() {
       if (status) {
         loadingStatus = status;
         const metadata = lastMetadata || extractNetflixMetadata();
-        updateSkipitFAB(metadata, fabSkippingActive, activeSkippingTypes);
+        updateSkipitFAB(metadata, fabSkippingActive);
       }
     } else if (type === "SKIPIT_SET_AVAILABLE_SKIP_TYPES") {
       // Set available skip types before skipping starts (from content script)
