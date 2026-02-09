@@ -57,6 +57,11 @@ export interface SkipMessage {
   timestamps: Timestamp[];
   seasonNumber?: number;
   episodeNumber?: number;
+  preferences?: {
+    skipNudity: boolean;
+    skipSex: boolean;
+    skipGore: boolean;
+  };
 }
 
 export interface StopSkipMessage {
@@ -110,6 +115,11 @@ export interface TabSkipState {
   timestamps: Timestamp[];
   seasonNumber?: number;
   episodeNumber?: number;
+  preferences?: {
+    skipNudity: boolean;
+    skipSex: boolean;
+    skipGore: boolean;
+  };
   activatedAt: number;
 }
 

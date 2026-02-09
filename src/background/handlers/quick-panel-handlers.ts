@@ -204,7 +204,7 @@ export async function handleQuickSkipActivate(message: {
       };
     }
 
-    // Reuse existing ACTIVATE_SKIP logic
+    // Reuse existing ACTIVATE_SKIP logic (pass preferences for refresh support)
     const result = await handleActivateSkip({
       type: "ACTIVATE_SKIP",
       contentType: message.contentType,
@@ -213,6 +213,7 @@ export async function handleQuickSkipActivate(message: {
       timestamps,
       seasonNumber: message.seasonNumber,
       episodeNumber: message.episodeNumber,
+      preferences: message.preferences,
     });
 
     return result as QuickSkipActivateResponse;

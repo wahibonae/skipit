@@ -74,7 +74,12 @@ async function handleSaveTimestamp(data: {
           // Reset marking state in injected script
           window.postMessage({ type: "SKIPIT_RESET_MARKING" }, "*");
 
-          // Refresh available skip types so FAB updates immediately
+          // Refresh active skip session from DB (nothing happens if not skipping)
+          if (state.isSkipping) {
+            chrome.runtime.sendMessage({ type: "REFRESH_ACTIVE_SKIPPING" });
+          }
+
+          // Always refresh available skip types + cached counts
           if (state.lastNetflixMetadata) {
             checkAvailableSkipsForCurrentVideo(state.lastNetflixMetadata);
           }

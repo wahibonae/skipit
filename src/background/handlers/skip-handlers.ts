@@ -6,6 +6,8 @@
 import type { TabSkipState, ExtensionMessage } from "../../lib/types";
 import { getTabState, setTabState, clearTabState } from "./tab-state";
 import { extractNetflixVideoId } from "../utils/netflix-utils";
+import { getTimestamps } from "../../lib/api";
+import { getAuthToken } from "./auth";
 
 /**
  * Activate skipping on the active Netflix tab
@@ -39,7 +41,7 @@ export async function handleActivateSkip(
     );
   }
 
-  // Store per-tab skip state
+  // Store per-tab skip state (including preferences for refresh support)
   const skipState: TabSkipState = {
     tabId: netflixTab.id,
     netflixVideoId,
@@ -50,6 +52,7 @@ export async function handleActivateSkip(
     timestamps: message.timestamps,
     seasonNumber: message.seasonNumber,
     episodeNumber: message.episodeNumber,
+    preferences: message.preferences,
     activatedAt: Date.now(),
   };
 
@@ -188,6 +191,63 @@ export async function handleContentReady(
   }
 
   return { success: true, restored: false };
+}
+
+/**
+ * Refresh active skipping session by re-fetching timestamps from DB.
+ * Called after a user submits a new timestamp while skipping is active.
+ * Re-applies the fresh timestamps to the active skip session.
+ */
+export async function handleRefreshActiveSkipping(tabId?: number) {
+  if (!tabId) {
+    return { success: false, error: "No tab ID" };
+  }
+
+  const existingState = await getTabState(tabId);
+  if (!existingState?.isActive || !existingState.preferences) {
+    // Not actively skipping or no preferences stored, nothing to refresh
+    return { success: false };
+  }
+
+  const token = await getAuthToken();
+  if (!token) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  // Re-fetch timestamps from DB with same preferences
+  const timestamps = await getTimestamps(
+    existingState.contentType,
+    existingState.contentId,
+    token,
+    {
+      skipNudity: existingState.preferences.skipNudity,
+      skipSex: existingState.preferences.skipSex,
+      skipGore: existingState.preferences.skipGore,
+      seasonNumber: existingState.seasonNumber,
+      episodeNumber: existingState.episodeNumber,
+    }
+  );
+
+  // Update stored tab state with fresh timestamps
+  const updatedState: TabSkipState = {
+    ...existingState,
+    timestamps,
+  };
+  await setTabState(updatedState);
+
+  // Re-send to content script to re-apply skipping
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: "START_SKIPPING",
+      timestamps,
+      contentTitle: existingState.contentTitle,
+      netflixVideoId: existingState.netflixVideoId,
+    });
+    return { success: true };
+  } catch (error) {
+    console.warn("[Background] Could not refresh skip session:", error);
+    return { success: false, error: "Content script not reachable" };
+  }
 }
 
 /**

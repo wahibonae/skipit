@@ -13,6 +13,7 @@ import {
   handleGetSkipStatus,
   handleContentReady,
   handleContentPing,
+  handleRefreshActiveSkipping,
 } from "./handlers/skip-handlers";
 import {
   handleSaveTimestamp,
@@ -91,6 +92,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       return true;
     }
+  }
+
+  // Refresh active skipping session (after user submits a new timestamp)
+  if (message.type === "REFRESH_ACTIVE_SKIPPING") {
+    handleRefreshActiveSkipping(sender.tab?.id)
+      .then(sendResponse)
+      .catch((error) => {
+        console.error("[Background] Error refreshing active skipping:", error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
   }
 
   // Timestamp operations
