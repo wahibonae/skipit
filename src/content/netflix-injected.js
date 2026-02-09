@@ -370,6 +370,7 @@ let wasFullscreenBeforeModal = false;
 
 // Skip checking state
 let activeTimestamps = [];
+let originalTimestamps = []; // Unmerged timestamps for timeline rendering
 let skipCheckInterval = null;
 let lastSkipTime = 0;
 const SKIP_COOLDOWN = 500; // 500ms cooldown between skips
@@ -1447,9 +1448,9 @@ function setupTimelineObserver(timestamps) {
         return;
       }
 
-      // Same video, safe to re-render using current activeTimestamps (not closure)
-      if (activeTimestamps.length > 0) {
-        renderTimelineSegments(activeTimestamps);
+      // Same video, safe to re-render using original unmerged timestamps for per-type colors
+      if (originalTimestamps.length > 0) {
+        renderTimelineSegments(originalTimestamps);
       }
     }
   });
@@ -1465,6 +1466,34 @@ function setupTimelineObserver(timestamps) {
 // ============================================================================
 // SKIP CHECKING
 // ============================================================================
+
+/**
+ * Merge overlapping/adjacent timestamps into continuous ranges.
+ * Prevents frame cuts when consecutive scenes of different types
+ * (e.g., nudity then sex) are both being skipped.
+ */
+function mergeOverlappingTimestamps(timestamps) {
+  if (timestamps.length <= 1) return timestamps;
+
+  const sorted = [...timestamps].sort((a, b) => a[0] - b[0]);
+  const merged = [[sorted[0][0], sorted[0][1], sorted[0][2]]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const current = sorted[i];
+    const last = merged[merged.length - 1];
+
+    if (current[0] <= last[1]) {
+      last[1] = Math.max(last[1], current[1]);
+      // Combine types (deduplicated)
+      const types = new Set(last[2].split(",").concat(current[2].split(",")));
+      last[2] = [...types].join(",");
+    } else {
+      merged.push([current[0], current[1], current[2]]);
+    }
+  }
+
+  return merged;
+}
 
 /**
  * Start checking for timestamps to skip
@@ -1486,8 +1515,9 @@ function startSkipChecking(timestamps) {
   const types = [...new Set(timestamps.map((t) => t[2] || "default"))];
   activeSkippingTypes = types; // Track what's actually being skipped
 
-  // Set all state atomically
-  activeTimestamps = timestamps;
+  // Store originals for timeline rendering, merge overlapping for skip logic
+  originalTimestamps = timestamps;
+  activeTimestamps = mergeOverlappingTimestamps(timestamps);
   skippingForVideoIdFromUrl = videoIdFromUrl; // URL-based video ID is the source of truth
   fabSkippingActive = true;
   if (metadata?.netflixId) {
@@ -1564,6 +1594,7 @@ function stopSkipChecking() {
 
   // Clear skipping state (but preserve availableSkipTypes - they're still in DB)
   activeTimestamps = [];
+  originalTimestamps = [];
   skippingForVideoIdFromUrl = null;
   fabSkippingActive = false;
   activeSkippingTypes = []; // Clear what was being skipped
@@ -1622,17 +1653,18 @@ function buildNotificationContent(notification, skipType, startMs, endMs) {
   // Clear existing content
   notification.textContent = "";
 
-  const formattedType = formatSkipType(skipType) || "content";
+  const formattedType = skipType && skipType.includes(",")
+    ? formatSkipTypes(skipType.split(","))
+    : (formatSkipType(skipType) || "content");
 
   // Create header container
   const headerDiv = document.createElement("div");
   headerDiv.className = "skipit-notification-header";
 
-  // Create icon container
+  // Create icon container - use first type for styling when multiple types are merged
+  const iconType = skipType && skipType.includes(",") ? skipType.split(",")[0] : (skipType || "default");
   const iconDiv = document.createElement("div");
-  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${
-    skipType || "default"
-  }`;
+  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${iconType}`;
 
   // Create SVG icon
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

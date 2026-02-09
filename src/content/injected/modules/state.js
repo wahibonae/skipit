@@ -34,6 +34,7 @@ let wasFullscreenBeforeModal = false;
 
 // Skip checking state
 let activeTimestamps = [];
+let originalTimestamps = []; // Unmerged timestamps for timeline rendering
 let skipCheckInterval = null;
 let lastSkipTime = 0;
 const SKIP_COOLDOWN = 500; // 500ms cooldown between skips

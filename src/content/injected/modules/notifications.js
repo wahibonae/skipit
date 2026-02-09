@@ -37,17 +37,18 @@ function buildNotificationContent(notification, skipType, startMs, endMs) {
   // Clear existing content
   notification.textContent = "";
 
-  const formattedType = formatSkipType(skipType) || "content";
+  const formattedType = skipType && skipType.includes(",")
+    ? formatSkipTypes(skipType.split(","))
+    : (formatSkipType(skipType) || "content");
 
   // Create header container
   const headerDiv = document.createElement("div");
   headerDiv.className = "skipit-notification-header";
 
-  // Create icon container
+  // Create icon container - use first type for styling when multiple types are merged
+  const iconType = skipType && skipType.includes(",") ? skipType.split(",")[0] : (skipType || "default");
   const iconDiv = document.createElement("div");
-  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${
-    skipType || "default"
-  }`;
+  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${iconType}`;
 
   // Create SVG icon
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

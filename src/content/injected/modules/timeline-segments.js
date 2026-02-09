@@ -174,9 +174,9 @@ function setupTimelineObserver(timestamps) {
         return;
       }
 
-      // Same video, safe to re-render using current activeTimestamps (not closure)
-      if (activeTimestamps.length > 0) {
-        renderTimelineSegments(activeTimestamps);
+      // Same video, safe to re-render using original unmerged timestamps for per-type colors
+      if (originalTimestamps.length > 0) {
+        renderTimelineSegments(originalTimestamps);
       }
     }
   });
