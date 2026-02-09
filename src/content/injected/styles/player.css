@@ -255,111 +255,10 @@
   opacity: 0.8;
 }
 
-/* Voting notification styles */
-.skipit-notification.voting {
-  pointer-events: auto;
-  flex-direction: column;
-  align-items: stretch;
-  min-width: 280px;
-  max-width: 360px;
-  padding: 12px 16px;
-}
 .skipit-notification-header {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-.skipit-vote-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 10px;
-}
-.skipit-vote-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 8px 16px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-}
-.skipit-vote-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-.skipit-vote-btn.upvote:hover {
-  background: rgba(34, 197, 94, 0.3);
-  border-color: rgb(34, 197, 94);
-}
-.skipit-vote-btn.downvote:hover {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: rgb(239, 68, 68);
-}
-.skipit-vote-btn.wrong-type:hover {
-  background: rgba(251, 191, 36, 0.3);
-  border-color: rgb(251, 191, 36);
-}
-.skipit-type-selector {
-  display: flex;
-  gap: 8px;
-  padding: 8px 0;
-  justify-content: center;
-  margin-top: 10px;
-}
-.skipit-type-option {
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s ease;
-  border: 1px solid;
-  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-}
-.skipit-type-option:hover {
-  transform: scale(1.05);
-}
-.skipit-type-option--nudity {
-  background: rgba(236, 72, 153, 0.2);
-  color: #EC4899;
-  border-color: #EC4899;
-}
-.skipit-type-option--sex {
-  background: rgba(239, 68, 68, 0.2);
-  color: #EF4444;
-  border-color: #EF4444;
-}
-.skipit-type-option--gore {
-  background: rgba(249, 115, 22, 0.2);
-  color: #F97316;
-  border-color: #F97316;
-}
-.skipit-type-option--cancel {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-.skipit-countdown {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  margin-top: 8px;
-}
-.skipit-countdown-bar {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  margin-top: 4px;
-  overflow: hidden;
-}
-.skipit-countdown-progress {
-  height: 100%;
-  background: rgba(255, 255, 255, 0.6);
-  transition: width 0.1s linear;
 }
 .skipit-close-btn {
   position: absolute;
@@ -376,13 +275,6 @@
 .skipit-close-btn:hover {
   color: white;
 }
-.skipit-vote-confirmation {
-  text-align: center;
-  padding: 8px 0;
-  color: #22C55E;
-  font-size: 14px;
-}
-
 /* Locked state for buttons when not authenticated */
 .skipit-mark-btn.locked,
 .skipit-fab.locked {

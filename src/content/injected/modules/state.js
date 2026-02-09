@@ -46,14 +46,8 @@ let segmentsTimelineObserver = null;
 
 // Notification state
 const NOTIFICATION_ID = "skipit-notification";
-const NOTIFICATION_DURATION = 6000; // Auto-dismiss after 6s (longer for voting)
+const NOTIFICATION_DURATION = 4000; // Auto-dismiss after 4s
 const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
-const VOTE_CONFIRMATION_DURATION = 1500; // Show "Thanks!" for 1.5s
 
 let notificationTimeout = null;
-let countdownInterval = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
-let currentSkipGroupId = null; // Track current skip group for voting
-let votedSkipGroups = new Set(); // Track voted groups in this session
-let sessionSkipCount = 0; // Track number of skips in this session
-let isNotificationHovered = false; // Track hover state for timer pause

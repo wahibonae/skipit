@@ -169,27 +169,3 @@ export async function saveTimestamp(
   });
 }
 
-/**
- * Vote on a skip group
- */
-export async function voteOnSkip(
-  skipGroupId: number,
-  voteType: 1 | -1,
-  token: string
-): Promise<{
-  success: boolean;
-  newConfidence: number;
-  newStatus: string;
-  newUpvotes: number;
-  newDownvotes: number;
-  userVote: number;
-}> {
-  return apiCall(`/skips/vote`, token, {
-    method: "POST",
-    body: JSON.stringify({
-      skipGroupId,
-      voteType,
-      source: "extension",
-    }),
-  });
-}

@@ -172,38 +172,5 @@ export function setupWindowMessageHandlers() {
       }
     }
 
-    // Vote on skip group from injected script
-    if (type === "SKIPIT_SKIP_VOTE") {
-      const { skipGroupId, voteType } = event.data;
-
-      chrome.runtime.sendMessage(
-        {
-          type: "VOTE_SKIP",
-          skipGroupId,
-          voteType,
-        },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn("[Content] Vote error:", chrome.runtime.lastError);
-            window.postMessage(
-              {
-                type: "SKIPIT_VOTE_RESULT",
-                data: { success: false, error: chrome.runtime.lastError.message },
-              },
-              "*"
-            );
-            return;
-          }
-
-          window.postMessage(
-            {
-              type: "SKIPIT_VOTE_RESULT",
-              data: response,
-            },
-            "*"
-          );
-        }
-      );
-    }
   });
 }

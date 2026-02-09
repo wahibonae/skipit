@@ -31,8 +31,7 @@ import {
 } from "./handlers/popup-handlers";
 import {
   handleCheckAvailableSkips,
-  handleVoteSkip,
-} from "./handlers/voting-handlers";
+} from "./handlers/skip-availability-handlers";
 
 // ============================================================================
 // MESSAGE ROUTER
@@ -187,23 +186,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  // Voting operations
+  // Skip availability check
   if (message.type === "CHECK_AVAILABLE_SKIPS") {
     handleCheckAvailableSkips(message)
       .then(sendResponse)
       .catch((error) => {
         console.error("[Background] Error checking available skips:", error);
         sendResponse({ success: false, skipTypes: [] });
-      });
-    return true;
-  }
-
-  if (message.type === "VOTE_SKIP") {
-    handleVoteSkip(message)
-      .then(sendResponse)
-      .catch((error) => {
-        console.error("[Background] Error voting on skip:", error);
-        sendResponse({ success: false, error: error.message });
       });
     return true;
   }

@@ -69,18 +69,14 @@ function startSkipChecking(timestamps) {
         const start = timestamp[0];
         const end = timestamp[1];
         const skipType = timestamp[2] || "default"; // Single type string
-        const skipGroupId = timestamp[3] || null; // Skip group ID for voting
-        const confidence = timestamp[4] ?? 0.5; // Confidence score
-        const userContributed = timestamp[5] ?? false; // User submitted timestamp in this group
-        const userVoted = timestamp[6] ?? false; // User already voted on this group
 
         if (currentTime >= start && currentTime < end) {
           // Auto-skip the content
           seek(end);
           lastSkipTime = now;
 
-          // Show notification with voting if skipGroupId is available and user hasn't contributed/voted
-          showSkipNotification(skipType, start, end, skipGroupId, confidence, userContributed, userVoted);
+          // Show notification
+          showSkipNotification(skipType, start, end);
 
           break; // Only skip one timestamp at a time
         }

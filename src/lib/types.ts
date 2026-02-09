@@ -16,14 +16,9 @@ export interface SearchResponse {
 export type SkipCategory = "Nudity" | "Sex" | "Gore";
 
 export interface Timestamp {
-  id?: number; // skip group ID for voting
   start_time: number; // in seconds
   end_time: number; // in seconds
   type: SkipCategory;
-  confidence?: number; // 0.0 to 1.0
-  status?: "pending" | "verified" | "disputed" | "rejected"; // skip group status
-  userContributed?: boolean; // true if current user submitted a timestamp in this group
-  userVoted?: boolean; // true if current user already voted on this group
 }
 
 export interface UserPreferences {
@@ -257,20 +252,3 @@ export interface OpenAuthPopupResponse {
   error?: string;
 }
 
-// ============================================================================
-// SKIP VOTING MESSAGE TYPES
-// ============================================================================
-
-// Vote on a skip group (injected -> content -> background)
-export interface SkipVoteMessage {
-  type: "VOTE_SKIP";
-  skipGroupId: number;
-  voteType: 1 | -1; // 1 = upvote, -1 = downvote
-}
-
-export interface SkipVoteResponse {
-  success: boolean;
-  newConfidence?: number;
-  newStatus?: string;
-  error?: string;
-}

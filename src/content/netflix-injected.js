@@ -264,111 +264,10 @@ const BUTTON_STYLES = `
   opacity: 0.8;
 }
 
-/* Voting notification styles */
-.skipit-notification.voting {
-  pointer-events: auto;
-  flex-direction: column;
-  align-items: stretch;
-  min-width: 280px;
-  max-width: 360px;
-  padding: 12px 16px;
-}
 .skipit-notification-header {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-.skipit-vote-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 10px;
-}
-.skipit-vote-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 8px 16px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-}
-.skipit-vote-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-.skipit-vote-btn.upvote:hover {
-  background: rgba(34, 197, 94, 0.3);
-  border-color: rgb(34, 197, 94);
-}
-.skipit-vote-btn.downvote:hover {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: rgb(239, 68, 68);
-}
-.skipit-vote-btn.wrong-type:hover {
-  background: rgba(251, 191, 36, 0.3);
-  border-color: rgb(251, 191, 36);
-}
-.skipit-type-selector {
-  display: flex;
-  gap: 8px;
-  padding: 8px 0;
-  justify-content: center;
-  margin-top: 10px;
-}
-.skipit-type-option {
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s ease;
-  border: 1px solid;
-  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-}
-.skipit-type-option:hover {
-  transform: scale(1.05);
-}
-.skipit-type-option--nudity {
-  background: rgba(236, 72, 153, 0.2);
-  color: #EC4899;
-  border-color: #EC4899;
-}
-.skipit-type-option--sex {
-  background: rgba(239, 68, 68, 0.2);
-  color: #EF4444;
-  border-color: #EF4444;
-}
-.skipit-type-option--gore {
-  background: rgba(249, 115, 22, 0.2);
-  color: #F97316;
-  border-color: #F97316;
-}
-.skipit-type-option--cancel {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-.skipit-countdown {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  margin-top: 8px;
-}
-.skipit-countdown-bar {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  margin-top: 4px;
-  overflow: hidden;
-}
-.skipit-countdown-progress {
-  height: 100%;
-  background: rgba(255, 255, 255, 0.6);
-  transition: width 0.1s linear;
 }
 .skipit-close-btn {
   position: absolute;
@@ -385,13 +284,6 @@ const BUTTON_STYLES = `
 .skipit-close-btn:hover {
   color: white;
 }
-.skipit-vote-confirmation {
-  text-align: center;
-  padding: 8px 0;
-  color: #22C55E;
-  font-size: 14px;
-}
-
 /* Locked state for buttons when not authenticated */
 .skipit-mark-btn.locked,
 .skipit-fab.locked {
@@ -490,17 +382,11 @@ let segmentsTimelineObserver = null;
 
 // Notification state
 const NOTIFICATION_ID = "skipit-notification";
-const NOTIFICATION_DURATION = 6000; // Auto-dismiss after 6s (longer for voting)
+const NOTIFICATION_DURATION = 4000; // Auto-dismiss after 4s
 const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
-const VOTE_CONFIRMATION_DURATION = 1500; // Show "Thanks!" for 1.5s
 
 let notificationTimeout = null;
-let countdownInterval = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
-let currentSkipGroupId = null; // Track current skip group for voting
-let votedSkipGroups = new Set(); // Track voted groups in this session
-let sessionSkipCount = 0; // Track number of skips in this session
-let isNotificationHovered = false; // Track hover state for timer pause
 
 
 // ============================================================================
@@ -1647,18 +1533,14 @@ function startSkipChecking(timestamps) {
         const start = timestamp[0];
         const end = timestamp[1];
         const skipType = timestamp[2] || "default"; // Single type string
-        const skipGroupId = timestamp[3] || null; // Skip group ID for voting
-        const confidence = timestamp[4] ?? 0.5; // Confidence score
-        const userContributed = timestamp[5] ?? false; // User submitted timestamp in this group
-        const userVoted = timestamp[6] ?? false; // User already voted on this group
 
         if (currentTime >= start && currentTime < end) {
           // Auto-skip the content
           seek(end);
           lastSkipTime = now;
 
-          // Show notification with voting if skipGroupId is available and user hasn't contributed/voted
-          showSkipNotification(skipType, start, end, skipGroupId, confidence, userContributed, userVoted);
+          // Show notification
+          showSkipNotification(skipType, start, end);
 
           break; // Only skip one timestamp at a time
         }
@@ -1702,7 +1584,7 @@ function stopSkipChecking() {
 
 
 // ============================================================================
-// SKIP NOTIFICATIONS WITH VOTING
+// SKIP NOTIFICATIONS
 // ============================================================================
 
 /**
@@ -1734,40 +1616,11 @@ function getOrCreateNotification() {
 }
 
 /**
- * Check if we should show voting prompt
- */
-function shouldShowVotingPrompt(skipGroupId, confidence) {
-  // Already voted this session
-  if (votedSkipGroups.has(skipGroupId)) {
-    return false;
-  }
-
-  // High confidence, well-validated - don't need votes
-  if (confidence >= 0.9) {
-    return false;
-  }
-
-  // Low confidence - always ask
-  if (confidence < 0.5) {
-    return true;
-  }
-
-  // First 5 skips of session - always ask
-  if (sessionSkipCount <= 5) {
-    return true;
-  }
-
-  // Otherwise, every 3rd skip
-  return sessionSkipCount % 3 === 0;
-}
-
-/**
  * Build notification content using safe DOM methods
  */
-function buildNotificationContent(notification, skipType, startMs, endMs, showVoting = false) {
+function buildNotificationContent(notification, skipType, startMs, endMs) {
   // Clear existing content
   notification.textContent = "";
-  notification.classList.remove("voting");
 
   const formattedType = formatSkipType(skipType) || "content";
 
@@ -1810,192 +1663,15 @@ function buildNotificationContent(notification, skipType, startMs, endMs, showVo
   headerDiv.appendChild(iconDiv);
   headerDiv.appendChild(textDiv);
   notification.appendChild(headerDiv);
-
-  // Add voting buttons if enabled
-  if (showVoting) {
-    notification.classList.add("voting");
-
-    // Create vote buttons container
-    const voteButtonsDiv = document.createElement("div");
-    voteButtonsDiv.className = "skipit-vote-buttons";
-
-    // Upvote button
-    const upvoteBtn = document.createElement("button");
-    upvoteBtn.className = "skipit-vote-btn upvote";
-    upvoteBtn.textContent = "\uD83D\uDC4D";
-    upvoteBtn.title = "Correct skip (Y)";
-    upvoteBtn.onclick = () => handleVote(1, skipType);
-
-    // Downvote button
-    const downvoteBtn = document.createElement("button");
-    downvoteBtn.className = "skipit-vote-btn downvote";
-    downvoteBtn.textContent = "\uD83D\uDC4E";
-    downvoteBtn.title = "Wrong skip (N)";
-    downvoteBtn.onclick = () => handleVote(-1, skipType);
-
-    // Wrong type button
-    const wrongTypeBtn = document.createElement("button");
-    wrongTypeBtn.className = "skipit-vote-btn wrong-type";
-    wrongTypeBtn.textContent = "\uD83C\uDFF7\uFE0F";
-    wrongTypeBtn.title = "Wrong type (T)";
-    wrongTypeBtn.onclick = () => showTypeSelector(notification, skipType);
-
-    voteButtonsDiv.appendChild(upvoteBtn);
-    voteButtonsDiv.appendChild(downvoteBtn);
-    voteButtonsDiv.appendChild(wrongTypeBtn);
-    notification.appendChild(voteButtonsDiv);
-
-    // Add countdown bar
-    const countdownDiv = document.createElement("div");
-    countdownDiv.className = "skipit-countdown";
-
-    const countdownBar = document.createElement("div");
-    countdownBar.className = "skipit-countdown-bar";
-
-    const countdownProgress = document.createElement("div");
-    countdownProgress.className = "skipit-countdown-progress";
-    countdownProgress.id = "skipit-countdown-progress";
-    countdownProgress.style.width = "100%";
-
-    countdownBar.appendChild(countdownProgress);
-    countdownDiv.appendChild(countdownBar);
-    notification.appendChild(countdownDiv);
-
-    // Add hover handlers to pause timer
-    notification.onmouseenter = () => {
-      isNotificationHovered = true;
-    };
-    notification.onmouseleave = () => {
-      isNotificationHovered = false;
-    };
-
-    // Add keyboard shortcuts
-    document.addEventListener("keydown", handleVoteKeyboard);
-  }
 }
 
 /**
- * Handle keyboard shortcuts for voting
- */
-function handleVoteKeyboard(e) {
-  if (!currentSkipGroupId) return;
-
-  const key = e.key.toLowerCase();
-  if (key === "y") {
-    handleVote(1, null);
-  } else if (key === "n") {
-    handleVote(-1, null);
-  } else if (key === "t") {
-    const notification = document.getElementById(NOTIFICATION_ID);
-    if (notification) {
-      showTypeSelector(notification, null);
-    }
-  }
-}
-
-/**
- * Show type selector for wrong type voting
- */
-function showTypeSelector(notification, currentType) {
-  // Find vote buttons container
-  let voteButtonsDiv = notification.querySelector(".skipit-vote-buttons");
-  if (!voteButtonsDiv) return;
-
-  // Clear and convert to type selector
-  while (voteButtonsDiv.firstChild) {
-    voteButtonsDiv.removeChild(voteButtonsDiv.firstChild);
-  }
-  voteButtonsDiv.className = "skipit-type-selector";
-
-  const types = ["Nudity", "Sex", "Gore"];
-  types.forEach(type => {
-    if (type.toLowerCase() !== (currentType || "").toLowerCase()) {
-      const typeBtn = document.createElement("button");
-      typeBtn.className = `skipit-type-option skipit-type-option--${type.toLowerCase()}`;
-      typeBtn.textContent = type;
-      typeBtn.onclick = () => handleVote(-1, currentType, type);
-      voteButtonsDiv.appendChild(typeBtn);
-    }
-  });
-
-  // Add cancel button
-  const cancelBtn = document.createElement("button");
-  cancelBtn.className = "skipit-type-option skipit-type-option--cancel";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.onclick = () => {
-    hideSkipNotification();
-  };
-  voteButtonsDiv.appendChild(cancelBtn);
-}
-
-/**
- * Handle vote action
- */
-function handleVote(voteType, currentType, suggestedType = null) {
-  if (!currentSkipGroupId) {
-    console.warn("[Netflix Injected] No skip group ID for voting");
-    return;
-  }
-
-  // Mark as voted
-  votedSkipGroups.add(currentSkipGroupId);
-
-  // Remove keyboard listener
-  document.removeEventListener("keydown", handleVoteKeyboard);
-
-  // Send vote to content script
-  window.postMessage({
-    type: "SKIPIT_SKIP_VOTE",
-    skipGroupId: currentSkipGroupId,
-    voteType: voteType,
-    suggestedType: suggestedType,
-  }, "*");
-
-  // Show confirmation
-  showVoteConfirmation();
-}
-
-/**
- * Show vote confirmation
- */
-function showVoteConfirmation() {
-  const notification = document.getElementById(NOTIFICATION_ID);
-  if (!notification) return;
-
-  // Clear timers
-  if (notificationTimeout) {
-    clearTimeout(notificationTimeout);
-  }
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-
-  // Show confirmation using safe DOM methods
-  notification.textContent = "";
-  notification.classList.remove("voting");
-
-  const confirmDiv = document.createElement("div");
-  confirmDiv.className = "skipit-vote-confirmation";
-  confirmDiv.textContent = "\u2713 Thanks for voting!";
-  notification.appendChild(confirmDiv);
-
-  // Dismiss after short delay
-  notificationTimeout = setTimeout(() => {
-    hideSkipNotification();
-  }, VOTE_CONFIRMATION_DURATION);
-}
-
-/**
- * Show skip notification with optional voting
+ * Show skip notification
  * @param {string} skipType - Single type string like 'nudity', 'sex', or 'gore'
  * @param {number} startMs - Start time in milliseconds
  * @param {number} endMs - End time in milliseconds
- * @param {number} skipGroupId - Skip group ID for voting (optional)
- * @param {number} confidence - Confidence score 0-1 (optional)
- * @param {boolean} userContributed - User submitted a timestamp in this group (optional)
- * @param {boolean} userVoted - User already voted on this group (optional)
  */
-function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, confidence = 0.5, userContributed = false, userVoted = false) {
+function showSkipNotification(skipType, startMs, endMs) {
   // Check cooldown for this specific segment
   const now = Date.now();
   if (
@@ -2007,68 +1683,29 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
     return;
   }
 
-  // Track session skip count
-  sessionSkipCount++;
-
   // Update last notified segment
   lastNotifiedSegment = { start: startMs, end: endMs, timestamp: now };
-
-  // Store current skip group ID for voting
-  currentSkipGroupId = skipGroupId;
 
   const notification = getOrCreateNotification();
   if (!notification) return;
 
-  // Clear existing timeouts and intervals
+  // Clear existing timeout
   if (notificationTimeout) {
     clearTimeout(notificationTimeout);
   }
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-
-  // Remove any existing keyboard listener
-  document.removeEventListener("keydown", handleVoteKeyboard);
-
-  // Determine if we should show voting buttons
-  // Don't show voting if user contributed to this skip group or already voted
-  const showVoting = skipGroupId && !userContributed && !userVoted && shouldShowVotingPrompt(skipGroupId, confidence);
 
   // Build notification content
-  buildNotificationContent(notification, skipType, startMs, endMs, showVoting);
+  buildNotificationContent(notification, skipType, startMs, endMs);
 
   // Show notification
   requestAnimationFrame(() => {
     notification.classList.add("visible");
   });
 
-  // Start countdown animation if voting is shown
-  if (showVoting) {
-    let timeRemaining = NOTIFICATION_DURATION;
-    const updateInterval = 100; // Update every 100ms
-
-    countdownInterval = setInterval(() => {
-      if (!isNotificationHovered) {
-        timeRemaining -= updateInterval;
-      }
-
-      const progress = (timeRemaining / NOTIFICATION_DURATION) * 100;
-      const progressBar = document.getElementById("skipit-countdown-progress");
-      if (progressBar) {
-        progressBar.style.width = `${progress}%`;
-      }
-
-      if (timeRemaining <= 0) {
-        clearInterval(countdownInterval);
-        hideSkipNotification();
-      }
-    }, updateInterval);
-  } else {
-    // Simple auto-dismiss for non-voting notification
-    notificationTimeout = setTimeout(() => {
-      hideSkipNotification();
-    }, NOTIFICATION_DURATION);
-  }
+  // Auto-dismiss
+  notificationTimeout = setTimeout(() => {
+    hideSkipNotification();
+  }, NOTIFICATION_DURATION);
 }
 
 /**
@@ -2077,25 +1714,13 @@ function showSkipNotification(skipType, startMs, endMs, skipGroupId = null, conf
 function hideSkipNotification() {
   const notification = document.getElementById(NOTIFICATION_ID);
   if (notification) {
-    notification.classList.remove("visible", "voting");
+    notification.classList.remove("visible");
   }
 
   if (notificationTimeout) {
     clearTimeout(notificationTimeout);
     notificationTimeout = null;
   }
-
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-    countdownInterval = null;
-  }
-
-  // Remove keyboard listener
-  document.removeEventListener("keydown", handleVoteKeyboard);
-
-  // Clear current skip group ID
-  currentSkipGroupId = null;
-  isNotificationHovered = false;
 }
 
 /**
@@ -2104,7 +1729,6 @@ function hideSkipNotification() {
 function cleanupNotification() {
   hideSkipNotification();
   lastNotifiedSegment = null;
-  sessionSkipCount = 0; // Reset session skip count
 
   const notification = document.getElementById(NOTIFICATION_ID);
   if (notification) {

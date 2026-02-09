@@ -1,9 +1,9 @@
 /**
- * Voting and skip availability handlers
- * Manages skip group voting and checking available skip types
+ * Skip availability handlers
+ * Checks what skip types are available for a video
  */
 
-import { getTimestamps, voteOnSkip } from "../../lib/api";
+import { getTimestamps } from "../../lib/api";
 import { getAuthToken } from "./auth";
 
 /**
@@ -52,42 +52,5 @@ export async function handleCheckAvailableSkips(message: {
   } catch (error) {
     console.error("[Background] Error checking available skips:", error);
     return { success: false, skipTypes: [] };
-  }
-}
-
-/**
- * Vote on a skip group
- */
-export async function handleVoteSkip(message: {
-  skipGroupId: number;
-  voteType: 1 | -1;
-}): Promise<{
-  success: boolean;
-  newConfidence?: number;
-  newStatus?: string;
-  error?: string;
-}> {
-  const token = await getAuthToken();
-  if (!token) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  try {
-    const result = await voteOnSkip(
-      message.skipGroupId,
-      message.voteType,
-      token
-    );
-
-    return {
-      success: true,
-      newConfidence: result.newConfidence,
-      newStatus: result.newStatus,
-    };
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("[Background] Vote error:", errorMessage);
-    return { success: false, error: errorMessage };
   }
 }

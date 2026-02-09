@@ -46,16 +46,12 @@ export async function startSkipping(
     await waitForNetflixReady();
 
     // Format timestamps for injected script (API now returns milliseconds directly)
-    // Format: [start_ms, end_ms, type, skipGroupId, confidence, userContributed, userVoted]
+    // Format: [start_ms, end_ms, type]
     // type is lowercase for CSS class matching
     const timestampsMs = timestamps.map((t) => [
       t.start_time, // [0] start in milliseconds
       t.end_time, // [1] end in milliseconds
       t.type.toLowerCase(), // [2] 'nudity', 'sex', or 'gore'
-      t.id || null, // [3] skip group ID for voting
-      t.confidence ?? 0.5, // [4] confidence score
-      t.userContributed ?? false, // [5] user submitted timestamp in this group
-      t.userVoted ?? false, // [6] user already voted on this group
     ]);
 
     // Send timestamps to injected script
