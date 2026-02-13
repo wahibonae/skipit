@@ -13,9 +13,9 @@ export const CLERK_SYNC_HOST = IS_DEVELOPMENT
 // Web app URL for navigation (extension-auth, movie pages, etc.)
 export const APP_URL = IS_DEVELOPMENT
   ? "http://localhost:3000"
-  : "https://www.getskipit.com";
+  : "https://getskipit.com";
 
 // API configuration
 export const API_BASE_URL = IS_DEVELOPMENT
   ? "http://localhost:3000/api"
-  : "https://www.getskipit.com/api";
+  : "https://getskipit.com/api";
