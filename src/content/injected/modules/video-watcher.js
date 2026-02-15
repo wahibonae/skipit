@@ -36,6 +36,7 @@ function startVideoChangeWatcher() {
 
       // Reset skip types state for new video
       availableSkipTypes = [];
+      isContentClean = false;
       loadingStatus = "detecting";
 
       // Notify content script that metadata is ready for new video
@@ -54,6 +55,7 @@ function startVideoChangeWatcher() {
       lastNetflixId = currentNetflixId;
       lastMetadata = metadata;
 
+      isContentClean = false;
       loadingStatus = "detecting";
 
       window.postMessage(

@@ -152,6 +152,11 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
       "loading": "Loading skips..."
     };
     typesLine.textContent = statusText[loadingStatus] || "Loading...";
+  } else if (isContentClean) {
+    // Content marked as clean by admin
+    button.classList.remove("active");
+    button.classList.add("disabled");
+    typesLine.textContent = "No skips (clean)";
   } else {
     // No skips available - disabled state
     button.classList.remove("active");
@@ -201,6 +206,7 @@ function updateButtonsAuthState(authenticated) {
       if (metadata) {
         // Reset to loading state and trigger fresh fetch
         availableSkipTypes = [];
+        isContentClean = false;
         loadingStatus = "detecting";
         updateSkipitFAB(metadata, fabSkippingActive);
 

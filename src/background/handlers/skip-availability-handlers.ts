@@ -15,7 +15,7 @@ export async function handleCheckAvailableSkips(message: {
   tmdbId: number;
   seasonNumber?: number;
   episodeNumber?: number;
-}): Promise<{ success: boolean; skipTypes: string[]; counts?: { nudity: number; sex: number; gore: number; total: number } }> {
+}): Promise<{ success: boolean; skipTypes: string[]; isClean?: boolean; counts?: { nudity: number; sex: number; gore: number; total: number } }> {
   const token = await getAuthToken();
   if (!token) {
     return { success: false, skipTypes: [] };
@@ -23,7 +23,7 @@ export async function handleCheckAvailableSkips(message: {
 
   try {
     // Fetch ALL timestamps (all types enabled) to see what's available
-    const timestamps = await getTimestamps(
+    const { timestamps, isClean } = await getTimestamps(
       message.contentType,
       message.tmdbId,
       token,
@@ -48,7 +48,7 @@ export async function handleCheckAvailableSkips(message: {
       }
     }
 
-    return { success: true, skipTypes, counts };
+    return { success: true, skipTypes, isClean, counts };
   } catch (error) {
     console.error("[Background] Error checking available skips:", error);
     return { success: false, skipTypes: [] };

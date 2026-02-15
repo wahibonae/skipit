@@ -364,6 +364,7 @@ let lastNetflixId = null; // Track video ID to detect navigation
 let availableSkipTypes = []; // All skip types available in DB (for display when NOT skipping)
 let activeSkippingTypes = []; // Skip types currently being skipped (for display when skipping)
 let loadingStatus = "detecting"; // "detecting" | "loading" | "ready" | "not_recognized"
+let isContentClean = false; // Whether this content is marked as clean
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
@@ -851,6 +852,11 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
       "loading": "Loading skips..."
     };
     typesLine.textContent = statusText[loadingStatus] || "Loading...";
+  } else if (isContentClean) {
+    // Content marked as clean by admin
+    button.classList.remove("active");
+    button.classList.add("disabled");
+    typesLine.textContent = "No skips (clean)";
   } else {
     // No skips available - disabled state
     button.classList.remove("active");
@@ -900,6 +906,7 @@ function updateButtonsAuthState(authenticated) {
       if (metadata) {
         // Reset to loading state and trigger fresh fetch
         availableSkipTypes = [];
+        isContentClean = false;
         loadingStatus = "detecting";
         updateSkipitFAB(metadata, fabSkippingActive);
 
@@ -1816,6 +1823,7 @@ function startVideoChangeWatcher() {
 
       // Reset skip types state for new video
       availableSkipTypes = [];
+      isContentClean = false;
       loadingStatus = "detecting";
 
       // Notify content script that metadata is ready for new video
@@ -1834,6 +1842,7 @@ function startVideoChangeWatcher() {
       lastNetflixId = currentNetflixId;
       lastMetadata = metadata;
 
+      isContentClean = false;
       loadingStatus = "detecting";
 
       window.postMessage(
@@ -1896,6 +1905,9 @@ function setupMessageHandler() {
       const status = data?.status;
       if (status) {
         loadingStatus = status;
+        if (status !== "ready") {
+          isContentClean = false;
+        }
         const metadata = lastMetadata || extractNetflixMetadata();
         updateSkipitFAB(metadata, fabSkippingActive);
       }
@@ -1905,6 +1917,7 @@ function setupMessageHandler() {
       const metadata =
         data?.metadata || lastMetadata || extractNetflixMetadata();
       availableSkipTypes = skipTypes;
+      isContentClean = data?.isClean || false;
       loadingStatus = "ready"; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {

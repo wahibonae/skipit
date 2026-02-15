@@ -99,7 +99,7 @@ export async function getTimestamps(
     seasonNumber?: number;
     episodeNumber?: number;
   }
-): Promise<Timestamp[]> {
+): Promise<{ timestamps: Timestamp[]; isClean: boolean }> {
   const params = new URLSearchParams({
     source: "extension",
   });
@@ -120,7 +120,7 @@ export async function getTimestamps(
     params.append("episodeNumber", String(options.episodeNumber));
   }
 
-  return apiCall<Timestamp[]>(
+  return apiCall<{ timestamps: Timestamp[]; isClean: boolean }>(
     `/timestamps/${contentType}/${contentId}?${params.toString()}`,
     token
   );

@@ -61,6 +61,7 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
       }
 
       const skipTypes = response?.skipTypes || [];
+      const isClean = response?.isClean || false;
 
       // Cache timestamp counts if available (avoids re-fetching when quick panel opens)
       if (response?.counts && resolved.tmdbId) {
@@ -71,7 +72,7 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
       window.postMessage(
         {
           type: "SKIPIT_SET_AVAILABLE_SKIP_TYPES",
-          data: { skipTypes },
+          data: { skipTypes, isClean },
         },
         "*"
       );

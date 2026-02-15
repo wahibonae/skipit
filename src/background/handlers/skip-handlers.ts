@@ -215,7 +215,7 @@ export async function handleRefreshActiveSkipping(tabId?: number) {
   }
 
   // Re-fetch timestamps from DB with same preferences
-  const timestamps = await getTimestamps(
+  const { timestamps } = await getTimestamps(
     existingState.contentType,
     existingState.contentId,
     token,

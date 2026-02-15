@@ -40,6 +40,9 @@ function setupMessageHandler() {
       const status = data?.status;
       if (status) {
         loadingStatus = status;
+        if (status !== "ready") {
+          isContentClean = false;
+        }
         const metadata = lastMetadata || extractNetflixMetadata();
         updateSkipitFAB(metadata, fabSkippingActive);
       }
@@ -49,6 +52,7 @@ function setupMessageHandler() {
       const metadata =
         data?.metadata || lastMetadata || extractNetflixMetadata();
       availableSkipTypes = skipTypes;
+      isContentClean = data?.isClean || false;
       loadingStatus = "ready"; // Done loading, show actual state
       updateSkipitFAB(metadata, fabSkippingActive, skipTypes);
     } else if (type === "SKIPIT_GET_NETFLIX_METADATA") {

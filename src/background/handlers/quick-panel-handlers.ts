@@ -153,7 +153,7 @@ async function getTimestampCounts(
 ): Promise<TimestampCounts> {
   try {
     // Fetch all timestamps (with all skip types enabled to get everything)
-    const timestamps = await getTimestamps(contentType, contentId, token, {
+    const { timestamps } = await getTimestamps(contentType, contentId, token, {
       skipNudity: true,
       skipSex: true,
       skipGore: true,
@@ -213,7 +213,7 @@ export async function handleQuickSkipActivate(message: {
 
   try {
     // Fetch timestamps with user's preferences
-    const timestamps = await getTimestamps(
+    const { timestamps } = await getTimestamps(
       message.contentType,
       message.tmdbId,
       token,

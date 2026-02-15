@@ -28,6 +28,7 @@ let lastNetflixId = null; // Track video ID to detect navigation
 let availableSkipTypes = []; // All skip types available in DB (for display when NOT skipping)
 let activeSkippingTypes = []; // Skip types currently being skipped (for display when skipping)
 let loadingStatus = "detecting"; // "detecting" | "loading" | "ready" | "not_recognized"
+let isContentClean = false; // Whether this content is marked as clean
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
