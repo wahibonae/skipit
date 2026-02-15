@@ -10,7 +10,6 @@ export const Auth = () => {
   const [detectedContent, setDetectedContent] =
     useState<AutoDetectedContent | null>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
-  const [isOnNetflix, setIsOnNetflix] = useState(false);
 
   // Fetch detected content when authenticated
   useEffect(() => {
@@ -29,7 +28,6 @@ export const Auth = () => {
         });
 
         if (!tab?.id || !tab.url?.includes("netflix.com")) {
-          setIsOnNetflix(false);
           setDetectedContent(null);
           setIsLoadingContent(false);
           return;
@@ -37,7 +35,6 @@ export const Auth = () => {
 
         // Only consider it a streaming page if on /watch/
         const isWatchPage = tab.url?.includes("netflix.com/watch") ?? false;
-        setIsOnNetflix(isWatchPage);
 
         if (!isWatchPage) {
           setDetectedContent(null);
@@ -188,7 +185,7 @@ export const Auth = () => {
         </button>
       )}
 
-      {!isLoadingContent && !detectedContent && !isOnNetflix && (
+      {!isLoadingContent && !detectedContent && (
         <button
           className="action-button"
           onClick={() => chrome.tabs.create({ url: APP_URL })}

@@ -128,13 +128,17 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("disabled");
     const typeText = formatSkipTypes(activeSkippingTypes);
     typesLine.textContent = typeText
-      ? `Skipping ${typeText} scenes`
+      ? activeSkippingTypes.length >= 3
+        ? `Skipping ${typeText}`
+        : `Skipping ${typeText} scenes`
       : "Skipping";
   } else if (availableSkipTypes && availableSkipTypes.length > 0) {
     // Has skips available - show skip types
     button.classList.remove("active", "disabled");
     const typeText = formatSkipTypes(availableSkipTypes);
-    typesLine.textContent = `Skip ${typeText} scenes`;
+    typesLine.textContent = availableSkipTypes.length >= 3
+      ? `Skip ${typeText}`
+      : `Skip ${typeText} scenes`;
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");

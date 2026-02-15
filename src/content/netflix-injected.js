@@ -14,7 +14,7 @@ const BUTTON_STYLES = `
 /* Skipit Wrapper - Contains both FAB and Mark buttons */
 #skipit-buttons-wrapper {
   position: absolute;
-  bottom: 140px;
+  bottom: 150px;
   right: 26px;
   z-index: 2147483646;
   display: flex;
@@ -45,7 +45,7 @@ const BUTTON_STYLES = `
   cursor: pointer;
   padding: 10px 16px;
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.2s ease;
@@ -56,7 +56,7 @@ const BUTTON_STYLES = `
   background: rgba(26, 26, 26, 0.95);
 }
 .skipit-mark-btn .skipit-mark-icon {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 1;
 }
@@ -114,7 +114,7 @@ const BUTTON_STYLES = `
 
 /* FAB Label - "Skipit" branding */
 .skipit-fab-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #ff6f4f;
   text-transform: uppercase;
@@ -126,7 +126,7 @@ const BUTTON_STYLES = `
 
 /* FAB Types - Main CTA text */
 .skipit-fab-types {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: white;
   line-height: 1.2;
@@ -827,13 +827,17 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("disabled");
     const typeText = formatSkipTypes(activeSkippingTypes);
     typesLine.textContent = typeText
-      ? `Skipping ${typeText} scenes`
+      ? activeSkippingTypes.length >= 3
+        ? `Skipping ${typeText}`
+        : `Skipping ${typeText} scenes`
       : "Skipping";
   } else if (availableSkipTypes && availableSkipTypes.length > 0) {
     // Has skips available - show skip types
     button.classList.remove("active", "disabled");
     const typeText = formatSkipTypes(availableSkipTypes);
-    typesLine.textContent = `Skip ${typeText} scenes`;
+    typesLine.textContent = availableSkipTypes.length >= 3
+      ? `Skip ${typeText}`
+      : `Skip ${typeText} scenes`;
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");
