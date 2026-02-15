@@ -9,7 +9,12 @@ import type {
   CheckAuthResponse,
   QuickSkipActivateResponse,
 } from "../../lib/types";
-import { searchContent, getTimestamps, getUserPreferences } from "../../lib/api";
+import {
+  searchContent,
+  getTimestamps,
+  getUserPreferences,
+  checkIsOnNetflix,
+} from "../../lib/api";
 import { getAuthToken } from "./auth";
 import { handleActivateSkip } from "./skip-handlers";
 
@@ -55,7 +60,8 @@ export async function handleGetUserPreferences(): Promise<{
 }
 
 /**
- * Match Netflix content title to TMDB and optionally get timestamp counts
+ * Match Netflix content title to TMDB and optionally get timestamp counts.
+ * When multiple TMDB results match, checks Netflix availability to pick the correct one.
  */
 export async function handleMatchContent(message: {
   title: string;
@@ -77,11 +83,34 @@ export async function handleMatchContent(message: {
       return { success: false, error: "Content not found in database" };
     }
 
-    // Find best match (prioritize exact type match)
+    // 1. Filter to expected media type
     const expectedType = message.contentType === "episode" ? "tv" : "movie";
-    const match =
-      searchResponse.results.find((r) => r.media_type === expectedType) ||
-      searchResponse.results[0];
+    const typedCandidates = searchResponse.results.filter(
+      (r) => r.media_type === expectedType
+    );
+
+    // Fall back to all results if no type match
+    const candidates =
+      typedCandidates.length > 0 ? typedCandidates : searchResponse.results;
+
+    // If only one candidate, use it directly
+    let match = candidates[0];
+
+    if (candidates.length > 1) {
+      // 2. Check Netflix availability for top 3 candidates
+      const top = candidates.slice(0, 3);
+      const netflixChecks = await Promise.all(
+        top.map((c) => checkIsOnNetflix(c.media_type, c.id, token))
+      );
+
+      const netflixCandidates = top.filter((_, i) => netflixChecks[i]);
+
+      if (netflixCandidates.length >= 1) {
+        // Pick the first Netflix-available candidate
+        match = netflixCandidates[0];
+      }
+      // If none are on Netflix, keep match = candidates[0] (first result)
+    }
 
     // Only fetch timestamp counts if requested (defaults to true for backwards compatibility)
     const shouldIncludeCounts = message.includeCounts !== false;

@@ -149,7 +149,40 @@ export async function getTVShowEpisodes(
 }
 
 /**
- * Save a new timestamp (for future v1.1+)
+ * Check if a TMDB content ID is available on Netflix (any region)
+ * Uses TMDB watch/providers endpoint, checks for provider_id 8 (Netflix)
+ */
+export async function checkIsOnNetflix(
+  mediaType: "movie" | "tv",
+  tmdbId: number,
+  token: string
+): Promise<boolean> {
+  try {
+    const data = await apiCall<{
+      results: Record<
+        string,
+        { flatrate?: { provider_id: number }[] }
+      >;
+    }>("/tmdb", token, {
+      method: "POST",
+      body: JSON.stringify({
+        endpoint: `/${mediaType}/${tmdbId}/watch/providers`,
+        params: {},
+      }),
+    });
+
+    const regions = data.results;
+    if (!regions) return false;
+    return Object.values(regions).some((region) =>
+      region.flatrate?.some((p) => p.provider_id === 8)
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Save a new timestamp
  */
 export async function saveTimestamp(
   contentType: "movie" | "episode",
