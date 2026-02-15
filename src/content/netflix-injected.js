@@ -363,7 +363,7 @@ let lastMetadata = null;
 let lastNetflixId = null; // Track video ID to detect navigation
 let availableSkipTypes = []; // All skip types available in DB (for display when NOT skipping)
 let activeSkippingTypes = []; // Skip types currently being skipped (for display when skipping)
-let loadingStatus = "detecting"; // "detecting" | "loading" | "ready"
+let loadingStatus = "detecting"; // "detecting" | "loading" | "ready" | "not_recognized"
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
@@ -838,6 +838,11 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     typesLine.textContent = availableSkipTypes.length >= 3
       ? `Skip ${typeText}`
       : `Skip ${typeText} scenes`;
+  } else if (loadingStatus === "not_recognized") {
+    // Content couldn't be matched
+    button.classList.remove("active");
+    button.classList.add("disabled");
+    typesLine.textContent = "Content not recognized";
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");

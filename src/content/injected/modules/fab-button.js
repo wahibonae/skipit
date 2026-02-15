@@ -139,6 +139,11 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     typesLine.textContent = availableSkipTypes.length >= 3
       ? `Skip ${typeText}`
       : `Skip ${typeText} scenes`;
+  } else if (loadingStatus === "not_recognized") {
+    // Content couldn't be matched
+    button.classList.remove("active");
+    button.classList.add("disabled");
+    typesLine.textContent = "Content not recognized";
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");

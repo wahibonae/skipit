@@ -18,8 +18,8 @@ export async function checkAvailableSkipsForCurrentVideo(metadata: NetflixMetada
   if (!resolved) {
     window.postMessage(
       {
-        type: "SKIPIT_SET_AVAILABLE_SKIP_TYPES",
-        data: { skipTypes: [] },
+        type: "SKIPIT_LOADING_STATUS",
+        data: { status: "not_recognized" },
       },
       "*"
     );
