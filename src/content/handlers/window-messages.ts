@@ -220,18 +220,21 @@ export function setupWindowMessageHandlers() {
             );
           }
 
-          // If upvoted and actively skipping, refresh to include newly verified skip
-          if (response?.success && voteType === 1 && state.isSkipping) {
-            chrome.runtime.sendMessage(
-              { type: "REFRESH_ACTIVE_SKIPPING" },
-              () => {
-                if (chrome.runtime.lastError) {
-                  console.warn("[Content] Error refreshing active skipping");
+          // If upvoted, update available skip types (FAB) regardless of skipping state
+          if (response?.success && voteType === 1) {
+            if (state.isSkipping) {
+              // Refresh active skipping to include newly verified skip
+              chrome.runtime.sendMessage(
+                { type: "REFRESH_ACTIVE_SKIPPING" },
+                () => {
+                  if (chrome.runtime.lastError) {
+                    console.warn("[Content] Error refreshing active skipping");
+                  }
                 }
-              }
-            );
-          } else if (response?.success && voteType === 1 && !state.isSkipping) {
-            // Upvoted but not skipping - update available skip count
+              );
+            }
+
+            // Always update FAB available types (so upvoted nudity/gore show up)
             if (state.lastNetflixMetadata) {
               checkAvailableSkipsForCurrentVideo(state.lastNetflixMetadata);
             }
