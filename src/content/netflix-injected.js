@@ -1627,9 +1627,22 @@ function setupPendingTimelineObserver(pendingSkipsData) {
     pendingSegmentsTimelineObserver.disconnect();
   }
 
+  // Capture the video ID at the time pending segments were rendered
+  const videoIdAtRender = getVideoIdFromUrl();
+
   pendingSegmentsTimelineObserver = new MutationObserver(() => {
     if (!document.getElementById(PENDING_SEGMENTS_CONTAINER_ID)) {
-      // Only re-render if we still have pending skips
+      // Check if video changed — if so, clean up instead of re-rendering
+      const currentVideoId = getVideoIdFromUrl();
+      if (currentVideoId !== videoIdAtRender) {
+        pendingSkips = [];
+        removePendingTimelineSegments();
+        stopPendingSkipChecker();
+        dismissedPendingSkipIds = new Set();
+        return;
+      }
+
+      // Same video, re-render if we still have pending skips
       if (pendingSkips.length > 0) {
         renderPendingTimelineSegments(pendingSkips);
       }
@@ -1889,6 +1902,12 @@ function stopSkipChecking() {
 
   // Remove timeline segments
   removeTimelineSegments();
+
+  // Clean up pending skips
+  pendingSkips = [];
+  removePendingTimelineSegments();
+  stopPendingSkipChecker();
+  dismissedPendingSkipIds = new Set();
 
   // Clean up notification
   cleanupNotification();
@@ -2231,16 +2250,16 @@ function startVideoChangeWatcher() {
 
     // Detect video change
     if (lastNetflixId !== null && currentNetflixId !== lastNetflixId) {
-      // Video changed - stop any active skipping
+      // Video changed - stop any active skipping (also cleans pending skips)
       if (skippingForVideoIdFromUrl !== null) {
         stopSkipChecking();
+      } else if (pendingSkips.length > 0) {
+        // Not actively skipping, but pending skips need cleanup
+        pendingSkips = [];
+        removePendingTimelineSegments();
+        stopPendingSkipChecker();
+        dismissedPendingSkipIds = new Set();
       }
-
-      // Clear pending skips for old video
-      pendingSkips = [];
-      removePendingTimelineSegments();
-      stopPendingSkipChecker();
-      dismissedPendingSkipIds = new Set();
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
@@ -2372,9 +2391,16 @@ function setupMessageHandler() {
       const authenticated = event.data.data?.isAuthenticated || false;
       updateButtonsAuthState(authenticated);
 
-      // Stop skipping when user signs out
-      if (!authenticated && fabSkippingActive) {
-        stopSkipChecking();
+      // Stop skipping and clean up pending skips when user signs out
+      if (!authenticated) {
+        if (fabSkippingActive) {
+          stopSkipChecking();
+        } else if (pendingSkips.length > 0) {
+          pendingSkips = [];
+          removePendingTimelineSegments();
+          stopPendingSkipChecker();
+          dismissedPendingSkipIds = new Set();
+        }
       }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification

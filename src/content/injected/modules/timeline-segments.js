@@ -250,9 +250,22 @@ function setupPendingTimelineObserver(pendingSkipsData) {
     pendingSegmentsTimelineObserver.disconnect();
   }
 
+  // Capture the video ID at the time pending segments were rendered
+  const videoIdAtRender = getVideoIdFromUrl();
+
   pendingSegmentsTimelineObserver = new MutationObserver(() => {
     if (!document.getElementById(PENDING_SEGMENTS_CONTAINER_ID)) {
-      // Only re-render if we still have pending skips
+      // Check if video changed -> if so, clean up instead of re-rendering
+      const currentVideoId = getVideoIdFromUrl();
+      if (currentVideoId !== videoIdAtRender) {
+        pendingSkips = [];
+        removePendingTimelineSegments();
+        stopPendingSkipChecker();
+        dismissedPendingSkipIds = new Set();
+        return;
+      }
+
+      // Same video, re-render if we still have pending skips
       if (pendingSkips.length > 0) {
         renderPendingTimelineSegments(pendingSkips);
       }

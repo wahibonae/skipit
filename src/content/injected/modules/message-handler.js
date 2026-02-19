@@ -77,9 +77,16 @@ function setupMessageHandler() {
       const authenticated = event.data.data?.isAuthenticated || false;
       updateButtonsAuthState(authenticated);
 
-      // Stop skipping when user signs out
-      if (!authenticated && fabSkippingActive) {
-        stopSkipChecking();
+      // Stop skipping and clean up pending skips when user signs out
+      if (!authenticated) {
+        if (fabSkippingActive) {
+          stopSkipChecking();
+        } else if (pendingSkips.length > 0) {
+          pendingSkips = [];
+          removePendingTimelineSegments();
+          stopPendingSkipChecker();
+          dismissedPendingSkipIds = new Set();
+        }
       }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification

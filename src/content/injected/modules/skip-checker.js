@@ -145,7 +145,7 @@ function startPendingSkipChecker() {
 
         const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
 
-        // Auto-dismiss if past endTime (don't permanently dismiss — user may seek back)
+        // Auto-dismiss if past endTime (don't permanently dismiss because user may seek back)
         if (activeVotePromptSkipId === skip.id && currentTime >= skip.endTime) {
           hideVotePrompt();
           shouldShowPrompt = false;
@@ -163,7 +163,7 @@ function startPendingSkipChecker() {
         }
       }
 
-      // If no skip matched but a prompt is showing, user seeked out of range — dismiss it
+      // If no skip matched but a prompt is showing, user seeked out of range then dismiss it
       if (!shouldShowPrompt && activeVotePromptSkipId !== null) {
         hideVotePrompt();
       }
@@ -205,6 +205,12 @@ function stopSkipChecking() {
 
   // Remove timeline segments
   removeTimelineSegments();
+
+  // Clean up pending skips
+  pendingSkips = [];
+  removePendingTimelineSegments();
+  stopPendingSkipChecker();
+  dismissedPendingSkipIds = new Set();
 
   // Clean up notification
   cleanupNotification();
