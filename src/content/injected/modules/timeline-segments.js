@@ -150,6 +150,122 @@ function setupSegmentsResizeObserver(timelineBar) {
 }
 
 /**
+ * Render pending timeline segments for verification
+ * @param {Array} pendingSkipsData - Array of { id, startTime, endTime, type }
+ */
+function renderPendingTimelineSegments(pendingSkipsData) {
+  if (!pendingSkipsData || pendingSkipsData.length === 0) {
+    removePendingTimelineSegments();
+    return;
+  }
+
+  const info = getTimelineInfo();
+  if (!info) {
+    setTimeout(() => renderPendingTimelineSegments(pendingSkipsData), 500);
+    return;
+  }
+
+  const { timelineBar, duration } = info;
+  const barWidth = timelineBar.offsetWidth;
+
+  if (barWidth === 0) {
+    setTimeout(() => renderPendingTimelineSegments(pendingSkipsData), 500);
+    return;
+  }
+
+  // Remove existing pending segments
+  removePendingTimelineSegments();
+
+  const container = document.createElement("div");
+  container.id = PENDING_SEGMENTS_CONTAINER_ID;
+  container.className = "skipit-timeline-segments skipit-timeline-segments--pending-container";
+
+  pendingSkipsData.forEach((skip, index) => {
+    const startMs = skip.startTime;
+    const endMs = skip.endTime;
+    const skipType = skip.type || "pending";
+
+    const leftPercent = (startMs / duration) * 100;
+    const widthPercent = ((endMs - startMs) / duration) * 100;
+
+    const typeLabels = {
+      Nudity: "Nudity (unverified)",
+      nudity: "Nudity (unverified)",
+      Sex: "Sex (unverified)",
+      sex: "Sex (unverified)",
+      Gore: "Gore (unverified)",
+      gore: "Gore (unverified)",
+    };
+    const label = typeLabels[skipType] || "Unverified skip";
+
+    const segment = document.createElement("div");
+    segment.className = "skipit-segment skipit-segment--pending";
+    segment.style.left = `${leftPercent}%`;
+    segment.style.width = `${widthPercent}%`;
+    segment.dataset.index = index;
+    segment.dataset.start = startMs;
+    segment.dataset.end = endMs;
+    segment.dataset.type = skipType;
+    segment.dataset.label = label;
+    segment.dataset.skipId = skip.id;
+
+    // Click handler: seek to 3s before segment start
+    segment.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const seekTo = Math.max(0, startMs - VOTE_PROMPT_LEAD_TIME);
+      seek(seekTo);
+    });
+
+    container.appendChild(segment);
+  });
+
+  timelineBar.style.position = "relative";
+  timelineBar.appendChild(container);
+
+  // Set up observer for timeline recreation (same pattern as active segments)
+  setupPendingTimelineObserver(pendingSkipsData);
+}
+
+/**
+ * Remove pending timeline segments
+ */
+function removePendingTimelineSegments() {
+  const container = document.getElementById(PENDING_SEGMENTS_CONTAINER_ID);
+  if (container) {
+    container.remove();
+  }
+  pendingSegmentsRendered = false;
+
+  if (pendingSegmentsTimelineObserver) {
+    pendingSegmentsTimelineObserver.disconnect();
+    pendingSegmentsTimelineObserver = null;
+  }
+}
+
+/**
+ * Set up MutationObserver to re-render pending segments if timeline is recreated
+ */
+function setupPendingTimelineObserver(pendingSkipsData) {
+  if (pendingSegmentsTimelineObserver) {
+    pendingSegmentsTimelineObserver.disconnect();
+  }
+
+  pendingSegmentsTimelineObserver = new MutationObserver(() => {
+    if (!document.getElementById(PENDING_SEGMENTS_CONTAINER_ID)) {
+      // Only re-render if we still have pending skips
+      if (pendingSkips.length > 0) {
+        renderPendingTimelineSegments(pendingSkips);
+      }
+    }
+  });
+
+  pendingSegmentsTimelineObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+/**
  * Set up MutationObserver to re-render segments if timeline is recreated
  */
 function setupTimelineObserver(timestamps) {

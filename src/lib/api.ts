@@ -5,6 +5,8 @@ import type {
   Timestamp,
   UserPreferences,
   TVShowEpisodesResponse,
+  PendingSkip,
+  VoteResponse,
 } from "./types";
 
 // Generic API call function
@@ -179,6 +181,58 @@ export async function checkIsOnNetflix(
   } catch {
     return false;
   }
+}
+
+/**
+ * Fetch pending skip groups for verification
+ */
+export async function fetchPendingSkips(
+  contentType: "movie" | "episode",
+  contentId: number,
+  token: string,
+  options?: {
+    seasonNumber?: number;
+    episodeNumber?: number;
+  }
+): Promise<{ pendingSkips: PendingSkip[] }> {
+  const params = new URLSearchParams();
+  if (options?.seasonNumber !== undefined) {
+    params.append("seasonNumber", String(options.seasonNumber));
+  }
+  if (options?.episodeNumber !== undefined) {
+    params.append("episodeNumber", String(options.episodeNumber));
+  }
+
+  const queryString = params.toString();
+  const url = `/skips/pending/${contentType}/${contentId}${queryString ? `?${queryString}` : ""}`;
+  return apiCall<{ pendingSkips: PendingSkip[] }>(url, token);
+}
+
+/**
+ * Vote on a skip group
+ */
+export async function voteOnSkip(
+  skipGroupId: number,
+  voteType: 1 | -1,
+  token: string
+): Promise<VoteResponse> {
+  return apiCall<VoteResponse>("/skips/vote", token, {
+    method: "POST",
+    body: JSON.stringify({ skipGroupId, voteType, source: "extension" }),
+  });
+}
+
+/**
+ * Save user preferences
+ */
+export async function saveUserPreferences(
+  preferences: Record<string, boolean>,
+  token: string
+): Promise<UserPreferences> {
+  return apiCall<UserPreferences>("/user/preferences", token, {
+    method: "POST",
+    body: JSON.stringify(preferences),
+  });
 }
 
 /**

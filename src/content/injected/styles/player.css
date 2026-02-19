@@ -192,6 +192,21 @@
   box-shadow: 0 0 6px 1px rgba(255, 20, 147, 0.6), 0 0 12px 2px rgba(255, 20, 147, 0.3);
 }
 
+/* Pending (unverified) segments - neutral gray with dashed look */
+.skipit-timeline-segments--pending-container {
+  margin-bottom: 8px;
+}
+.skipit-segment--pending {
+  background: rgba(180, 180, 180, 0.7);
+  opacity: 0.75;
+  cursor: pointer;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+}
+.skipit-segment--pending:hover {
+  opacity: 1;
+  box-shadow: 0 0 6px 1px rgba(180, 180, 180, 0.6);
+}
+
 /* Skip Notification Styles */
 .skipit-notification {
   position: absolute;
@@ -321,4 +336,65 @@
 .skipit-mark-btn.locked:hover::after,
 .skipit-fab.locked:hover::after {
   opacity: 1;
+}
+
+/* Vote Prompt Styles — mirrors .skipit-notification with added buttons row */
+.skipit-vote-prompt {
+  position: absolute;
+  bottom: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2147483645;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+}
+.skipit-vote-prompt.visible {
+  opacity: 1;
+}
+/* Row 1: icon + text — reuses .skipit-notification-icon and .skipit-notification-text */
+.skipit-vote-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Row 2: centered buttons */
+.skipit-vote-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.skipit-vote-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  transition: all 0.15s ease;
+}
+.skipit-vote-btn--upvote {
+  background: #10B981;
+  color: white;
+}
+.skipit-vote-btn--upvote:hover {
+  background: #059669;
+}
+.skipit-vote-btn--downvote {
+  background: rgba(107, 114, 128, 0.6);
+  color: white;
+}
+.skipit-vote-btn--downvote:hover {
+  background: #EF4444;
 }

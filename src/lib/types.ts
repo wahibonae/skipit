@@ -262,3 +262,25 @@ export interface OpenAuthPopupResponse {
   error?: string;
 }
 
+// Pending skip group for verification voting
+export interface PendingSkip {
+  id: number;
+  startTime: number;
+  endTime: number;
+  type: string;
+  confidence: number;
+  submissionCount: number;
+}
+
+// Response from vote API
+export interface VoteResponse {
+  success: boolean;
+  skipGroupId: number;
+  newConfidence: number;
+  newStatus: string;
+  newUpvotes: number;
+  newDownvotes: number;
+  userVote: number;
+  vipVerified: boolean;
+}
+

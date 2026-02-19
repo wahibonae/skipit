@@ -33,6 +33,11 @@ import {
 import {
   handleCheckAvailableSkips,
 } from "./handlers/skip-availability-handlers";
+import {
+  handleFetchPendingSkips,
+  handleVoteOnSkip,
+  handleSaveUserPreferences,
+} from "./handlers/voting-handlers";
 
 // ============================================================================
 // MESSAGE ROUTER
@@ -193,6 +198,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(sendResponse)
       .catch((error) => {
         console.error("[Background] Error opening auth popup:", error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  }
+
+  // Voting and verification
+  if (message.type === "FETCH_PENDING_SKIPS") {
+    handleFetchPendingSkips(message)
+      .then(sendResponse)
+      .catch((error) => {
+        console.error("[Background] Error fetching pending skips:", error);
+        sendResponse({ success: false, pendingSkips: [] });
+      });
+    return true;
+  }
+
+  if (message.type === "VOTE_ON_SKIP") {
+    handleVoteOnSkip(message)
+      .then(sendResponse)
+      .catch((error) => {
+        console.error("[Background] Error voting on skip:", error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  }
+
+  if (message.type === "SAVE_USER_PREFERENCES") {
+    handleSaveUserPreferences(message)
+      .then(sendResponse)
+      .catch((error) => {
+        console.error("[Background] Error saving preferences:", error);
         sendResponse({ success: false, error: error.message });
       });
     return true;

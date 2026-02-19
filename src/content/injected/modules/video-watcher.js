@@ -25,6 +25,12 @@ function startVideoChangeWatcher() {
         stopSkipChecking();
       }
 
+      // Clear pending skips for old video
+      pendingSkips = [];
+      removePendingTimelineSegments();
+      stopPendingSkipChecker();
+      dismissedPendingSkipIds = new Set();
+
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
         resetMarkingState();

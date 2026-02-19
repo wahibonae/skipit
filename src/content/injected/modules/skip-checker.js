@@ -116,6 +116,74 @@ function startSkipChecking(timestamps) {
   }, 50); // Check every 50ms
 }
 
+// ============================================================================
+// PENDING SKIP CHECKER (for verification voting)
+// ============================================================================
+
+/**
+ * Start checking for pending skips to show vote prompts
+ * Runs on a separate 100ms interval
+ */
+function startPendingSkipChecker() {
+  if (pendingSkipCheckInterval) {
+    clearInterval(pendingSkipCheckInterval);
+  }
+
+  pendingSkipCheckInterval = setInterval(() => {
+    if (!isNetflixPlayerReady()) return;
+    if (pendingSkips.length === 0) return;
+
+    try {
+      const currentTime = getCurrentTime();
+      let shouldShowPrompt = false;
+
+      for (let i = 0; i < pendingSkips.length; i++) {
+        const skip = pendingSkips[i];
+
+        // Skip if already dismissed this session
+        if (dismissedPendingSkipIds.has(skip.id)) continue;
+
+        const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
+
+        // Auto-dismiss if past endTime (don't permanently dismiss — user may seek back)
+        if (activeVotePromptSkipId === skip.id && currentTime >= skip.endTime) {
+          hideVotePrompt();
+          shouldShowPrompt = false;
+          break;
+        }
+
+        // If we have an active prompt for a different skip, ignore others
+        if (activeVotePromptSkipId !== null && activeVotePromptSkipId !== skip.id) continue;
+
+        // Show prompt when within [startTime - 3s, endTime)
+        if (currentTime >= promptStart && currentTime < skip.endTime) {
+          showVotePrompt(skip);
+          shouldShowPrompt = true;
+          break;
+        }
+      }
+
+      // If no skip matched but a prompt is showing, user seeked out of range — dismiss it
+      if (!shouldShowPrompt && activeVotePromptSkipId !== null) {
+        hideVotePrompt();
+      }
+    } catch (error) {
+      console.error("[Netflix Injected] Error in pending skip check:", error);
+    }
+  }, 100);
+}
+
+/**
+ * Stop the pending skip checker
+ */
+function stopPendingSkipChecker() {
+  if (pendingSkipCheckInterval) {
+    clearInterval(pendingSkipCheckInterval);
+    pendingSkipCheckInterval = null;
+  }
+  hideVotePrompt();
+}
+
 /**
  * Stop checking for timestamps
  * This is the ONLY function that should deactivate skipping state

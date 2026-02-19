@@ -53,3 +53,14 @@ const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
 
 let notificationTimeout = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
+
+// Pending skip verification state
+let pendingSkips = [];
+let pendingSegmentsRendered = false;
+const VOTE_PROMPT_LEAD_TIME = 3000; // Show prompt 3s before segment
+let activeVotePromptSkipId = null;
+let votePromptTimeout = null;
+let pendingSkipCheckInterval = null;
+let dismissedPendingSkipIds = new Set(); // Don't re-show dismissed prompts
+const PENDING_SEGMENTS_CONTAINER_ID = "skipit-timeline-segments--pending";
+let pendingSegmentsTimelineObserver = null;

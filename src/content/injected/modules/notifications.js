@@ -139,6 +139,159 @@ function hideSkipNotification() {
   }
 }
 
+// ============================================================================
+// VOTE PROMPT FOR PENDING SKIPS
+// ============================================================================
+
+const VOTE_PROMPT_ID = "skipit-vote-prompt";
+
+/**
+ * Show vote prompt for a pending skip
+ */
+function showVotePrompt(skip) {
+  // Don't show if already showing for this skip AND element still exists in DOM
+  // (Netflix UI updates during seeking can remove foreign DOM elements)
+  if (activeVotePromptSkipId === skip.id && document.getElementById(VOTE_PROMPT_ID)) return;
+
+  // Remove any existing prompt
+  hideVotePrompt();
+
+  activeVotePromptSkipId = skip.id;
+
+  // Find player container
+  const video = document.querySelector("video");
+  if (!video) return;
+
+  let playerContainer =
+    video.closest(".watch-video--player-view") ||
+    video.closest('[data-uia="video-canvas"]')?.parentElement ||
+    document.querySelector(".watch-video") ||
+    video.parentElement?.parentElement?.parentElement;
+
+  if (!playerContainer) return;
+
+  // Create prompt element (mirrors .skipit-notification structure)
+  const prompt = document.createElement("div");
+  prompt.id = VOTE_PROMPT_ID;
+  prompt.className = "skipit-vote-prompt";
+
+  // Row 1: [icon circle] [title + time] — same as active skip notification
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "skipit-vote-header";
+
+  const typeLabel = formatSkipType(skip.type) || "default";
+  const iconDiv = document.createElement("div");
+  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${typeLabel}`;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z");
+  svg.appendChild(path);
+  iconDiv.appendChild(svg);
+
+  const textDiv = document.createElement("div");
+  textDiv.className = "skipit-notification-text";
+
+  const titleSpan = document.createElement("span");
+  titleSpan.className = "skipit-notification-title";
+  const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
+  titleSpan.textContent = `Unverified ${formattedType} scene`;
+
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "skipit-notification-time";
+  timeSpan.textContent = `${formatTimeMs(skip.startTime)} \u2192 ${formatTimeMs(skip.endTime)}`;
+
+  textDiv.appendChild(titleSpan);
+  textDiv.appendChild(timeSpan);
+
+  headerDiv.appendChild(iconDiv);
+  headerDiv.appendChild(textDiv);
+
+  // Row 2: centered buttons
+  const buttons = document.createElement("div");
+  buttons.className = "skipit-vote-buttons";
+
+  const upvoteBtn = document.createElement("button");
+  upvoteBtn.className = "skipit-vote-btn skipit-vote-btn--upvote";
+  upvoteBtn.textContent = "Upvote & Skip";
+  upvoteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleVote(skip.id, 1, skip.endTime);
+  });
+
+  const downvoteBtn = document.createElement("button");
+  downvoteBtn.className = "skipit-vote-btn skipit-vote-btn--downvote";
+  downvoteBtn.textContent = "Downvote";
+  downvoteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleVote(skip.id, -1, null);
+  });
+
+  buttons.appendChild(upvoteBtn);
+  buttons.appendChild(downvoteBtn);
+
+  prompt.appendChild(headerDiv);
+  prompt.appendChild(buttons);
+
+  playerContainer.appendChild(prompt);
+
+  // Fade in
+  requestAnimationFrame(() => {
+    prompt.classList.add("visible");
+  });
+}
+
+/**
+ * Hide the vote prompt
+ */
+function hideVotePrompt() {
+  const prompt = document.getElementById(VOTE_PROMPT_ID);
+  if (prompt) {
+    prompt.classList.remove("visible");
+    setTimeout(() => prompt.remove(), 250);
+  }
+  activeVotePromptSkipId = null;
+
+  if (votePromptTimeout) {
+    clearTimeout(votePromptTimeout);
+    votePromptTimeout = null;
+  }
+}
+
+/**
+ * Handle a vote action
+ */
+function handleVote(skipGroupId, voteType, seekToMs) {
+  hideVotePrompt();
+
+  // If upvote, seek to end time immediately
+  if (voteType === 1 && seekToMs !== null) {
+    seek(seekToMs);
+  }
+
+  // Send vote to content script (which bridges to background)
+  window.postMessage(
+    {
+      type: "SKIPIT_VOTE_ON_SKIP",
+      skipGroupId: skipGroupId,
+      voteType: voteType,
+      endTime: seekToMs,
+    },
+    "*"
+  );
+
+  // Mark as dismissed so it won't re-show
+  dismissedPendingSkipIds.add(skipGroupId);
+
+  // Remove from local pending skips
+  pendingSkips = pendingSkips.filter((s) => s.id !== skipGroupId);
+
+  // Re-render pending timeline segments
+  renderPendingTimelineSegments(pendingSkips);
+}
+
 /**
  * Clean up notification on stop
  */

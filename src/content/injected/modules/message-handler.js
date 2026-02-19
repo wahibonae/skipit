@@ -81,6 +81,35 @@ function setupMessageHandler() {
       if (!authenticated && fabSkippingActive) {
         stopSkipChecking();
       }
+    } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
+      // Receive pending skips for verification
+      const pendingSkipsData = event.data.data?.pendingSkips || [];
+      pendingSkips = pendingSkipsData;
+      dismissedPendingSkipIds = new Set(); // Reset dismissed set for new batch
+
+      if (pendingSkips.length > 0) {
+        renderPendingTimelineSegments(pendingSkips);
+        startPendingSkipChecker();
+      }
+    } else if (type === "SKIPIT_VOTE_RESULT") {
+      // Vote result from content script
+      const resultData = event.data.data;
+      if (resultData?.success) {
+        showSkipNotification("default", 0, 0);
+        // Override the notification content to show "Thanks for helping!"
+        const notification = document.getElementById(NOTIFICATION_ID);
+        if (notification) {
+          notification.textContent = "";
+          const text = document.createElement("span");
+          text.className = "skipit-notification-title";
+          text.textContent = "Thanks for helping!";
+          notification.appendChild(text);
+          notification.classList.add("visible");
+          setTimeout(() => {
+            notification.classList.remove("visible");
+          }, NOTIFICATION_DURATION);
+        }
+      }
     }
   });
 }

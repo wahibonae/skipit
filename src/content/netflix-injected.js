@@ -201,6 +201,21 @@ const BUTTON_STYLES = `
   box-shadow: 0 0 6px 1px rgba(255, 20, 147, 0.6), 0 0 12px 2px rgba(255, 20, 147, 0.3);
 }
 
+/* Pending (unverified) segments - neutral gray with dashed look */
+.skipit-timeline-segments--pending-container {
+  margin-bottom: 8px;
+}
+.skipit-segment--pending {
+  background: rgba(180, 180, 180, 0.7);
+  opacity: 0.75;
+  cursor: pointer;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+}
+.skipit-segment--pending:hover {
+  opacity: 1;
+  box-shadow: 0 0 6px 1px rgba(180, 180, 180, 0.6);
+}
+
 /* Skip Notification Styles */
 .skipit-notification {
   position: absolute;
@@ -332,6 +347,67 @@ const BUTTON_STYLES = `
   opacity: 1;
 }
 
+/* Vote Prompt Styles — mirrors .skipit-notification with added buttons row */
+.skipit-vote-prompt {
+  position: absolute;
+  bottom: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2147483645;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+}
+.skipit-vote-prompt.visible {
+  opacity: 1;
+}
+/* Row 1: icon + text — reuses .skipit-notification-icon and .skipit-notification-text */
+.skipit-vote-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Row 2: centered buttons */
+.skipit-vote-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.skipit-vote-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
+  transition: all 0.15s ease;
+}
+.skipit-vote-btn--upvote {
+  background: #10B981;
+  color: white;
+}
+.skipit-vote-btn--upvote:hover {
+  background: #059669;
+}
+.skipit-vote-btn--downvote {
+  background: rgba(107, 114, 128, 0.6);
+  color: white;
+}
+.skipit-vote-btn--downvote:hover {
+  background: #EF4444;
+}
+
 `;
 
 // ============================================================================
@@ -389,6 +465,17 @@ const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
 
 let notificationTimeout = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
+
+// Pending skip verification state
+let pendingSkips = [];
+let pendingSegmentsRendered = false;
+const VOTE_PROMPT_LEAD_TIME = 3000; // Show prompt 3s before segment
+let activeVotePromptSkipId = null;
+let votePromptTimeout = null;
+let pendingSkipCheckInterval = null;
+let dismissedPendingSkipIds = new Set(); // Don't re-show dismissed prompts
+const PENDING_SEGMENTS_CONTAINER_ID = "skipit-timeline-segments--pending";
+let pendingSegmentsTimelineObserver = null;
 
 
 // ============================================================================
@@ -1440,6 +1527,122 @@ function setupSegmentsResizeObserver(timelineBar) {
 }
 
 /**
+ * Render pending timeline segments for verification
+ * @param {Array} pendingSkipsData - Array of { id, startTime, endTime, type }
+ */
+function renderPendingTimelineSegments(pendingSkipsData) {
+  if (!pendingSkipsData || pendingSkipsData.length === 0) {
+    removePendingTimelineSegments();
+    return;
+  }
+
+  const info = getTimelineInfo();
+  if (!info) {
+    setTimeout(() => renderPendingTimelineSegments(pendingSkipsData), 500);
+    return;
+  }
+
+  const { timelineBar, duration } = info;
+  const barWidth = timelineBar.offsetWidth;
+
+  if (barWidth === 0) {
+    setTimeout(() => renderPendingTimelineSegments(pendingSkipsData), 500);
+    return;
+  }
+
+  // Remove existing pending segments
+  removePendingTimelineSegments();
+
+  const container = document.createElement("div");
+  container.id = PENDING_SEGMENTS_CONTAINER_ID;
+  container.className = "skipit-timeline-segments skipit-timeline-segments--pending-container";
+
+  pendingSkipsData.forEach((skip, index) => {
+    const startMs = skip.startTime;
+    const endMs = skip.endTime;
+    const skipType = skip.type || "pending";
+
+    const leftPercent = (startMs / duration) * 100;
+    const widthPercent = ((endMs - startMs) / duration) * 100;
+
+    const typeLabels = {
+      Nudity: "Nudity (unverified)",
+      nudity: "Nudity (unverified)",
+      Sex: "Sex (unverified)",
+      sex: "Sex (unverified)",
+      Gore: "Gore (unverified)",
+      gore: "Gore (unverified)",
+    };
+    const label = typeLabels[skipType] || "Unverified skip";
+
+    const segment = document.createElement("div");
+    segment.className = "skipit-segment skipit-segment--pending";
+    segment.style.left = `${leftPercent}%`;
+    segment.style.width = `${widthPercent}%`;
+    segment.dataset.index = index;
+    segment.dataset.start = startMs;
+    segment.dataset.end = endMs;
+    segment.dataset.type = skipType;
+    segment.dataset.label = label;
+    segment.dataset.skipId = skip.id;
+
+    // Click handler: seek to 3s before segment start
+    segment.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const seekTo = Math.max(0, startMs - VOTE_PROMPT_LEAD_TIME);
+      seek(seekTo);
+    });
+
+    container.appendChild(segment);
+  });
+
+  timelineBar.style.position = "relative";
+  timelineBar.appendChild(container);
+
+  // Set up observer for timeline recreation (same pattern as active segments)
+  setupPendingTimelineObserver(pendingSkipsData);
+}
+
+/**
+ * Remove pending timeline segments
+ */
+function removePendingTimelineSegments() {
+  const container = document.getElementById(PENDING_SEGMENTS_CONTAINER_ID);
+  if (container) {
+    container.remove();
+  }
+  pendingSegmentsRendered = false;
+
+  if (pendingSegmentsTimelineObserver) {
+    pendingSegmentsTimelineObserver.disconnect();
+    pendingSegmentsTimelineObserver = null;
+  }
+}
+
+/**
+ * Set up MutationObserver to re-render pending segments if timeline is recreated
+ */
+function setupPendingTimelineObserver(pendingSkipsData) {
+  if (pendingSegmentsTimelineObserver) {
+    pendingSegmentsTimelineObserver.disconnect();
+  }
+
+  pendingSegmentsTimelineObserver = new MutationObserver(() => {
+    if (!document.getElementById(PENDING_SEGMENTS_CONTAINER_ID)) {
+      // Only re-render if we still have pending skips
+      if (pendingSkips.length > 0) {
+        renderPendingTimelineSegments(pendingSkips);
+      }
+    }
+  });
+
+  pendingSegmentsTimelineObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+/**
  * Set up MutationObserver to re-render segments if timeline is recreated
  */
 function setupTimelineObserver(timestamps) {
@@ -1595,6 +1798,74 @@ function startSkipChecking(timestamps) {
       console.error("[Netflix Injected] Error in skip check:", error);
     }
   }, 50); // Check every 50ms
+}
+
+// ============================================================================
+// PENDING SKIP CHECKER (for verification voting)
+// ============================================================================
+
+/**
+ * Start checking for pending skips to show vote prompts
+ * Runs on a separate 100ms interval
+ */
+function startPendingSkipChecker() {
+  if (pendingSkipCheckInterval) {
+    clearInterval(pendingSkipCheckInterval);
+  }
+
+  pendingSkipCheckInterval = setInterval(() => {
+    if (!isNetflixPlayerReady()) return;
+    if (pendingSkips.length === 0) return;
+
+    try {
+      const currentTime = getCurrentTime();
+      let shouldShowPrompt = false;
+
+      for (let i = 0; i < pendingSkips.length; i++) {
+        const skip = pendingSkips[i];
+
+        // Skip if already dismissed this session
+        if (dismissedPendingSkipIds.has(skip.id)) continue;
+
+        const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
+
+        // Auto-dismiss if past endTime (don't permanently dismiss — user may seek back)
+        if (activeVotePromptSkipId === skip.id && currentTime >= skip.endTime) {
+          hideVotePrompt();
+          shouldShowPrompt = false;
+          break;
+        }
+
+        // If we have an active prompt for a different skip, ignore others
+        if (activeVotePromptSkipId !== null && activeVotePromptSkipId !== skip.id) continue;
+
+        // Show prompt when within [startTime - 3s, endTime)
+        if (currentTime >= promptStart && currentTime < skip.endTime) {
+          showVotePrompt(skip);
+          shouldShowPrompt = true;
+          break;
+        }
+      }
+
+      // If no skip matched but a prompt is showing, user seeked out of range — dismiss it
+      if (!shouldShowPrompt && activeVotePromptSkipId !== null) {
+        hideVotePrompt();
+      }
+    } catch (error) {
+      console.error("[Netflix Injected] Error in pending skip check:", error);
+    }
+  }, 100);
+}
+
+/**
+ * Stop the pending skip checker
+ */
+function stopPendingSkipChecker() {
+  if (pendingSkipCheckInterval) {
+    clearInterval(pendingSkipCheckInterval);
+    pendingSkipCheckInterval = null;
+  }
+  hideVotePrompt();
 }
 
 /**
@@ -1771,6 +2042,159 @@ function hideSkipNotification() {
   }
 }
 
+// ============================================================================
+// VOTE PROMPT FOR PENDING SKIPS
+// ============================================================================
+
+const VOTE_PROMPT_ID = "skipit-vote-prompt";
+
+/**
+ * Show vote prompt for a pending skip
+ */
+function showVotePrompt(skip) {
+  // Don't show if already showing for this skip AND element still exists in DOM
+  // (Netflix UI updates during seeking can remove foreign DOM elements)
+  if (activeVotePromptSkipId === skip.id && document.getElementById(VOTE_PROMPT_ID)) return;
+
+  // Remove any existing prompt
+  hideVotePrompt();
+
+  activeVotePromptSkipId = skip.id;
+
+  // Find player container
+  const video = document.querySelector("video");
+  if (!video) return;
+
+  let playerContainer =
+    video.closest(".watch-video--player-view") ||
+    video.closest('[data-uia="video-canvas"]')?.parentElement ||
+    document.querySelector(".watch-video") ||
+    video.parentElement?.parentElement?.parentElement;
+
+  if (!playerContainer) return;
+
+  // Create prompt element (mirrors .skipit-notification structure)
+  const prompt = document.createElement("div");
+  prompt.id = VOTE_PROMPT_ID;
+  prompt.className = "skipit-vote-prompt";
+
+  // Row 1: [icon circle] [title + time] — same as active skip notification
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "skipit-vote-header";
+
+  const typeLabel = formatSkipType(skip.type) || "default";
+  const iconDiv = document.createElement("div");
+  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${typeLabel}`;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z");
+  svg.appendChild(path);
+  iconDiv.appendChild(svg);
+
+  const textDiv = document.createElement("div");
+  textDiv.className = "skipit-notification-text";
+
+  const titleSpan = document.createElement("span");
+  titleSpan.className = "skipit-notification-title";
+  const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
+  titleSpan.textContent = `Unverified ${formattedType} scene`;
+
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "skipit-notification-time";
+  timeSpan.textContent = `${formatTimeMs(skip.startTime)} \u2192 ${formatTimeMs(skip.endTime)}`;
+
+  textDiv.appendChild(titleSpan);
+  textDiv.appendChild(timeSpan);
+
+  headerDiv.appendChild(iconDiv);
+  headerDiv.appendChild(textDiv);
+
+  // Row 2: centered buttons
+  const buttons = document.createElement("div");
+  buttons.className = "skipit-vote-buttons";
+
+  const upvoteBtn = document.createElement("button");
+  upvoteBtn.className = "skipit-vote-btn skipit-vote-btn--upvote";
+  upvoteBtn.textContent = "Upvote & Skip";
+  upvoteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleVote(skip.id, 1, skip.endTime);
+  });
+
+  const downvoteBtn = document.createElement("button");
+  downvoteBtn.className = "skipit-vote-btn skipit-vote-btn--downvote";
+  downvoteBtn.textContent = "Downvote";
+  downvoteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleVote(skip.id, -1, null);
+  });
+
+  buttons.appendChild(upvoteBtn);
+  buttons.appendChild(downvoteBtn);
+
+  prompt.appendChild(headerDiv);
+  prompt.appendChild(buttons);
+
+  playerContainer.appendChild(prompt);
+
+  // Fade in
+  requestAnimationFrame(() => {
+    prompt.classList.add("visible");
+  });
+}
+
+/**
+ * Hide the vote prompt
+ */
+function hideVotePrompt() {
+  const prompt = document.getElementById(VOTE_PROMPT_ID);
+  if (prompt) {
+    prompt.classList.remove("visible");
+    setTimeout(() => prompt.remove(), 250);
+  }
+  activeVotePromptSkipId = null;
+
+  if (votePromptTimeout) {
+    clearTimeout(votePromptTimeout);
+    votePromptTimeout = null;
+  }
+}
+
+/**
+ * Handle a vote action
+ */
+function handleVote(skipGroupId, voteType, seekToMs) {
+  hideVotePrompt();
+
+  // If upvote, seek to end time immediately
+  if (voteType === 1 && seekToMs !== null) {
+    seek(seekToMs);
+  }
+
+  // Send vote to content script (which bridges to background)
+  window.postMessage(
+    {
+      type: "SKIPIT_VOTE_ON_SKIP",
+      skipGroupId: skipGroupId,
+      voteType: voteType,
+      endTime: seekToMs,
+    },
+    "*"
+  );
+
+  // Mark as dismissed so it won't re-show
+  dismissedPendingSkipIds.add(skipGroupId);
+
+  // Remove from local pending skips
+  pendingSkips = pendingSkips.filter((s) => s.id !== skipGroupId);
+
+  // Re-render pending timeline segments
+  renderPendingTimelineSegments(pendingSkips);
+}
+
 /**
  * Clean up notification on stop
  */
@@ -1811,6 +2235,12 @@ function startVideoChangeWatcher() {
       if (skippingForVideoIdFromUrl !== null) {
         stopSkipChecking();
       }
+
+      // Clear pending skips for old video
+      pendingSkips = [];
+      removePendingTimelineSegments();
+      stopPendingSkipChecker();
+      dismissedPendingSkipIds = new Set();
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
@@ -1945,6 +2375,35 @@ function setupMessageHandler() {
       // Stop skipping when user signs out
       if (!authenticated && fabSkippingActive) {
         stopSkipChecking();
+      }
+    } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
+      // Receive pending skips for verification
+      const pendingSkipsData = event.data.data?.pendingSkips || [];
+      pendingSkips = pendingSkipsData;
+      dismissedPendingSkipIds = new Set(); // Reset dismissed set for new batch
+
+      if (pendingSkips.length > 0) {
+        renderPendingTimelineSegments(pendingSkips);
+        startPendingSkipChecker();
+      }
+    } else if (type === "SKIPIT_VOTE_RESULT") {
+      // Vote result from content script
+      const resultData = event.data.data;
+      if (resultData?.success) {
+        showSkipNotification("default", 0, 0);
+        // Override the notification content to show "Thanks for helping!"
+        const notification = document.getElementById(NOTIFICATION_ID);
+        if (notification) {
+          notification.textContent = "";
+          const text = document.createElement("span");
+          text.className = "skipit-notification-title";
+          text.textContent = "Thanks for helping!";
+          notification.appendChild(text);
+          notification.classList.add("visible");
+          setTimeout(() => {
+            notification.classList.remove("visible");
+          }, NOTIFICATION_DURATION);
+        }
       }
     }
   });

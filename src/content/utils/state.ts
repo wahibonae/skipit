@@ -3,7 +3,7 @@
  * Centralized state to avoid circular dependencies
  */
 
-import type { NetflixMetadata } from "../../lib/types";
+import type { NetflixMetadata, PendingSkip } from "../../lib/types";
 import { TimestampOverlay } from "../timestamp-overlay";
 import { QuickPanel } from "../quick-panel";
 
@@ -18,6 +18,8 @@ export interface ContentState {
   quickPanel: QuickPanel | null;
   authCheckInterval: ReturnType<typeof setInterval> | null;
   lastKnownAuthState: boolean;
+  helpVerifySkips: boolean;
+  pendingSkipsForVideo: PendingSkip[] | null;
 }
 
 export const state: ContentState = {
@@ -31,4 +33,6 @@ export const state: ContentState = {
   quickPanel: null,
   authCheckInterval: null,
   lastKnownAuthState: false,
+  helpVerifySkips: false,
+  pendingSkipsForVideo: null,
 };

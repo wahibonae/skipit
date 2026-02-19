@@ -11,6 +11,7 @@ import { startAuthStateWatcher, checkAndPropagateAuthState, openAuthPopup } from
 import { showMarkingOverlay, updateOverlayContent } from "../managers/overlay-manager";
 import { showQuickPanel, handleQuickPanelStart } from "../managers/quick-panel-manager";
 import { reportContentReady } from "./initialization";
+import { fetchAndSendPendingSkips } from "../utils/pending-skip-utils";
 
 /**
  * Set up window message handlers for injected script communication
@@ -27,6 +28,17 @@ export function setupWindowMessageHandlers() {
 
       // Start auth state watcher to detect sign-in and update buttons
       startAuthStateWatcher();
+
+      // Fetch user preferences to check help_verify_skips opt-in
+      chrome.runtime.sendMessage(
+        { type: "GET_USER_PREFERENCES" },
+        (response) => {
+          if (chrome.runtime.lastError) return;
+          if (response?.success && response.preferences) {
+            state.helpVerifySkips = response.preferences.help_verify_skips ?? false;
+          }
+        }
+      );
 
       // Notify background that we're ready
       // Background will restore state if needed based on video ID
@@ -169,7 +181,63 @@ export function setupWindowMessageHandlers() {
       if (metadata) {
         state.lastNetflixMetadata = metadata;
         checkAvailableSkipsForCurrentVideo(metadata);
+
+        // Fetch pending skips if user opted in
+        if (state.helpVerifySkips) {
+          fetchAndSendPendingSkips(metadata);
+        }
       }
+    }
+
+    // Vote on a pending skip (bridge from injected -> background)
+    if (type === "SKIPIT_VOTE_ON_SKIP") {
+      const { skipGroupId, voteType } = event.data;
+
+      chrome.runtime.sendMessage(
+        { type: "VOTE_ON_SKIP", skipGroupId, voteType },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            window.postMessage(
+              { type: "SKIPIT_VOTE_RESULT", data: { success: false } },
+              "*"
+            );
+            return;
+          }
+
+          // Forward result to injected script
+          window.postMessage(
+            {
+              type: "SKIPIT_VOTE_RESULT",
+              data: { success: response?.success ?? false, voteType },
+            },
+            "*"
+          );
+
+          // Remove voted skip from local state
+          if (response?.success && state.pendingSkipsForVideo) {
+            state.pendingSkipsForVideo = state.pendingSkipsForVideo.filter(
+              (s) => s.id !== skipGroupId
+            );
+          }
+
+          // If upvoted and actively skipping, refresh to include newly verified skip
+          if (response?.success && voteType === 1 && state.isSkipping) {
+            chrome.runtime.sendMessage(
+              { type: "REFRESH_ACTIVE_SKIPPING" },
+              () => {
+                if (chrome.runtime.lastError) {
+                  console.warn("[Content] Error refreshing active skipping");
+                }
+              }
+            );
+          } else if (response?.success && voteType === 1 && !state.isSkipping) {
+            // Upvoted but not skipping - update available skip count
+            if (state.lastNetflixMetadata) {
+              checkAvailableSkipsForCurrentVideo(state.lastNetflixMetadata);
+            }
+          }
+        }
+      );
     }
 
   });
