@@ -223,19 +223,6 @@ export async function voteOnSkip(
 }
 
 /**
- * Save user preferences
- */
-export async function saveUserPreferences(
-  preferences: Record<string, boolean>,
-  token: string
-): Promise<UserPreferences> {
-  return apiCall<UserPreferences>("/user/preferences", token, {
-    method: "POST",
-    body: JSON.stringify(preferences),
-  });
-}
-
-/**
  * Save a new timestamp
  */
 export async function saveTimestamp(

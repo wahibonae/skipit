@@ -18,7 +18,6 @@ export interface ContentState {
   quickPanel: QuickPanel | null;
   authCheckInterval: ReturnType<typeof setInterval> | null;
   lastKnownAuthState: boolean;
-  helpVerifySkips: boolean;
   pendingSkipsForVideo: PendingSkip[] | null;
 }
 
@@ -33,6 +32,5 @@ export const state: ContentState = {
   quickPanel: null,
   authCheckInterval: null,
   lastKnownAuthState: false,
-  helpVerifySkips: false,
   pendingSkipsForVideo: null,
 };

@@ -36,7 +36,6 @@ import {
 import {
   handleFetchPendingSkips,
   handleVoteOnSkip,
-  handleSaveUserPreferences,
 } from "./handlers/voting-handlers";
 
 // ============================================================================
@@ -219,16 +218,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(sendResponse)
       .catch((error) => {
         console.error("[Background] Error voting on skip:", error);
-        sendResponse({ success: false, error: error.message });
-      });
-    return true;
-  }
-
-  if (message.type === "SAVE_USER_PREFERENCES") {
-    handleSaveUserPreferences(message)
-      .then(sendResponse)
-      .catch((error) => {
-        console.error("[Background] Error saving preferences:", error);
         sendResponse({ success: false, error: error.message });
       });
     return true;

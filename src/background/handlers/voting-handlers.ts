@@ -3,7 +3,7 @@
  * Manages fetching pending skips, voting, and saving preferences
  */
 
-import { fetchPendingSkips, voteOnSkip, saveUserPreferences } from "../../lib/api";
+import { fetchPendingSkips, voteOnSkip } from "../../lib/api";
 import { getAuthToken } from "./auth";
 
 /**
@@ -64,25 +64,3 @@ export async function handleVoteOnSkip(message: {
   }
 }
 
-/**
- * Save user preferences
- */
-export async function handleSaveUserPreferences(message: {
-  preferences: Record<string, boolean>;
-}): Promise<{ success: boolean; error?: string }> {
-  const token = await getAuthToken();
-  if (!token) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  try {
-    await saveUserPreferences(message.preferences, token);
-    return { success: true };
-  } catch (error) {
-    console.error("[Background] Error saving preferences:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to save preferences",
-    };
-  }
-}

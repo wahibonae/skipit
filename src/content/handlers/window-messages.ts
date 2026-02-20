@@ -29,17 +29,6 @@ export function setupWindowMessageHandlers() {
       // Start auth state watcher to detect sign-in and update buttons
       startAuthStateWatcher();
 
-      // Fetch user preferences to check help_verify_skips opt-in
-      chrome.runtime.sendMessage(
-        { type: "GET_USER_PREFERENCES" },
-        (response) => {
-          if (chrome.runtime.lastError) return;
-          if (response?.success && response.preferences) {
-            state.helpVerifySkips = response.preferences.help_verify_skips ?? false;
-          }
-        }
-      );
-
       // Notify background that we're ready
       // Background will restore state if needed based on video ID
       reportContentReady();
@@ -182,10 +171,8 @@ export function setupWindowMessageHandlers() {
         state.lastNetflixMetadata = metadata;
         checkAvailableSkipsForCurrentVideo(metadata);
 
-        // Fetch pending skips if user opted in
-        if (state.helpVerifySkips) {
-          fetchAndSendPendingSkips(metadata);
-        }
+        // Fetch pending skips for verification
+        fetchAndSendPendingSkips(metadata);
       }
     }
 

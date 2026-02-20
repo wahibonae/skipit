@@ -10,30 +10,6 @@ export const Auth = () => {
   const [detectedContent, setDetectedContent] =
     useState<AutoDetectedContent | null>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
-  const [helpVerify, setHelpVerify] = useState(false);
-  const [isLoadingPrefs, setIsLoadingPrefs] = useState(true);
-
-  // Fetch user preferences when authenticated
-  useEffect(() => {
-    if (!isSignedIn) {
-      setIsLoadingPrefs(false);
-      return;
-    }
-
-    chrome.runtime.sendMessage(
-      { type: "GET_USER_PREFERENCES" },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          setIsLoadingPrefs(false);
-          return;
-        }
-        if (response?.success && response.preferences) {
-          setHelpVerify(response.preferences.help_verify_skips ?? false);
-        }
-        setIsLoadingPrefs(false);
-      }
-    );
-  }, [isSignedIn]);
 
   // Fetch detected content when authenticated
   useEffect(() => {
@@ -105,23 +81,6 @@ export const Auth = () => {
     if (!detectedContent) return;
     const url = getSkipitUrl(detectedContent);
     chrome.tabs.create({ url });
-  };
-
-  const handleToggleHelpVerify = () => {
-    const newValue = !helpVerify;
-    setHelpVerify(newValue);
-    chrome.runtime.sendMessage(
-      {
-        type: "SAVE_USER_PREFERENCES",
-        preferences: { help_verify_skips: newValue },
-      },
-      (response) => {
-        if (chrome.runtime.lastError || !response?.success) {
-          // Revert on failure
-          setHelpVerify(!newValue);
-        }
-      }
-    );
   };
 
   const handleSignIn = () => {
@@ -260,25 +219,6 @@ export const Auth = () => {
         </svg>
         Watch tutorial
       </button>
-
-      {!isLoadingPrefs && (
-        <div className="verify-toggle">
-          <div className="verify-toggle-text">
-            <span className="verify-toggle-label">Help verify skips</span>
-            <span className="verify-toggle-desc">
-              Vote on unverified skip timestamps while watching
-            </span>
-          </div>
-          <button
-            className={`toggle-switch${helpVerify ? " active" : ""}`}
-            onClick={handleToggleHelpVerify}
-            role="switch"
-            aria-checked={helpVerify}
-          >
-            <span className="toggle-switch-knob" />
-          </button>
-        </div>
-      )}
 
       <button className="welcome-signout" onClick={handleSignOut}>
         Sign Out
