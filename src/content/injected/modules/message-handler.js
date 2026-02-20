@@ -81,11 +81,8 @@ function setupMessageHandler() {
       if (!authenticated) {
         if (fabSkippingActive) {
           stopSkipChecking();
-        } else if (pendingSkips.length > 0) {
-          pendingSkips = [];
-          removePendingTimelineSegments();
-          stopPendingSkipChecker();
         }
+        clearPendingSkips();
       }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification

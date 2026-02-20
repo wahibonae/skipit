@@ -428,8 +428,8 @@ const BUTTON_STYLES = `
   flex-shrink: 0;
 }
 .skipit-thanks-icon svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 `;
@@ -1658,9 +1658,7 @@ function setupPendingTimelineObserver(pendingSkipsData) {
       // Check if video changed -> if so, clean up instead of re-rendering
       const currentVideoId = getVideoIdFromUrl();
       if (currentVideoId !== videoIdAtRender) {
-        pendingSkips = [];
-        removePendingTimelineSegments();
-        stopPendingSkipChecker();
+        clearPendingSkips();
         return;
       }
 
@@ -1901,6 +1899,16 @@ function stopPendingSkipChecker() {
 }
 
 /**
+ * Clear all pending skip state (segments, checker, dismissed set)
+ * Call this only on video/content change or auth logout — NOT on manual stop skipping
+ */
+function clearPendingSkips() {
+  pendingSkips = [];
+  removePendingTimelineSegments();
+  stopPendingSkipChecker();
+}
+
+/**
  * Stop checking for timestamps
  * This is the ONLY function that should deactivate skipping state
  */
@@ -1921,11 +1929,6 @@ function stopSkipChecking() {
 
   // Remove timeline segments
   removeTimelineSegments();
-
-  // Clean up pending skips
-  pendingSkips = [];
-  removePendingTimelineSegments();
-  stopPendingSkipChecker();
 
   // Clean up notification
   cleanupNotification();
@@ -2285,15 +2288,13 @@ function startVideoChangeWatcher() {
 
     // Detect video change
     if (lastNetflixId !== null && currentNetflixId !== lastNetflixId) {
-      // Video changed - stop any active skipping (also cleans pending skips)
+      // Video changed - stop any active skipping
       if (skippingForVideoIdFromUrl !== null) {
         stopSkipChecking();
-      } else if (pendingSkips.length > 0) {
-        // Not actively skipping, but pending skips need cleanup
-        pendingSkips = [];
-        removePendingTimelineSegments();
-        stopPendingSkipChecker();
       }
+
+      // Always clear pending skips for old video
+      clearPendingSkips();
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {
@@ -2429,11 +2430,8 @@ function setupMessageHandler() {
       if (!authenticated) {
         if (fabSkippingActive) {
           stopSkipChecking();
-        } else if (pendingSkips.length > 0) {
-          pendingSkips = [];
-          removePendingTimelineSegments();
-          stopPendingSkipChecker();
         }
+        clearPendingSkips();
       }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification

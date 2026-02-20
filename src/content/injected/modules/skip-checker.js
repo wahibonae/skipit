@@ -182,6 +182,16 @@ function stopPendingSkipChecker() {
 }
 
 /**
+ * Clear all pending skip state (segments, checker, dismissed set)
+ * Call this only on video/content change or auth logout — NOT on manual stop skipping
+ */
+function clearPendingSkips() {
+  pendingSkips = [];
+  removePendingTimelineSegments();
+  stopPendingSkipChecker();
+}
+
+/**
  * Stop checking for timestamps
  * This is the ONLY function that should deactivate skipping state
  */
@@ -202,11 +212,6 @@ function stopSkipChecking() {
 
   // Remove timeline segments
   removeTimelineSegments();
-
-  // Clean up pending skips
-  pendingSkips = [];
-  removePendingTimelineSegments();
-  stopPendingSkipChecker();
 
   // Clean up notification
   cleanupNotification();

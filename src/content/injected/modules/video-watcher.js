@@ -20,15 +20,13 @@ function startVideoChangeWatcher() {
 
     // Detect video change
     if (lastNetflixId !== null && currentNetflixId !== lastNetflixId) {
-      // Video changed - stop any active skipping (also cleans pending skips)
+      // Video changed - stop any active skipping
       if (skippingForVideoIdFromUrl !== null) {
         stopSkipChecking();
-      } else if (pendingSkips.length > 0) {
-        // Not actively skipping, but pending skips need cleanup
-        pendingSkips = [];
-        removePendingTimelineSegments();
-        stopPendingSkipChecker();
       }
+
+      // Always clear pending skips for old video
+      clearPendingSkips();
 
       // Reset marking state for new video (prevents stale timestamps)
       if (markingState.isMarking) {

@@ -258,9 +258,7 @@ function setupPendingTimelineObserver(pendingSkipsData) {
       // Check if video changed -> if so, clean up instead of re-rendering
       const currentVideoId = getVideoIdFromUrl();
       if (currentVideoId !== videoIdAtRender) {
-        pendingSkips = [];
-        removePendingTimelineSegments();
-        stopPendingSkipChecker();
+        clearPendingSkips();
         return;
       }
 
