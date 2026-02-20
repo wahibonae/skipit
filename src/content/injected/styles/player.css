@@ -338,7 +338,7 @@
   opacity: 1;
 }
 
-/* Vote Prompt Styles — mirrors .skipit-notification with added buttons row */
+/* Vote Prompt Styles: mirrors .skipit-notification with added buttons row */
 .skipit-vote-prompt {
   position: absolute;
   bottom: 160px;
@@ -362,7 +362,7 @@
 .skipit-vote-prompt.visible {
   opacity: 1;
 }
-/* Row 1: icon + text — reuses .skipit-notification-icon and .skipit-notification-text */
+/* Row 1: icon + text: reuses .skipit-notification-icon and .skipit-notification-text */
 .skipit-vote-header {
   display: flex;
   align-items: center;
@@ -407,7 +407,7 @@
   background: rgba(107, 114, 128, 0.85);
 }
 
-/* Thanks notification — green circle + checkmark */
+/* Thanks notification: green circle + checkmark */
 .skipit-thanks-icon {
   display: flex;
   align-items: center;

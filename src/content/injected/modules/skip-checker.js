@@ -123,6 +123,12 @@ function startSkipChecking(timestamps) {
 /**
  * Start checking for pending skips to show vote prompts
  * Runs on a separate 100ms interval
+ *
+ * Prompt behavior:
+ * - Shows for 5s of playing time then auto-hides
+ * - Pausing keeps the prompt visible (timer paused)
+ * - After auto-hide, won't re-show while still in segment
+ * - Seeking out and back in re-triggers the prompt
  */
 function startPendingSkipChecker() {
   if (pendingSkipCheckInterval) {
@@ -135,34 +141,51 @@ function startPendingSkipChecker() {
 
     try {
       const currentTime = getCurrentTime();
-      let shouldShowPrompt = false;
+      const video = document.querySelector("video");
+      const isPaused = video && video.paused;
+      let inRange = false;
+
+      // Detect seek: time jumped more than 500ms from last tick
+      if (votePromptLastCheckedTime >= 0 && Math.abs(currentTime - votePromptLastCheckedTime) > 500) {
+        votePromptShownForCurrentVisit = false;
+        votePromptPlayTimeElapsed = 0;
+      }
+      votePromptLastCheckedTime = currentTime;
 
       for (let i = 0; i < pendingSkips.length; i++) {
         const skip = pendingSkips[i];
-
         const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
 
-        // Auto-dismiss if past endTime (don't permanently dismiss because user may seek back)
-        if (activeVotePromptSkipId === skip.id && currentTime >= skip.endTime) {
-          hideVotePrompt();
-          shouldShowPrompt = false;
-          break;
-        }
-
-        // If we have an active prompt for a different skip, ignore others
-        if (activeVotePromptSkipId !== null && activeVotePromptSkipId !== skip.id) continue;
-
-        // Show prompt when within [startTime - 3s, endTime)
         if (currentTime >= promptStart && currentTime < skip.endTime) {
-          showVotePrompt(skip);
-          shouldShowPrompt = true;
+          inRange = true;
+
+          // Prompt is currently visible for this skip
+          if (activeVotePromptSkipId === skip.id) {
+            // Count playing time toward auto-dismiss
+            if (!isPaused) {
+              votePromptPlayTimeElapsed += 100;
+              if (votePromptPlayTimeElapsed >= VOTE_PROMPT_DISPLAY_DURATION) {
+                hideVotePrompt();
+                votePromptShownForCurrentVisit = true;
+              }
+            }
+            // If paused, do nothing: prompt stays, timer paused
+          } else if (!votePromptShownForCurrentVisit) {
+            // First time entering this segment visit -> show prompt
+            showVotePrompt(skip);
+            votePromptPlayTimeElapsed = 0;
+          }
           break;
         }
       }
 
-      // If no skip matched but a prompt is showing, user seeked out of range then dismiss it
-      if (!shouldShowPrompt && activeVotePromptSkipId !== null) {
-        hideVotePrompt();
+      if (!inRange) {
+        // User is outside all pending skip ranges -> reset for next visit
+        votePromptShownForCurrentVisit = false;
+        votePromptPlayTimeElapsed = 0;
+        if (activeVotePromptSkipId !== null) {
+          hideVotePrompt();
+        }
       }
     } catch (error) {
       console.error("[Netflix Injected] Error in pending skip check:", error);
@@ -183,7 +206,7 @@ function stopPendingSkipChecker() {
 
 /**
  * Clear all pending skip state (segments, checker, dismissed set)
- * Call this only on video/content change or auth logout — NOT on manual stop skipping
+ * Call this only on video/content change or auth logout, NOT on manual stop skipping
  */
 function clearPendingSkips() {
   pendingSkips = [];
