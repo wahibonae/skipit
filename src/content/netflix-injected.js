@@ -384,28 +384,52 @@ const BUTTON_STYLES = `
   gap: 8px;
 }
 .skipit-vote-btn {
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.15s ease;
 }
+.skipit-vote-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
 .skipit-vote-btn--upvote {
-  background: #10B981;
+  background: #ff6f4f;
   color: white;
 }
 .skipit-vote-btn--upvote:hover {
-  background: #059669;
+  background: #e5593b;
 }
 .skipit-vote-btn--downvote {
   background: rgba(107, 114, 128, 0.6);
   color: white;
 }
 .skipit-vote-btn--downvote:hover {
-  background: #EF4444;
+  background: rgba(107, 114, 128, 0.85);
+}
+
+/* Thanks notification — green circle + checkmark */
+.skipit-thanks-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+}
+.skipit-thanks-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 `;
@@ -473,7 +497,6 @@ const VOTE_PROMPT_LEAD_TIME = 3000; // Show prompt 3s before segment
 let activeVotePromptSkipId = null;
 let votePromptTimeout = null;
 let pendingSkipCheckInterval = null;
-let dismissedPendingSkipIds = new Set(); // Don't re-show dismissed prompts
 const PENDING_SEGMENTS_CONTAINER_ID = "skipit-timeline-segments--pending";
 let pendingSegmentsTimelineObserver = null;
 
@@ -1632,13 +1655,12 @@ function setupPendingTimelineObserver(pendingSkipsData) {
 
   pendingSegmentsTimelineObserver = new MutationObserver(() => {
     if (!document.getElementById(PENDING_SEGMENTS_CONTAINER_ID)) {
-      // Check if video changed — if so, clean up instead of re-rendering
+      // Check if video changed -> if so, clean up instead of re-rendering
       const currentVideoId = getVideoIdFromUrl();
       if (currentVideoId !== videoIdAtRender) {
         pendingSkips = [];
         removePendingTimelineSegments();
         stopPendingSkipChecker();
-        dismissedPendingSkipIds = new Set();
         return;
       }
 
@@ -1837,12 +1859,9 @@ function startPendingSkipChecker() {
       for (let i = 0; i < pendingSkips.length; i++) {
         const skip = pendingSkips[i];
 
-        // Skip if already dismissed this session
-        if (dismissedPendingSkipIds.has(skip.id)) continue;
-
         const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
 
-        // Auto-dismiss if past endTime (don't permanently dismiss — user may seek back)
+        // Auto-dismiss if past endTime (don't permanently dismiss because user may seek back)
         if (activeVotePromptSkipId === skip.id && currentTime >= skip.endTime) {
           hideVotePrompt();
           shouldShowPrompt = false;
@@ -1860,7 +1879,7 @@ function startPendingSkipChecker() {
         }
       }
 
-      // If no skip matched but a prompt is showing, user seeked out of range — dismiss it
+      // If no skip matched but a prompt is showing, user seeked out of range then dismiss it
       if (!shouldShowPrompt && activeVotePromptSkipId !== null) {
         hideVotePrompt();
       }
@@ -1907,7 +1926,6 @@ function stopSkipChecking() {
   pendingSkips = [];
   removePendingTimelineSegments();
   stopPendingSkipChecker();
-  dismissedPendingSkipIds = new Set();
 
   // Clean up notification
   cleanupNotification();
@@ -2137,7 +2155,17 @@ function showVotePrompt(skip) {
 
   const upvoteBtn = document.createElement("button");
   upvoteBtn.className = "skipit-vote-btn skipit-vote-btn--upvote";
-  upvoteBtn.textContent = "Upvote & Skip";
+  // Thumbs up icon
+  const upIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  upIcon.setAttribute("viewBox", "0 0 24 24");
+  upIcon.setAttribute("fill", "currentColor");
+  const upPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  upPath.setAttribute("d", "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z");
+  upIcon.appendChild(upPath);
+  upvoteBtn.appendChild(upIcon);
+  const upLabel = document.createElement("span");
+  upLabel.textContent = "Upvote & Skip";
+  upvoteBtn.appendChild(upLabel);
   upvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     handleVote(skip.id, 1, skip.endTime);
@@ -2145,7 +2173,17 @@ function showVotePrompt(skip) {
 
   const downvoteBtn = document.createElement("button");
   downvoteBtn.className = "skipit-vote-btn skipit-vote-btn--downvote";
-  downvoteBtn.textContent = "Downvote";
+  // Thumbs down icon
+  const downIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  downIcon.setAttribute("viewBox", "0 0 24 24");
+  downIcon.setAttribute("fill", "currentColor");
+  const downPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  downPath.setAttribute("d", "M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z");
+  downIcon.appendChild(downPath);
+  downvoteBtn.appendChild(downIcon);
+  const downLabel = document.createElement("span");
+  downLabel.textContent = "Downvote";
+  downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     handleVote(skip.id, -1, null);
@@ -2204,9 +2242,6 @@ function handleVote(skipGroupId, voteType, seekToMs) {
     "*"
   );
 
-  // Mark as dismissed so it won't re-show
-  dismissedPendingSkipIds.add(skipGroupId);
-
   // Remove from local pending skips
   pendingSkips = pendingSkips.filter((s) => s.id !== skipGroupId);
 
@@ -2258,7 +2293,6 @@ function startVideoChangeWatcher() {
         pendingSkips = [];
         removePendingTimelineSegments();
         stopPendingSkipChecker();
-        dismissedPendingSkipIds = new Set();
       }
 
       // Reset marking state for new video (prevents stale timestamps)
@@ -2399,14 +2433,12 @@ function setupMessageHandler() {
           pendingSkips = [];
           removePendingTimelineSegments();
           stopPendingSkipChecker();
-          dismissedPendingSkipIds = new Set();
         }
       }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];
       pendingSkips = pendingSkipsData;
-      dismissedPendingSkipIds = new Set(); // Reset dismissed set for new batch
 
       if (pendingSkips.length > 0) {
         renderPendingTimelineSegments(pendingSkips);
@@ -2417,13 +2449,27 @@ function setupMessageHandler() {
       const resultData = event.data.data;
       if (resultData?.success) {
         showSkipNotification("default", 0, 0);
-        // Override the notification content to show "Thanks for helping!"
+        // Override the notification content to show "Thanks for helping!" with green circle + checkmark
         const notification = document.getElementById(NOTIFICATION_ID);
         if (notification) {
           notification.textContent = "";
+
+          // Green circle with checkmark icon
+          const iconDiv = document.createElement("div");
+          iconDiv.className = "skipit-thanks-icon";
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 24 24");
+          svg.setAttribute("fill", "currentColor");
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z");
+          svg.appendChild(path);
+          iconDiv.appendChild(svg);
+
           const text = document.createElement("span");
           text.className = "skipit-notification-title";
           text.textContent = "Thanks for helping!";
+
+          notification.appendChild(iconDiv);
           notification.appendChild(text);
           notification.classList.add("visible");
           setTimeout(() => {

@@ -261,7 +261,6 @@ function setupPendingTimelineObserver(pendingSkipsData) {
         pendingSkips = [];
         removePendingTimelineSegments();
         stopPendingSkipChecker();
-        dismissedPendingSkipIds = new Set();
         return;
       }
 

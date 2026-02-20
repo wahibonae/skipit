@@ -28,7 +28,6 @@ function startVideoChangeWatcher() {
         pendingSkips = [];
         removePendingTimelineSegments();
         stopPendingSkipChecker();
-        dismissedPendingSkipIds = new Set();
       }
 
       // Reset marking state for new video (prevents stale timestamps)

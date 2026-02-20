@@ -375,26 +375,50 @@
   gap: 8px;
 }
 .skipit-vote-btn {
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.15s ease;
 }
+.skipit-vote-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
 .skipit-vote-btn--upvote {
-  background: #10B981;
+  background: #ff6f4f;
   color: white;
 }
 .skipit-vote-btn--upvote:hover {
-  background: #059669;
+  background: #e5593b;
 }
 .skipit-vote-btn--downvote {
   background: rgba(107, 114, 128, 0.6);
   color: white;
 }
 .skipit-vote-btn--downvote:hover {
-  background: #EF4444;
+  background: rgba(107, 114, 128, 0.85);
+}
+
+/* Thanks notification — green circle + checkmark */
+.skipit-thanks-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+}
+.skipit-thanks-icon svg {
+  width: 12px;
+  height: 12px;
 }

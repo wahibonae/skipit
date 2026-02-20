@@ -215,7 +215,17 @@ function showVotePrompt(skip) {
 
   const upvoteBtn = document.createElement("button");
   upvoteBtn.className = "skipit-vote-btn skipit-vote-btn--upvote";
-  upvoteBtn.textContent = "Upvote & Skip";
+  // Thumbs up icon
+  const upIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  upIcon.setAttribute("viewBox", "0 0 24 24");
+  upIcon.setAttribute("fill", "currentColor");
+  const upPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  upPath.setAttribute("d", "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z");
+  upIcon.appendChild(upPath);
+  upvoteBtn.appendChild(upIcon);
+  const upLabel = document.createElement("span");
+  upLabel.textContent = "Upvote & Skip";
+  upvoteBtn.appendChild(upLabel);
   upvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     handleVote(skip.id, 1, skip.endTime);
@@ -223,7 +233,17 @@ function showVotePrompt(skip) {
 
   const downvoteBtn = document.createElement("button");
   downvoteBtn.className = "skipit-vote-btn skipit-vote-btn--downvote";
-  downvoteBtn.textContent = "Downvote";
+  // Thumbs down icon
+  const downIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  downIcon.setAttribute("viewBox", "0 0 24 24");
+  downIcon.setAttribute("fill", "currentColor");
+  const downPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  downPath.setAttribute("d", "M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z");
+  downIcon.appendChild(downPath);
+  downvoteBtn.appendChild(downIcon);
+  const downLabel = document.createElement("span");
+  downLabel.textContent = "Downvote";
+  downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     handleVote(skip.id, -1, null);
@@ -281,9 +301,6 @@ function handleVote(skipGroupId, voteType, seekToMs) {
     },
     "*"
   );
-
-  // Mark as dismissed so it won't re-show
-  dismissedPendingSkipIds.add(skipGroupId);
 
   // Remove from local pending skips
   pendingSkips = pendingSkips.filter((s) => s.id !== skipGroupId);

@@ -140,9 +140,6 @@ function startPendingSkipChecker() {
       for (let i = 0; i < pendingSkips.length; i++) {
         const skip = pendingSkips[i];
 
-        // Skip if already dismissed this session
-        if (dismissedPendingSkipIds.has(skip.id)) continue;
-
         const promptStart = skip.startTime - VOTE_PROMPT_LEAD_TIME;
 
         // Auto-dismiss if past endTime (don't permanently dismiss because user may seek back)
@@ -210,7 +207,6 @@ function stopSkipChecking() {
   pendingSkips = [];
   removePendingTimelineSegments();
   stopPendingSkipChecker();
-  dismissedPendingSkipIds = new Set();
 
   // Clean up notification
   cleanupNotification();
