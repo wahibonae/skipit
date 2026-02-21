@@ -362,6 +362,10 @@
 .skipit-vote-prompt.visible {
   opacity: 1;
 }
+/* Strip icon background in vote prompt — show bare icon only */
+.skipit-vote-prompt .skipit-notification-icon {
+  background: none !important;
+}
 /* Row 1: icon + text: reuses .skipit-notification-icon and .skipit-notification-text */
 .skipit-vote-header {
   display: flex;

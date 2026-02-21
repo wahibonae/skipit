@@ -347,7 +347,7 @@ const BUTTON_STYLES = `
   opacity: 1;
 }
 
-/* Vote Prompt Styles — mirrors .skipit-notification with added buttons row */
+/* Vote Prompt Styles: mirrors .skipit-notification with added buttons row */
 .skipit-vote-prompt {
   position: absolute;
   bottom: 160px;
@@ -371,7 +371,11 @@ const BUTTON_STYLES = `
 .skipit-vote-prompt.visible {
   opacity: 1;
 }
-/* Row 1: icon + text — reuses .skipit-notification-icon and .skipit-notification-text */
+/* Strip icon background in vote prompt — show bare icon only */
+.skipit-vote-prompt .skipit-notification-icon {
+  background: none !important;
+}
+/* Row 1: icon + text: reuses .skipit-notification-icon and .skipit-notification-text */
 .skipit-vote-header {
   display: flex;
   align-items: center;
@@ -416,7 +420,7 @@ const BUTTON_STYLES = `
   background: rgba(107, 114, 128, 0.85);
 }
 
-/* Thanks notification — green circle + checkmark */
+/* Thanks notification: green circle + checkmark */
 .skipit-thanks-icon {
   display: flex;
   align-items: center;
@@ -1890,9 +1894,9 @@ function startPendingSkipChecker() {
                 votePromptShownForCurrentVisit = true;
               }
             }
-            // If paused, do nothing — prompt stays, timer paused
+            // If paused, do nothing: prompt stays, timer paused
           } else if (!votePromptShownForCurrentVisit) {
-            // First time entering this segment visit — show prompt
+            // First time entering this segment visit -> show prompt
             showVotePrompt(skip);
             votePromptPlayTimeElapsed = 0;
           }
@@ -1901,7 +1905,7 @@ function startPendingSkipChecker() {
       }
 
       if (!inRange) {
-        // User is outside all pending skip ranges — reset for next visit
+        // User is outside all pending skip ranges -> reset for next visit
         votePromptShownForCurrentVisit = false;
         votePromptPlayTimeElapsed = 0;
         if (activeVotePromptSkipId !== null) {
@@ -1927,12 +1931,15 @@ function stopPendingSkipChecker() {
 
 /**
  * Clear all pending skip state (segments, checker, dismissed set)
- * Call this only on video/content change or auth logout — NOT on manual stop skipping
+ * Call this only on video/content change or auth logout, NOT on manual stop skipping
  */
 function clearPendingSkips() {
   pendingSkips = [];
   removePendingTimelineSegments();
   stopPendingSkipChecker();
+  votePromptShownForCurrentVisit = false;
+  votePromptPlayTimeElapsed = 0;
+  votePromptLastCheckedTime = -1;
 }
 
 /**
@@ -2167,7 +2174,7 @@ function showVotePrompt(skip) {
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
   const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
-  titleSpan.textContent = `Unverified ${formattedType} scene`;
+  titleSpan.textContent = `${formattedType} scene?`;
 
   const timeSpan = document.createElement("span");
   timeSpan.className = "skipit-notification-time";
@@ -2194,7 +2201,7 @@ function showVotePrompt(skip) {
   upIcon.appendChild(upPath);
   upvoteBtn.appendChild(upIcon);
   const upLabel = document.createElement("span");
-  upLabel.textContent = "Upvote & Skip";
+  upLabel.textContent = "Yes, skip it";
   upvoteBtn.appendChild(upLabel);
   upvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -2212,7 +2219,7 @@ function showVotePrompt(skip) {
   downIcon.appendChild(downPath);
   downvoteBtn.appendChild(downIcon);
   const downLabel = document.createElement("span");
-  downLabel.textContent = "Downvote";
+  downLabel.textContent = "No, it's not";
   downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();

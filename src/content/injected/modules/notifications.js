@@ -197,7 +197,7 @@ function showVotePrompt(skip) {
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
   const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
-  titleSpan.textContent = `Unverified ${formattedType} scene`;
+  titleSpan.textContent = `${formattedType} scene?`;
 
   const timeSpan = document.createElement("span");
   timeSpan.className = "skipit-notification-time";
@@ -224,7 +224,7 @@ function showVotePrompt(skip) {
   upIcon.appendChild(upPath);
   upvoteBtn.appendChild(upIcon);
   const upLabel = document.createElement("span");
-  upLabel.textContent = "Upvote & Skip";
+  upLabel.textContent = "Yes, skip it";
   upvoteBtn.appendChild(upLabel);
   upvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -242,7 +242,7 @@ function showVotePrompt(skip) {
   downIcon.appendChild(downPath);
   downvoteBtn.appendChild(downIcon);
   const downLabel = document.createElement("span");
-  downLabel.textContent = "Downvote";
+  downLabel.textContent = "No, it's not";
   downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();

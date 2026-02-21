@@ -212,6 +212,9 @@ function clearPendingSkips() {
   pendingSkips = [];
   removePendingTimelineSegments();
   stopPendingSkipChecker();
+  votePromptShownForCurrentVisit = false;
+  votePromptPlayTimeElapsed = 0;
+  votePromptLastCheckedTime = -1;
 }
 
 /**
