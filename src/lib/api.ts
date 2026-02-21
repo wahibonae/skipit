@@ -151,8 +151,9 @@ export async function getTVShowEpisodes(
 }
 
 /**
- * Check if a TMDB content ID is available on Netflix (any region)
- * Uses TMDB watch/providers endpoint, checks for provider_id 8 (Netflix)
+ * Check if a TMDB content ID is available on Netflix (any region).
+ * Uses TMDB watch/providers endpoint, falls back to networks (TV) and homepage
+ * when watch/providers data is missing (common for some Netflix Originals).
  */
 export async function checkIsOnNetflix(
   mediaType: "movie" | "tv",
@@ -160,6 +161,7 @@ export async function checkIsOnNetflix(
   token: string
 ): Promise<boolean> {
   try {
+    // Primary check: watch/providers
     const data = await apiCall<{
       results: Record<
         string,
@@ -174,10 +176,36 @@ export async function checkIsOnNetflix(
     });
 
     const regions = data.results;
-    if (!regions) return false;
-    return Object.values(regions).some((region) =>
+    if (regions && Object.values(regions).some((region) =>
       region.flatrate?.some((p) => p.provider_id === 8)
-    );
+    )) {
+      return true;
+    }
+
+    // Fallback: check details for Netflix indicators
+    // (TMDB watch/providers can be empty for some Netflix Originals)
+    const details = await apiCall<{
+      networks?: { id: number }[];
+      homepage?: string;
+    }>("/tmdb", token, {
+      method: "POST",
+      body: JSON.stringify({
+        endpoint: `/${mediaType}/${tmdbId}`,
+        params: {},
+      }),
+    });
+
+    // TV shows: check networks array for Netflix (ID 213)
+    if (details.networks?.some((n) => n.id === 213)) {
+      return true;
+    }
+
+    // Both: check if homepage is a Netflix URL
+    if (details.homepage?.includes("netflix.com")) {
+      return true;
+    }
+
+    return false;
   } catch {
     return false;
   }
