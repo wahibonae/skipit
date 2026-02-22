@@ -42,17 +42,59 @@ async function apiCall<T>(
 }
 
 /**
- * Search for movies and TV shows via TMDB
+ * Search for movies and TV shows via TMDB.
+ * When mediaType is provided, uses /search/{mediaType} with optional year filter.
+ * Otherwise falls back to /search/multi (e.g. general search).
  */
 export async function searchContent(
   query: string,
-  token: string
+  token: string,
+  mediaType?: "movie" | "tv",
+  year?: number
 ): Promise<SearchResponse> {
   if (!query.trim()) {
     return { results: [] };
   }
 
-  // Use TMDB multiSearch via the proxy endpoint
+  if (mediaType) {
+    // Type-specific search with optional year filter
+    const params: Record<string, string | number> = { query };
+    if (year) {
+      params.year = year; // works for both /search/tv and /search/movie
+    }
+
+    const tmdbResponse = await apiCall<{
+      results: Array<{
+        id: number;
+        title?: string;
+        name?: string;
+        poster_path: string | null;
+        release_date?: string;
+        first_air_date?: string;
+        overview?: string;
+      }>;
+    }>("/tmdb", token, {
+      method: "POST",
+      body: JSON.stringify({
+        endpoint: `/search/${mediaType}`,
+        params,
+      }),
+    });
+
+    // Results from type-specific endpoint don't include media_type, set it
+    const results: SearchResult[] = tmdbResponse.results.map((item) => ({
+      id: item.id,
+      media_type: mediaType,
+      title: item.title || item.name || "Unknown",
+      poster_path: item.poster_path,
+      release_date: item.release_date || item.first_air_date || null,
+      timestamp_count: 0,
+    }));
+
+    return { results };
+  }
+
+  // Fallback: multi search
   const tmdbResponse = await apiCall<{
     results: Array<{
       id: number;
@@ -81,7 +123,7 @@ export async function searchContent(
       title: item.title || item.name || "Unknown",
       poster_path: item.poster_path,
       release_date: item.release_date || item.first_air_date || null,
-      timestamp_count: 0, // TMDB doesn't have this, we can fetch separately if needed
+      timestamp_count: 0,
     }));
 
   return { results };

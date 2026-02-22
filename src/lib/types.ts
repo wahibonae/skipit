@@ -143,6 +143,7 @@ export interface NetflixMetadata {
   episodeNumber: number | null;
   episodeTitle: string | null;
   netflixId: string;
+  year: number | null;
 }
 
 // Auto-detected content for Mark Scene overlay
@@ -180,6 +181,7 @@ export interface MatchContentMessage {
   contentType: "movie" | "episode";
   seasonNumber?: number;
   episodeNumber?: number;
+  year?: number;
 }
 
 export interface MatchContentResponse {

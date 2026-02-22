@@ -186,6 +186,14 @@ function extractNetflixMetadata() {
       }
     }
 
+    // Extract year from first season (TV) or directly from video (movies)
+    let year = null;
+    if (video.seasons && video.seasons.length > 0) {
+      year = video.seasons[0].year || null;
+    } else if (video.year) {
+      year = video.year;
+    }
+
     const result = {
       title: video.title,
       type: isEpisode ? "episode" : "movie",
@@ -193,6 +201,7 @@ function extractNetflixMetadata() {
       episodeNumber: episodeNumber,
       episodeTitle: episodeTitle,
       netflixId: sessionKey,
+      year: year,
     };
 
     return result;

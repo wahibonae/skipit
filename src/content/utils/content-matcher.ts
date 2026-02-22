@@ -33,6 +33,7 @@ export async function matchContent(
         contentType: metadata.type,
         seasonNumber: metadata.seasonNumber,
         episodeNumber: metadata.episodeNumber,
+        year: metadata.year,
         includeCounts: false, // Only need TMDB match, not timestamp counts
       },
       (response) => {
