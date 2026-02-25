@@ -473,6 +473,9 @@ let isContentClean = false; // Whether this content is marked as clean
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
 
+// Track if video was playing before opening mark-scene modal
+let wasPlayingBeforeMarkModal = false;
+
 // Skip checking state
 let activeTimestamps = [];
 let originalTimestamps = []; // Unmerged timestamps for timeline rendering
@@ -1154,7 +1157,9 @@ function handleMarkButtonClick(event) {
 
     updateButtonState(false);
 
-    // Track fullscreen state before exiting, pause video and exit fullscreen
+    // Track playback and fullscreen state before pausing
+    const video = document.querySelector("video");
+    wasPlayingBeforeMarkModal = video ? !video.paused : false;
     wasFullscreenBeforeModal = !!document.fullscreenElement;
     pauseVideo();
     exitFullscreenIfActive().then(() => {
@@ -2459,7 +2464,15 @@ function setupMessageHandler() {
       );
     } else if (type === "SKIPIT_MODAL_CLOSED") {
       // Modal was closed - restore playback and fullscreen state
-      playVideo();
+      const source = event.data.source;
+      if (source === "mark-scene") {
+        if (wasPlayingBeforeMarkModal) {
+          playVideo();
+        }
+        wasPlayingBeforeMarkModal = false;
+      } else {
+        playVideo();
+      }
       if (wasFullscreenBeforeModal) {
         enterFullscreen();
         wasFullscreenBeforeModal = false;

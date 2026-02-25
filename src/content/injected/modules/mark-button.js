@@ -91,7 +91,9 @@ function handleMarkButtonClick(event) {
 
     updateButtonState(false);
 
-    // Track fullscreen state before exiting, pause video and exit fullscreen
+    // Track playback and fullscreen state before pausing
+    const video = document.querySelector("video");
+    wasPlayingBeforeMarkModal = video ? !video.paused : false;
     wasFullscreenBeforeModal = !!document.fullscreenElement;
     pauseVideo();
     exitFullscreenIfActive().then(() => {

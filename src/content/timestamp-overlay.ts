@@ -275,7 +275,7 @@ export class TimestampOverlay {
   private handleCancel() {
     this.hide();
     this.onCancel();
-    window.postMessage({ type: "SKIPIT_MODAL_CLOSED" }, "*");
+    window.postMessage({ type: "SKIPIT_MODAL_CLOSED", source: "mark-scene" }, "*");
   }
 
   private async handleSave() {
@@ -304,7 +304,7 @@ export class TimestampOverlay {
       });
 
       this.hide();
-      window.postMessage({ type: "SKIPIT_MODAL_CLOSED" }, "*");
+      window.postMessage({ type: "SKIPIT_MODAL_CLOSED", source: "mark-scene" }, "*");
     } catch (error) {
       console.error("[Overlay] Save error:", error);
       this.state.error = error instanceof Error ? error.message : "Failed to save. Please try again.";

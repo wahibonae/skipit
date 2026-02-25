@@ -33,6 +33,9 @@ let isContentClean = false; // Whether this content is marked as clean
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
 
+// Track if video was playing before opening mark-scene modal
+let wasPlayingBeforeMarkModal = false;
+
 // Skip checking state
 let activeTimestamps = [];
 let originalTimestamps = []; // Unmerged timestamps for timeline rendering

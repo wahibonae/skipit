@@ -67,7 +67,15 @@ function setupMessageHandler() {
       );
     } else if (type === "SKIPIT_MODAL_CLOSED") {
       // Modal was closed - restore playback and fullscreen state
-      playVideo();
+      const source = event.data.source;
+      if (source === "mark-scene") {
+        if (wasPlayingBeforeMarkModal) {
+          playVideo();
+        }
+        wasPlayingBeforeMarkModal = false;
+      } else {
+        playVideo();
+      }
       if (wasFullscreenBeforeModal) {
         enterFullscreen();
         wasFullscreenBeforeModal = false;
