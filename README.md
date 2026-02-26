@@ -32,7 +32,7 @@ Both share the same account and database. One user, one account across the whole
 
 ```bash
 git clone https://github.com/wahibonae/skipit.git
-cd skipit/extension
+cd skipit/
 npm install
 ```
 
