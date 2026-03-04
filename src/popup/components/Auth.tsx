@@ -140,7 +140,7 @@ export const Auth = () => {
 
   // Simple welcome screen when authenticated
   const handleWatchTutorial = () => {
-    chrome.tabs.create({ url: "https://getskipit.com/extension-auth" });
+    chrome.tabs.create({ url: "https://youtu.be/mE_iKMKwvpE" });
   };
 
   return (
