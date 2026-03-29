@@ -2,7 +2,7 @@
 
 Skip nudity, sex, and gore scenes on Netflix automatically.
 
-![Skipit](screenshot.png)
+![Skipit](skipit-extension.jpg)
 
 Skipit is a browser extension that lets you skip scenes you don't want to see on Netflix. Skips are community-sourced and verified through a voting/reputation system, the more people contribute, the better it gets.
 
