@@ -169,7 +169,12 @@ export function setupWindowMessageHandlers() {
       const metadata = event.data.data?.metadata;
       if (metadata) {
         state.lastNetflixMetadata = metadata;
-        checkAvailableSkipsForCurrentVideo(metadata);
+
+        // Only check skips if authenticated — without auth, matchContent fails
+        // and the FAB would incorrectly show "Content not recognized"
+        if (state.lastKnownAuthState) {
+          checkAvailableSkipsForCurrentVideo(metadata);
+        }
 
         // Fetch pending skips for verification
         fetchAndSendPendingSkips(metadata);
