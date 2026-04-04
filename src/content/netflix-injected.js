@@ -61,7 +61,7 @@ const BUTTON_STYLES = `
   line-height: 1;
 }
 .skipit-mark-btn.recording {
-  background: rgba(255, 110, 79, 0.9);
+  background: rgba(255, 110, 79, 1);
   color: white;
 }
 .skipit-mark-btn.recording .skipit-mark-icon {
