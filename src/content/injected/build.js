@@ -19,6 +19,7 @@ const MODULE_ORDER = [
   'player-api.js',
   'fab-button.js',
   'mark-button.js',
+  'seek-buttons.js',
   'button-visibility.js',
   'timeline-segments.js',
   'skip-checker.js',

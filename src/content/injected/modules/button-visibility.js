@@ -48,9 +48,14 @@ function injectSkipitButtons() {
   const fabButton = createSkipitFAB();
   wrapper.appendChild(fabButton);
 
-  // Create Mark button (bottom)
+  // Create Mark row (bottom): [-2s] [+2s] [Mark scene]
+  const markRow = document.createElement("div");
+  markRow.className = "skipit-mark-row";
+  markRow.appendChild(createSeekButton(-2000));
+  markRow.appendChild(createSeekButton(2000));
   const markButton = createMarkButton();
-  wrapper.appendChild(markButton);
+  markRow.appendChild(markButton);
+  wrapper.appendChild(markRow);
 
   // Append to player container (positioned above Netflix's skip buttons via CSS)
   playerContainer.appendChild(wrapper);

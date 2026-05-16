@@ -426,3 +426,42 @@
   width: 12px;
   height: 12px;
 }
+
+/* ===========================================
+   SEEK BUTTONS (-2s / +2s) - inline row with Mark scene
+   =========================================== */
+.skipit-mark-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.skipit-mark-row .skipit-seek-btn[data-delta="2000"] {
+  margin-left: 6px;
+}
+.skipit-mark-row .skipit-mark-btn {
+  margin-left: 6px;
+}
+
+.skipit-seek-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 26, 0.85);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0 10px;
+  color: white;
+  opacity: 0.8;
+  transition: transform 0.12s ease, background 0.2s ease, opacity 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#skipit-buttons-wrapper:hover .skipit-seek-btn:not(.locked) {
+  opacity: 1;
+}
+.skipit-seek-icon { flex: 0 0 auto; }
+.skipit-seek-btn:hover { background: rgba(26, 26, 26, 0.95); }
+.skipit-seek-btn:active { transform: scale(0.92); }
+.skipit-seek-btn.locked { opacity: 0.6; cursor: not-allowed; }
+.skipit-seek-btn.locked:active { transform: none; }

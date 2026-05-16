@@ -192,6 +192,21 @@ function updateButtonsAuthState(authenticated) {
     }
   }
 
+  // Update Seek buttons (-2s / +2s)
+  document.querySelectorAll(".skipit-seek-btn").forEach((btn) => {
+    const delta = Number(btn.dataset.delta);
+    if (authenticated) {
+      btn.classList.remove("locked");
+      btn.setAttribute(
+        "aria-label",
+        `Seek ${delta > 0 ? "forward" : "back"} 2 seconds`
+      );
+    } else {
+      btn.classList.add("locked");
+      btn.setAttribute("aria-label", "Sign in to use");
+    }
+  });
+
   // Update FAB button
   const fabButton = document.getElementById(FAB_BUTTON_ID);
   if (fabButton) {
