@@ -41,7 +41,10 @@ function createSeekIconSVG(direction) {
 function createSeekButton(deltaMs) {
   const direction = deltaMs > 0 ? "forward" : "back";
   const button = document.createElement("button");
-  button.className = "skipit-seek-btn" + (isAuthenticated ? "" : " locked");
+  button.className =
+    "skipit-seek-btn" +
+    (isAuthenticated ? "" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.dataset.delta = String(deltaMs);
   button.setAttribute(
     "aria-label",

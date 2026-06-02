@@ -2,6 +2,7 @@ import { ClerkProvider } from "../lib/clerk";
 import { CLERK_PUBLISHABLE_KEY, CLERK_SYNC_HOST } from "../lib/config";
 import { useAuth } from "./hooks/useAuth";
 import { Auth } from "./components/Auth";
+import { SkipitLogo } from "./components/SkipitLogo";
 
 function AppContent() {
   const { isLoaded } = useAuth();
@@ -11,11 +12,7 @@ function AppContent() {
     return (
       <div className="app">
         <div className="loading-screen">
-          <img
-            src="/public/icons/icon128.png"
-            alt="Skipit"
-            className="loading-logo"
-          />
+          <SkipitLogo className="loading-logo" />
           <span className="loading-text">Loading...</span>
         </div>
       </div>

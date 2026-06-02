@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc && vite build --mode development",
     "build:prod": "tsc && vite build",
+    "zip": "rm -f skipit-extension.zip && cd dist && zip -r ../skipit-extension.zip .",
+    "package": "npm run build:prod && npm run zip",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@clerk/chrome-extension": "^2.8.6",
+    "@clerk/chrome-extension": "^3.1.31",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

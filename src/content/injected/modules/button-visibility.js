@@ -155,8 +155,12 @@ function watchButtonsVisibility() {
     const netflixSkipContainer = document.querySelector(
       ".watch-video--skip-content"
     );
+    const netflixPreplayContainer = document.querySelector(
+      ".watch-video--skip-preplay"
+    );
     const hasNetflixSkipButton =
-      netflixSkipContainer && netflixSkipContainer.children.length > 0;
+      (netflixSkipContainer && netflixSkipContainer.children.length > 0) ||
+      (netflixPreplayContainer && netflixPreplayContainer.children.length > 0);
     wrapper.classList.toggle("netflix-skip-visible", hasNetflixSkipButton);
   }
 

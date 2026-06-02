@@ -30,6 +30,9 @@ let activeSkippingTypes = []; // Skip types currently being skipped (for display
 let loadingStatus = "detecting"; // "detecting" | "loading" | "ready" | "not_recognized"
 let isContentClean = false; // Whether this content is marked as clean
 
+// FAB visual style: "classic" (default) | "netflix"
+let currentFabStyle = "classic";
+
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
 

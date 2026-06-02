@@ -7,7 +7,5 @@ export {
   SignInButton,
   SignUpButton,
   UserButton,
-  SignedIn,
-  SignedOut,
 } from "@clerk/chrome-extension";
 export { CLERK_PUBLISHABLE_KEY } from "./config";

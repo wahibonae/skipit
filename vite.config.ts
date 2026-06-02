@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
       };
 
   return {
+    define: {
+      // Clerk 3.x bundle references Node's `global`; alias to `globalThis` for browser context
+      global: 'globalThis',
+    },
     plugins: [
       // Build the injected script from modules before main build
       {

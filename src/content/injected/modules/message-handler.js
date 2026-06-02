@@ -92,6 +92,12 @@ function setupMessageHandler() {
         }
         clearPendingSkips();
       }
+    } else if (type === "SKIPIT_SET_FAB_STYLE") {
+      // Update FAB visual style ("classic" | "netflix")
+      const style =
+        event.data.data?.style === "netflix" ? "netflix" : "classic";
+      currentFabStyle = style;
+      applyFabStyleToExistingButtons(style);
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];

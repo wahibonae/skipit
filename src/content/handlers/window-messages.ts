@@ -7,7 +7,13 @@ import { state } from "../utils/state";
 import { getCachedContent } from "../utils/cache-manager";
 import { matchContent } from "../utils/content-matcher";
 import { checkAvailableSkipsForCurrentVideo } from "../utils/skip-utils";
-import { startAuthStateWatcher, checkAndPropagateAuthState, openAuthPopup } from "../managers/auth-manager";
+import {
+  startAuthStateWatcher,
+  checkAndPropagateAuthState,
+  openAuthPopup,
+  propagateFabStyle,
+  startFabStyleWatcher,
+} from "../managers/auth-manager";
 import { showMarkingOverlay, updateOverlayContent } from "../managers/overlay-manager";
 import { showQuickPanel, handleQuickPanelStart } from "../managers/quick-panel-manager";
 import { reportContentReady } from "./initialization";
@@ -28,6 +34,10 @@ export function setupWindowMessageHandlers() {
 
       // Start auth state watcher to detect sign-in and update buttons
       startAuthStateWatcher();
+
+      // Send the current FAB style and listen for future changes
+      propagateFabStyle();
+      startFabStyleWatcher();
 
       // Notify background that we're ready
       // Background will restore state if needed based on video ID

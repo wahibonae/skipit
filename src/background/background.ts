@@ -5,6 +5,7 @@
 
 import { clearTabState, getTabState } from "./handlers/tab-state";
 import { extractNetflixVideoId } from "./utils/netflix-utils";
+import { APP_URL } from "../lib/config";
 
 // Handler imports
 import {
@@ -240,6 +241,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // ============================================================================
 // TAB LIFECYCLE HANDLERS
 // ============================================================================
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason !== "install") return;
+
+  chrome.tabs.create({
+    url: `${APP_URL}/extension-auth?source=extension-install`,
+  });
+});
 
 // Clean up when tabs are closed
 chrome.tabs.onRemoved.addListener(async (tabId) => {

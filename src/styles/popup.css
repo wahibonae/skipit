@@ -1,30 +1,42 @@
 /* ============================================
-   Skipit Extension - Design System
-   Brand Colors:
-   - Primary Blue: #07689f
-   - Primary Orange: #ff6f4f
+   Skipit Extension Popup
+   Matches frontend (Tailwind + shadcn aesthetic):
+   - Plus Jakarta Sans
+   - primaryOrange (#FF6E4F) + primaryBlue (#07689F)
+   - Soft tinted accent cards, white surface cards
+   - rounded-xl pills, opacity-90 button hovers
    ============================================ */
 
-/* CSS Variables */
 :root {
-  --primary-blue: #07689f;
-  --primary-orange: #ff6f4f;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-muted: #f1f5f9;
-  --border-color: #e2e8f0;
-  --border-focus: #07689f;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --success: #10b981;
-  --error: #ef4444;
+  --primary-orange: #FF6E4F;
+  --primary-orange-tint-05: rgba(255, 110, 79, 0.05);
+  --primary-orange-tint-10: rgba(255, 110, 79, 0.10);
+  --primary-orange-tint-20: rgba(255, 110, 79, 0.20);
+  --primary-orange-border: rgba(255, 110, 79, 0.20);
+
+  --primary-blue: #07689F;
+
+  --bg: hsl(0 0% 100%);
+  --bg-card: hsl(0 0% 100%);
+  --bg-muted: hsl(0 0% 96.1%);
+  --bg-subtle: hsl(0 0% 98%);
+
+  --text-primary: hsl(0 0% 9%);
+  --text-secondary: hsl(0 0% 35%);
+  --text-muted: hsl(0 0% 55%);
+
+  --border: hsl(0 0% 89.8%);
+  --border-strong: hsl(0 0% 82%);
+
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-/* Reset and Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -34,16 +46,15 @@
 body {
   width: 380px;
   min-height: 480px;
-  max-height: 520px;
+  max-height: 580px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-muted);
   color: var(--text-primary);
 }
 
-/* Force form elements to inherit font */
 button,
 input,
 select,
@@ -52,20 +63,24 @@ textarea {
   font-size: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* ============================================
-   App Shell
+   App shell
    ============================================ */
 
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-height: 520px;
-  background-color: var(--bg-primary);
+  max-height: 580px;
+  background-color: var(--bg-muted);
 }
 
 /* ============================================
-   Loading State
+   Loading state
    ============================================ */
 
 .loading-screen {
@@ -74,23 +89,23 @@ textarea {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  gap: 20px;
+  gap: 18px;
   padding: 40px;
 }
 
 .loading-logo {
-  width: 72px;
-  height: 72px;
+  height: 36px;
+  width: auto;
 }
 
 .loading-text {
-  font-size: 15px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 /* ============================================
-   Auth Screen (Not Signed In)
+   Auth screen (signed-out)
    ============================================ */
 
 .auth-screen {
@@ -99,55 +114,60 @@ textarea {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  padding: 40px 32px;
+  padding: 48px 32px;
   text-align: center;
+  background-color: var(--bg);
 }
 
 .auth-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 24px;
+  height: 44px;
+  width: auto;
+  margin-bottom: 28px;
 }
 
 .auth-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--primary-blue);
   margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
 }
 
 .auth-subtitle {
   font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 32px;
+  line-height: 1.55;
+  margin-bottom: 28px;
   max-width: 280px;
 }
 
 .auth-button {
   width: 100%;
   max-width: 280px;
-  padding: 14px 24px;
+  padding: 12px 20px;
   background-color: var(--primary-orange);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 15px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
 .auth-button:hover:not(:disabled) {
   opacity: 0.9;
 }
 
+.auth-button:active {
+  transform: translateY(1px);
+}
+
 .auth-button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -158,108 +178,355 @@ textarea {
 }
 
 /* ============================================
-   Welcome Screen (Signed In)
-   Simple, clean authenticated state
+   Popup shell (signed-in)
+   Header + body, no footer
    ============================================ */
 
-.welcome-screen {
+.popup-shell {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background-color: transparent;
+}
+
+/* Header */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 16px 16px;
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.popup-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.popup-header-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.popup-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tutorial button mirrors frontend "outline2" variant
+   (orange tint bg + orange text + thin orange border) */
+.popup-header-tutorial-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--primary-orange-border);
+  background: var(--primary-orange-tint-10);
+  color: var(--primary-orange);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  transition: background 0.15s ease;
+}
+
+.popup-header-tutorial-btn:hover {
+  background: var(--primary-orange-tint-20);
+}
+
+/* Ghost icon button */
+.popup-header-icon-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 40px 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.popup-header-icon-btn:hover {
+  background: var(--bg-muted);
+  color: var(--text-primary);
+}
+
+/* Body */
+.popup-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* ============================================
+   Cards (shadcn-style)
+   ============================================ */
+
+.popup-card {
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
   text-align: center;
 }
 
-.welcome-logo {
-  width: 56px;
-  height: 56px;
-  margin-bottom: 20px;
+.popup-card--now {
+  padding: 20px 16px;
 }
 
-.welcome-title {
-  font-size: 22px;
+.popup-card--settings {
+  padding: 16px;
+}
+
+/* ============================================
+   "Now watching" content
+   ============================================ */
+
+.detect-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.detect-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--primary-blue);
-  margin-bottom: 10px;
-  letter-spacing: -0.3px;
-}
-
-.welcome-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 14px;
-  max-width: 260px;
-}
-
-.welcome-subtitle strong {
+  text-transform: uppercase;
+  letter-spacing: 1px;
   color: var(--primary-orange);
-  font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.action-button {
+.detect-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-orange);
+  box-shadow: 0 0 0 3px var(--primary-orange-tint-20);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 3px var(--primary-orange-tint-20); }
+  50% { box-shadow: 0 0 0 5px var(--primary-orange-tint-10); }
+}
+
+.detect-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-orange);
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.detect-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+.detect-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.detect-content .btn-primary {
+  margin-top: 10px;
+}
+
+.detect-loading {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
+  padding: 8px 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   Primary button (frontend "default" variant)
+   ============================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  margin-top: 1px;
+  padding: 10px 40px;
   background-color: var(--primary-orange);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 16px;
-}
-
-.action-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.welcome-signout {
-  padding: 8px 20px;
-  background-color: transparent;
-  color: var(--text-muted);
-  border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
-.welcome-signout:hover:not(:disabled) {
-  background-color: rgba(255, 111, 79, 0.1);
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* ============================================
+   Settings card header (label inside card)
+   ============================================ */
+
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+}
+
+/* ============================================
+   FAB Style Selector
+   ============================================ */
+
+.fab-style-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.fab-style-cards {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.fab-style-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px 8px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fab-style-card:hover:not(.selected) {
+  background: var(--bg-muted);
+}
+
+.fab-style-card.selected {
+  border-color: var(--primary-orange-border);
+  background: var(--primary-orange-tint-05);
+}
+
+.fab-style-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.fab-style-card.selected .fab-style-card-name {
   color: var(--primary-orange);
 }
 
-.welcome-signout:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Mini FAB preview (mimics the real Netflix overlay button) */
+.fab-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  text-align: left;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.1;
+  box-sizing: border-box;
 }
 
-/* Detected content loading state */
-.detected-content-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
+.fab-preview-label {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
+
+.fab-preview-types {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* Classic — dark pill, orange label */
+.fab-preview--classic {
+  background: rgba(26, 26, 26, 0.92);
+  color: #ffffff;
+}
+.fab-preview--classic .fab-preview-label {
+  color: #ff6f4f;
+}
+.fab-preview--classic.fab-preview--active {
+  background: #ff6f4f;
+}
+.fab-preview--classic.fab-preview--active .fab-preview-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Netflix — white pill, black text; red when active */
+.fab-preview--netflix {
+  background: #ffffff;
+  color: #000000;
+  border-color: var(--border);
+}
+.fab-preview--netflix .fab-preview-label {
+  color: #000000;
+}
+.fab-preview--netflix.fab-preview--active {
+  background: #e50914;
+  color: #ffffff;
+  border-color: #e50914;
+}
+.fab-preview--netflix.fab-preview--active .fab-preview-label {
+  color: #ffffff;
+}
+
+/* ============================================
+   Spinner
+   ============================================ */
 
 .loading-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid var(--border-color);
-  border-top-color: var(--primary-blue);
+  border: 2px solid var(--border);
+  border-top-color: var(--primary-orange);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -271,7 +538,7 @@ textarea {
 }
 
 /* ============================================
-   Utility Classes
+   Utility
    ============================================ */
 
 .sr-only {

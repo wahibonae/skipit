@@ -8,7 +8,10 @@
 function createMarkButton() {
   const button = document.createElement("button");
   button.id = BUTTON_ID;
-  button.className = "skipit-mark-btn" + (isAuthenticated ? "" : " locked");
+  button.className =
+    "skipit-mark-btn" +
+    (isAuthenticated ? "" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.setAttribute(
     "aria-label",
     isAuthenticated ? "Mark scene" : "Sign in to contribute"

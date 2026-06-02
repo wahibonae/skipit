@@ -10,7 +10,9 @@ function createSkipitFAB() {
   const button = document.createElement("button");
   button.id = FAB_BUTTON_ID;
   button.className =
-    "skipit-fab" + (isAuthenticated ? " disabled" : " locked");
+    "skipit-fab" +
+    (isAuthenticated ? " disabled" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.setAttribute(
     "aria-label",
     isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
@@ -128,7 +130,7 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("disabled");
     const typeText = formatSkipTypes(activeSkippingTypes);
     typesLine.textContent = typeText
-      ? activeSkippingTypes.length >= 3
+      ? activeSkippingTypes.length >= 2
         ? `Skipping ${typeText}`
         : `Skipping ${typeText} scenes`
       : "Skipping";
@@ -246,4 +248,19 @@ function updateButtonsAuthState(authenticated) {
       if (typesLine) typesLine.textContent = "Sign in to skip";
     }
   }
+}
+
+/**
+ * Apply the chosen FAB style class to any already-rendered buttons.
+ * Called when the user toggles the style in the popup.
+ */
+function applyFabStyleToExistingButtons(style) {
+  const isNetflix = style === "netflix";
+  [FAB_BUTTON_ID, BUTTON_ID].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle("style-netflix", isNetflix);
+  });
+  document.querySelectorAll(".skipit-seek-btn").forEach((btn) => {
+    btn.classList.toggle("style-netflix", isNetflix);
+  });
 }

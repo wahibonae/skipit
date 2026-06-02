@@ -465,3 +465,56 @@
 .skipit-seek-btn:active { transform: scale(0.92); }
 .skipit-seek-btn.locked { opacity: 0.6; cursor: not-allowed; }
 .skipit-seek-btn.locked:active { transform: none; }
+
+/* ===========================================
+   NETFLIX STYLE MODIFIER (.style-netflix)
+   Applies a white standby / red active palette to FAB, Mark, and Seek buttons.
+   Default values are placeholders until exact hex values are provided.
+   =========================================== */
+
+/* Skipit FAB */
+.skipit-fab.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix .skipit-fab-label,
+.skipit-fab.style-netflix .skipit-fab-types {
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+.skipit-fab.style-netflix.active,
+.skipit-fab.style-netflix.active:hover {
+  background: var(--skipit-netflix-bg-active, #e50914);
+  color: #ffffff;
+}
+.skipit-fab.style-netflix.active .skipit-fab-label,
+.skipit-fab.style-netflix.active .skipit-fab-types {
+  color: #ffffff;
+}
+
+/* Mark Scene */
+.skipit-mark-btn.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-mark-btn.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+.skipit-mark-btn.style-netflix.recording {
+  background: var(--skipit-netflix-bg-active, #e50914);
+  color: #ffffff;
+}
+.skipit-mark-btn.style-netflix.recording .skipit-mark-icon {
+  color: #ffffff;
+}
+
+/* Seek (-2s / +2s) */
+.skipit-seek-btn.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-seek-btn.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}

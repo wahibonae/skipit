@@ -63,6 +63,38 @@ export function openAuthPopup(): void {
 }
 
 /**
+ * Read FAB style from chrome.storage.local and forward to injected script.
+ */
+export async function propagateFabStyle(): Promise<void> {
+  try {
+    const { fab_style } = await chrome.storage.local.get(["fab_style"]);
+    const style = fab_style === "netflix" ? "netflix" : "classic";
+    window.postMessage(
+      { type: "SKIPIT_SET_FAB_STYLE", data: { style } },
+      "*"
+    );
+  } catch (error) {
+    console.warn("[Content] Error reading FAB style:", error);
+  }
+}
+
+/**
+ * Watch chrome.storage for FAB style changes and forward them to the injected script.
+ */
+export function startFabStyleWatcher(): void {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local") return;
+    if (!changes.fab_style) return;
+    const next =
+      changes.fab_style.newValue === "netflix" ? "netflix" : "classic";
+    window.postMessage(
+      { type: "SKIPIT_SET_FAB_STYLE", data: { style: next } },
+      "*"
+    );
+  });
+}
+
+/**
  * Start periodic auth state checking
  * This allows buttons to unlock when user signs in via popup
  */

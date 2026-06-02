@@ -475,6 +475,59 @@ const BUTTON_STYLES = `
 .skipit-seek-btn.locked { opacity: 0.6; cursor: not-allowed; }
 .skipit-seek-btn.locked:active { transform: none; }
 
+/* ===========================================
+   NETFLIX STYLE MODIFIER (.style-netflix)
+   Applies a white standby / red active palette to FAB, Mark, and Seek buttons.
+   Default values are placeholders until exact hex values are provided.
+   =========================================== */
+
+/* Skipit FAB */
+.skipit-fab.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix .skipit-fab-label,
+.skipit-fab.style-netflix .skipit-fab-types {
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+.skipit-fab.style-netflix.active,
+.skipit-fab.style-netflix.active:hover {
+  background: var(--skipit-netflix-bg-active, #e50914);
+  color: #ffffff;
+}
+.skipit-fab.style-netflix.active .skipit-fab-label,
+.skipit-fab.style-netflix.active .skipit-fab-types {
+  color: #ffffff;
+}
+
+/* Mark Scene */
+.skipit-mark-btn.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-mark-btn.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+.skipit-mark-btn.style-netflix.recording {
+  background: var(--skipit-netflix-bg-active, #e50914);
+  color: #ffffff;
+}
+.skipit-mark-btn.style-netflix.recording .skipit-mark-icon {
+  color: #ffffff;
+}
+
+/* Seek (-2s / +2s) */
+.skipit-seek-btn.style-netflix {
+  background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
+  color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-seek-btn.style-netflix:hover {
+  background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+
 `;
 
 // ============================================================================
@@ -508,6 +561,9 @@ let availableSkipTypes = []; // All skip types available in DB (for display when
 let activeSkippingTypes = []; // Skip types currently being skipped (for display when skipping)
 let loadingStatus = "detecting"; // "detecting" | "loading" | "ready" | "not_recognized"
 let isContentClean = false; // Whether this content is marked as clean
+
+// FAB visual style: "classic" (default) | "netflix"
+let currentFabStyle = "classic";
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
@@ -879,7 +935,9 @@ function createSkipitFAB() {
   const button = document.createElement("button");
   button.id = FAB_BUTTON_ID;
   button.className =
-    "skipit-fab" + (isAuthenticated ? " disabled" : " locked");
+    "skipit-fab" +
+    (isAuthenticated ? " disabled" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.setAttribute(
     "aria-label",
     isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
@@ -997,7 +1055,7 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     button.classList.remove("disabled");
     const typeText = formatSkipTypes(activeSkippingTypes);
     typesLine.textContent = typeText
-      ? activeSkippingTypes.length >= 3
+      ? activeSkippingTypes.length >= 2
         ? `Skipping ${typeText}`
         : `Skipping ${typeText} scenes`
       : "Skipping";
@@ -1117,6 +1175,21 @@ function updateButtonsAuthState(authenticated) {
   }
 }
 
+/**
+ * Apply the chosen FAB style class to any already-rendered buttons.
+ * Called when the user toggles the style in the popup.
+ */
+function applyFabStyleToExistingButtons(style) {
+  const isNetflix = style === "netflix";
+  [FAB_BUTTON_ID, BUTTON_ID].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle("style-netflix", isNetflix);
+  });
+  document.querySelectorAll(".skipit-seek-btn").forEach((btn) => {
+    btn.classList.toggle("style-netflix", isNetflix);
+  });
+}
+
 
 // ============================================================================
 // MARK SCENE BUTTON
@@ -1128,7 +1201,10 @@ function updateButtonsAuthState(authenticated) {
 function createMarkButton() {
   const button = document.createElement("button");
   button.id = BUTTON_ID;
-  button.className = "skipit-mark-btn" + (isAuthenticated ? "" : " locked");
+  button.className =
+    "skipit-mark-btn" +
+    (isAuthenticated ? "" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.setAttribute(
     "aria-label",
     isAuthenticated ? "Mark scene" : "Sign in to contribute"
@@ -1317,7 +1393,10 @@ function createSeekIconSVG(direction) {
 function createSeekButton(deltaMs) {
   const direction = deltaMs > 0 ? "forward" : "back";
   const button = document.createElement("button");
-  button.className = "skipit-seek-btn" + (isAuthenticated ? "" : " locked");
+  button.className =
+    "skipit-seek-btn" +
+    (isAuthenticated ? "" : " locked") +
+    (currentFabStyle === "netflix" ? " style-netflix" : "");
   button.dataset.delta = String(deltaMs);
   button.setAttribute(
     "aria-label",
@@ -1503,8 +1582,12 @@ function watchButtonsVisibility() {
     const netflixSkipContainer = document.querySelector(
       ".watch-video--skip-content"
     );
+    const netflixPreplayContainer = document.querySelector(
+      ".watch-video--skip-preplay"
+    );
     const hasNetflixSkipButton =
-      netflixSkipContainer && netflixSkipContainer.children.length > 0;
+      (netflixSkipContainer && netflixSkipContainer.children.length > 0) ||
+      (netflixPreplayContainer && netflixPreplayContainer.children.length > 0);
     wrapper.classList.toggle("netflix-skip-visible", hasNetflixSkipButton);
   }
 
@@ -2620,6 +2703,12 @@ function setupMessageHandler() {
         }
         clearPendingSkips();
       }
+    } else if (type === "SKIPIT_SET_FAB_STYLE") {
+      // Update FAB visual style ("classic" | "netflix")
+      const style =
+        event.data.data?.style === "netflix" ? "netflix" : "classic";
+      currentFabStyle = style;
+      applyFabStyleToExistingButtons(style);
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];
