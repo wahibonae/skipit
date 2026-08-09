@@ -33,6 +33,10 @@ let isContentClean = false; // Whether this content is marked as clean
 // FAB visual style: "classic" (default) | "netflix"
 let currentFabStyle = "classic";
 
+// Discreet mode: hide skip category names on every ambient on-screen surface
+// (FAB, skip toast, vote prompt, timeline tooltip). Composes with currentFabStyle.
+let currentDiscreetMode = false;
+
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
 

@@ -2,6 +2,52 @@
 // TIMELINE SEGMENTS
 // ============================================================================
 
+const SEGMENT_DISCREET_LABEL = "Skipit ⏩︎";
+
+/**
+ * Tooltip text for a timeline segment.
+ * Discreet mode replaces the category with the Skipit wordmark.
+ */
+function getSegmentLabel(skipType, isPending) {
+  if (currentDiscreetMode) {
+    return isPending
+      ? `${SEGMENT_DISCREET_LABEL} (unverified)`
+      : SEGMENT_DISCREET_LABEL;
+  }
+
+  if (isPending) {
+    const pendingLabels = {
+      Nudity: "Nudity (unverified)",
+      nudity: "Nudity (unverified)",
+      Sex: "Sex (unverified)",
+      sex: "Sex (unverified)",
+      Gore: "Gore (unverified)",
+      gore: "Gore (unverified)",
+    };
+    return pendingLabels[skipType] || "Unverified skip";
+  }
+
+  const typeLabels = {
+    nudity: "Nudity",
+    sex: "Sex",
+    gore: "Gore",
+    default: "Skip",
+  };
+  return typeLabels[skipType] || "Skip";
+}
+
+/**
+ * Rewrite tooltip labels on segments already in the DOM.
+ * Called when discreet mode is toggled mid-playback so the change lands
+ * without waiting for a re-render.
+ */
+function refreshSegmentLabels() {
+  document.querySelectorAll(".skipit-segment").forEach((segment) => {
+    const isPending = segment.classList.contains("skipit-segment--pending");
+    segment.dataset.label = getSegmentLabel(segment.dataset.type, isPending);
+  });
+}
+
 /**
  * Get the timeline bar element and its duration
  * Returns: { timelineBar, duration } or null if not found
@@ -79,13 +125,7 @@ function renderTimelineSegments(timestamps) {
     const widthPercent = ((endMs - startMs) / duration) * 100;
 
     // Create human-readable label for tooltip
-    const typeLabels = {
-      nudity: "Nudity",
-      sex: "Sex",
-      gore: "Gore",
-      default: "Skip",
-    };
-    const label = typeLabels[skipType] || "Skip";
+    const label = getSegmentLabel(skipType, false);
 
     // Create segment element
     const segment = document.createElement("div");
@@ -188,15 +228,7 @@ function renderPendingTimelineSegments(pendingSkipsData) {
     const leftPercent = (startMs / duration) * 100;
     const widthPercent = ((endMs - startMs) / duration) * 100;
 
-    const typeLabels = {
-      Nudity: "Nudity (unverified)",
-      nudity: "Nudity (unverified)",
-      Sex: "Sex (unverified)",
-      sex: "Sex (unverified)",
-      Gore: "Gore (unverified)",
-      gore: "Gore (unverified)",
-    };
-    const label = typeLabels[skipType] || "Unverified skip";
+    const label = getSegmentLabel(skipType, true);
 
     const segment = document.createElement("div");
     segment.className = "skipit-segment skipit-segment--pending";

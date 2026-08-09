@@ -63,34 +63,84 @@ export function openAuthPopup(): void {
 }
 
 /**
+ * Last known appearance settings, kept in sync by the storage watcher below.
+ *
+ * Cached because the injected script renders its buttons visible immediately on
+ * SKIPIT_NETFLIX_READY: awaiting a storage read at that point would show the
+ * default (verbose) button for a frame before discreet mode could correct it.
+ *
+ * Netflix is an SPA, so the content script survives navigations while the
+ * injected script re-fires READY. That means these values are replayed on every
+ * navigation and MUST NOT go stale, hence the watcher writing back to them.
+ */
+let cachedFabStyle: "classic" | "netflix" = "classic";
+let cachedDiscreetMode = false;
+
+const appearanceSettingsLoaded = chrome.storage.local
+  .get(["fab_style", "discreet_mode"])
+  .then((res) => {
+    cachedFabStyle = res.fab_style === "netflix" ? "netflix" : "classic";
+    cachedDiscreetMode = res.discreet_mode === true;
+  })
+  .catch((error) => {
+    console.warn("[Content] Error reading appearance settings:", error);
+  });
+
+/**
  * Read FAB style from chrome.storage.local and forward to injected script.
  */
 export async function propagateFabStyle(): Promise<void> {
-  try {
-    const { fab_style } = await chrome.storage.local.get(["fab_style"]);
-    const style = fab_style === "netflix" ? "netflix" : "classic";
-    window.postMessage(
-      { type: "SKIPIT_SET_FAB_STYLE", data: { style } },
-      "*"
-    );
-  } catch (error) {
-    console.warn("[Content] Error reading FAB style:", error);
-  }
+  await appearanceSettingsLoaded;
+  window.postMessage(
+    { type: "SKIPIT_SET_FAB_STYLE", data: { style: cachedFabStyle } },
+    "*"
+  );
 }
 
 /**
- * Watch chrome.storage for FAB style changes and forward them to the injected script.
+ * Read discreet mode from chrome.storage.local and forward to injected script.
  */
+export async function propagateDiscreetMode(): Promise<void> {
+  await appearanceSettingsLoaded;
+  window.postMessage(
+    { type: "SKIPIT_SET_DISCREET_MODE", data: { enabled: cachedDiscreetMode } },
+    "*"
+  );
+}
+
+/**
+ * Watch chrome.storage for appearance changes (FAB style, discreet mode) and
+ * forward them to the injected script.
+ *
+ * Guarded: SKIPIT_NETFLIX_READY fires again on every SPA navigation, and
+ * chrome.storage.onChanged has no dedupe, so an unguarded call would stack a
+ * fresh listener per navigation and post N duplicate messages per toggle.
+ */
+let fabStyleWatcherStarted = false;
+
 export function startFabStyleWatcher(): void {
+  if (fabStyleWatcherStarted) return;
+  fabStyleWatcherStarted = true;
+
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local") return;
-    if (!changes.fab_style) return;
-    const next =
-      changes.fab_style.newValue === "netflix" ? "netflix" : "classic";
-    window.postMessage(
-      { type: "SKIPIT_SET_FAB_STYLE", data: { style: next } },
-      "*"
-    );
+
+    if (changes.fab_style) {
+      cachedFabStyle =
+        changes.fab_style.newValue === "netflix" ? "netflix" : "classic";
+      window.postMessage(
+        { type: "SKIPIT_SET_FAB_STYLE", data: { style: cachedFabStyle } },
+        "*"
+      );
+    }
+
+    if (changes.discreet_mode) {
+      cachedDiscreetMode = changes.discreet_mode.newValue === true;
+      window.postMessage(
+        { type: "SKIPIT_SET_DISCREET_MODE", data: { enabled: cachedDiscreetMode } },
+        "*"
+      );
+    }
   });
 }
 

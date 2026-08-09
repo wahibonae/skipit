@@ -112,16 +112,55 @@ const BUTTON_STYLES = `
   background: rgba(255, 110, 79, 1);
 }
 
-/* FAB Label - "Skipit" branding */
-.skipit-fab-label {
-  font-size: 12px;
-  font-weight: 600;
+/* FAB Label row - Skipit wordmark, plus the discreet badge when enabled */
+.skipit-fab-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #ff6f4f;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
-.skipit-fab.active .skipit-fab-label {
-  color: rgba(255, 255, 255, 0.9);
+/* Fully opaque: the wordmark inherits this as currentColor, and a dimmed logo
+   reads as washed out. The 0.9 here was a holdover from the old text label. */
+.skipit-fab.active .skipit-fab-label-row {
+  color: #ffffff;
+}
+
+/* Wordmark replaces the old "Skipit ⏩︎" text: it already contains the arrows.
+   Drawn in a single colour via currentColor, so the row's colour drives it. */
+.skipit-fab-logo {
+  display: flex;
+  align-items: center;
+}
+.skipit-fab-logo svg {
+  height: 16px;
+  width: auto;
+  display: block;
+}
+
+/* Discreet markers - both hidden unless the mode is on. The pill rides the
+   label row in the states that keep their text; the caption sits under the
+   wordmark on the collapsed tile, where a pill would break the centring. */
+.skipit-discreet-badge {
+  display: none;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.92);
+}
+.skipit-discreet-caption {
+  display: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0.72;
 }
 
 /* FAB Types - Main CTA text */
@@ -486,9 +525,13 @@ const BUTTON_STYLES = `
   background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
   color: var(--skipit-netflix-text-standby, #141414);
 }
-.skipit-fab.style-netflix .skipit-fab-label,
+.skipit-fab.style-netflix .skipit-fab-label-row,
 .skipit-fab.style-netflix .skipit-fab-types {
   color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix .skipit-discreet-badge {
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.75);
 }
 .skipit-fab.style-netflix:hover {
   background: var(--skipit-netflix-bg-standby-hover, #ffffff);
@@ -498,8 +541,12 @@ const BUTTON_STYLES = `
   background: var(--skipit-netflix-bg-active, #e50914);
   color: #ffffff;
 }
-.skipit-fab.style-netflix.active .skipit-fab-label,
+.skipit-fab.style-netflix.active .skipit-fab-label-row,
 .skipit-fab.style-netflix.active .skipit-fab-types {
+  color: #ffffff;
+}
+.skipit-fab.style-netflix.active .skipit-discreet-badge {
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
@@ -526,6 +573,57 @@ const BUTTON_STYLES = `
 }
 .skipit-seek-btn.style-netflix:hover {
   background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+
+/* ==========================================================================
+   Discreet mode: the FAB collapses to the Skipit wordmark alone, so no skip
+   category is ever named on screen. Composes with both FAB styles.
+   ========================================================================== */
+
+/* The .disabled and .locked states are excluded from the tile throughout: their
+   wording ("No skips yet", "Content not recognized", "Sign in to skip") names no
+   category, and it is the only thing telling the user why the button is dead.
+   They keep the full two-line button and instead show the "Discreet" badge, so
+   the mode is still visibly on. */
+.skipit-fab.discreet.disabled .skipit-discreet-badge,
+.skipit-fab.discreet.locked .skipit-discreet-badge {
+  display: inline-flex;
+}
+
+/* Working states collapse to a tile: the status line goes, the wordmark grows,
+   and the caption takes the status line's place under it. */
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-fab-types {
+  display: none;
+}
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-discreet-caption {
+  display: block;
+}
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-fab-logo svg {
+  height: 26px;
+}
+/* min-width sets the tile width independently of the wordmark. The two-line
+   lockup (wordmark + caption) is close enough in height to the normal button
+   that toggling the mode does not shift the stack. */
+.skipit-fab.discreet:not(.disabled):not(.locked) {
+  min-width: 160px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 26px;
+  gap: 6px;
+}
+
+/* Loading is the one state that has no colour/opacity hook of its own.
+   Needs its own keyframe: skipit-pulse peaks at opacity 1, which would
+   override a static opacity and pulse the mark up to full brightness.
+   Applied to the whole lockup so the caption pulses with the wordmark. */
+@keyframes skipit-logo-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.25; }
+}
+.skipit-fab.discreet.loading:not(.disabled):not(.locked) .skipit-fab-label-row,
+.skipit-fab.discreet.loading:not(.disabled):not(.locked) .skipit-discreet-caption {
+  animation: skipit-logo-pulse 1.6s ease-in-out infinite;
 }
 
 `;
@@ -564,6 +662,10 @@ let isContentClean = false; // Whether this content is marked as clean
 
 // FAB visual style: "classic" (default) | "netflix"
 let currentFabStyle = "classic";
+
+// Discreet mode: hide skip category names on every ambient on-screen surface
+// (FAB, skip toast, vote prompt, timeline tooltip). Composes with currentFabStyle.
+let currentDiscreetMode = false;
 
 // Track if we were in fullscreen before opening a modal
 let wasFullscreenBeforeModal = false;
@@ -686,6 +788,49 @@ function createLockIconSVG() {
     "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
   );
   svg.appendChild(path);
+  return svg;
+}
+
+/**
+ * Skipit wordmark paths, mirrored from src/popup/components/SkipitLogo.tsx.
+ * Drawn in a single colour via currentColor so each FAB style/state drives it.
+ */
+const SKIPIT_LOGO_PATHS = [
+  // S
+  "M53.923706,182.938858 C45.910275,180.096268 38.267155,177.397995 30.719603,174.454681 C27.240578,173.097977 26.121256,170.803329 28.226728,167.084396 C32.872292,158.878860 37.203308,150.495224 41.761826,141.999451 C46.697880,144.361740 51.326084,146.864365 56.169132,148.840424 C70.594238,154.726166 85.530739,157.166702 101.007004,154.292099 C104.025230,153.731491 107.091705,152.468124 109.695221,150.828918 C115.969963,146.878311 115.713478,138.029205 108.866913,135.284103 C99.517784,131.535660 89.598083,129.232010 80.151573,125.697952 C72.443100,122.814125 64.345253,120.074608 57.693645,115.442322 C42.168049,104.630028 41.635815,86.812485 48.533268,70.635323 C54.986195,55.500740 67.653923,47.239792 82.929909,42.868225 C109.273392,35.329456 135.075485,36.996235 160.191360,48.228279 C163.586746,49.746731 164.640625,51.398167 162.726196,55.003380 C158.381165,63.185863 154.389557,71.556030 150.757751,78.840073 C140.275864,75.909149 130.442169,72.481461 120.323952,70.525360 C110.656685,68.656433 100.781555,69.016312 91.633202,73.777306 C87.666725,75.841545 85.087486,78.883301 84.976662,83.500908 C84.862793,88.245354 87.941399,90.884285 91.903786,92.199455 C101.480530,95.378105 111.153290,98.274223 120.824753,101.158798 C130.439163,104.026360 139.728928,107.444344 146.778503,115.058517 C157.789810,126.951698 155.888672,146.201813 148.706650,158.340469 C138.742905,175.180664 122.503143,182.275879 104.264610,185.308945 C87.556541,188.087494 70.810509,187.332718 53.923706,182.938858 z",
+  // k
+  "M196.920319,175.178131 C196.355408,178.195541 195.839767,180.789536 195.270691,183.652344 C182.627441,183.652344 170.057404,183.652344 156.634628,183.652344 C166.649307,133.525406 176.611877,83.659225 186.653580,33.396988 C199.315659,33.396988 212.010361,33.396988 225.302185,33.396988 C220.196014,59.006496 215.144058,84.344055 209.808578,111.103615 C213.865280,107.810013 216.988434,105.353188 220.025620,102.794357 C231.063538,93.494972 242.054398,84.139565 253.126099,74.880737 C254.049072,74.108887 255.441711,73.500351 256.620300,73.493065 C271.119080,73.403488 285.618652,73.434143 300.117950,73.466370 C300.694244,73.467651 301.269836,73.793930 302.597992,74.197174 C283.809967,90.388542 265.519653,106.150986 246.697220,122.372032 C258.839264,142.524994 271.000031,162.708969 283.560638,183.556656 C281.501221,183.725388 280.139679,183.930786 278.777679,183.933777 C267.111542,183.959503 255.439758,183.744614 243.782272,184.062866 C239.879288,184.169434 237.865189,182.805481 236.007614,179.580414 C230.141571,169.395905 223.980377,159.381180 217.904404,149.318237 C217.397324,148.478424 216.673126,147.769714 215.949631,146.876404 C205.447479,153.431946 197.083282,161.263321 196.920319,175.178131 z",
+  // i (body)
+  "M331.792908,150.019348 C329.505371,161.485062 327.298645,172.531982 325.060974,183.733612 C312.369415,183.733612 299.945862,183.733612 286.698120,183.733612 C288.202301,176.044113 289.616699,168.640686 291.102020,161.251541 C296.722473,133.290344 302.401825,105.340881 307.937103,77.362885 C308.413544,74.954704 308.745819,73.351128 311.744934,73.381500 C323.222260,73.497742 334.701508,73.428505 347.113220,73.428505 C341.976440,99.103683 336.925049,124.352127 331.792908,150.019348 z",
+  // i (dot)
+  "M316.486572,27.507133 C325.226410,19.632277 335.155121,18.344467 345.537659,21.705141 C360.905853,26.679613 361.278656,43.368942 353.225891,52.791763 C345.584991,61.732662 329.867523,63.900536 319.888062,57.720795 C309.693573,51.407902 308.241638,39.506001 316.486572,27.507133 z",
+  // p
+  "M471.427399,155.426117 C461.500824,171.502884 447.947479,182.040314 429.389923,184.850800 C413.331146,187.282867 398.110046,185.700409 386.312256,171.421417 C385.725006,173.170975 385.155426,174.423615 384.886261,175.737793 C381.857391,190.526749 378.949310,205.341324 375.754639,220.093964 C375.461182,221.449097 373.438354,223.397034 372.181580,223.425323 C360.709045,223.683456 349.228302,223.576996 336.740509,223.576996 C337.781769,217.869308 338.663208,212.592117 339.713837,207.348816 C348.182037,165.086868 356.627625,122.820229 365.216949,80.582848 C367.005341,71.788490 365.517456,73.560112 373.932465,73.455742 C383.411163,73.338173 392.892456,73.428673 402.870667,73.428673 C402.459961,76.482971 402.100464,79.156456 401.640045,82.580627 C403.197845,81.765358 404.218811,81.393936 405.052124,80.771385 C433.025146,59.873508 473.883423,76.770439 478.985352,111.226334 C481.281464,126.733307 478.825195,141.282364 471.427399,155.426117 M395.147614,121.025017 C394.854279,121.974831 394.418304,122.905807 394.290039,123.877411 C393.205994,132.089127 392.020935,140.234802 397.591888,147.633270 C405.314331,157.888992 426.059845,156.436234 434.030304,145.565811 C438.746704,139.133392 440.926758,131.885376 440.828705,124.203194 C440.648529,110.082779 432.856293,102.628250 419.717010,102.618065 C408.158783,102.609108 399.572876,108.895523 395.147614,121.025017 z",
+  // i (body 2)
+  "M490.626404,133.463654 C494.525299,114.368240 498.229248,95.663475 502.127197,76.999207 C502.407135,75.658707 504.083771,73.608421 505.146271,73.586372 C516.939819,73.341568 528.740356,73.432175 541.120239,73.432175 C533.706360,110.512779 526.398010,147.065231 519.063171,183.750076 C506.340668,183.750076 493.912903,183.750076 480.688141,183.750076 C483.995453,166.898254 487.237091,150.381226 490.626404,133.463654 z",
+  // i (dot 2)
+  "M510.325745,54.660133 C504.272522,48.436069 503.803986,41.361858 506.477142,34.056076 C509.518280,25.744671 516.390747,21.829741 524.663635,20.506788 C532.420044,19.266422 540.066772,20.198259 546.332275,25.416742 C555.390625,32.961346 554.031494,48.595619 543.779602,56.180939 C534.258911,63.225269 517.434509,62.732269 510.325745,54.660133 z",
+  // t
+  "M606.506287,154.608719 C606.942139,160.075577 606.677795,165.716751 607.119995,171.301971 C607.382324,174.615067 608.758789,177.839935 609.781555,181.419739 C598.108459,186.361526 585.869629,187.060699 573.666748,184.299774 C555.414368,180.170151 546.034302,164.347229 549.778748,145.067810 C552.182739,132.690369 554.659912,120.327141 557.096130,107.955956 C557.126221,107.802818 557.048950,107.628532 556.925537,106.881424 C552.018127,106.881424 546.975525,106.881424 541.204895,106.881424 C543.247437,96.698807 545.149658,87.215622 547.112854,77.428650 C551.254089,77.428650 555.082214,77.168640 558.857788,77.502426 C562.568298,77.830444 563.721130,76.188171 564.271423,72.831833 C565.398438,65.958862 566.815491,59.126984 568.364807,52.335606 C568.650513,51.083553 570.106323,49.156471 571.050781,49.139496 C583.140869,48.922211 595.236267,48.996101 607.556885,48.996101 C605.756775,58.187386 603.947449,67.425209 602.026123,77.235359 C610.381409,77.235359 618.454712,77.235359 627.106323,77.235359 C625.211426,86.764862 623.540833,95.693031 621.519836,104.541161 C621.310059,105.459473 619.032471,106.438278 617.689026,106.475410 C610.705078,106.668442 603.712891,106.565292 595.999329,106.565292 C593.524719,119.778816 590.696838,132.870483 588.752380,146.092072 C587.752258,152.893005 592.613892,156.746521 599.756592,155.996613 C601.891968,155.772446 603.988770,155.182083 606.506287,154.608719 z",
+  // Double arrow
+  "M606.909302,154.457947 C606.909302,141.831406 606.909302,129.204865 606.909302,115.996277 C611.849182,115.996277 616.296387,115.875031 620.734131,116.027611 C626.031616,116.209724 629.737793,113.594017 630.692078,108.785446 C632.847534,97.923470 634.527039,86.948051 635.883240,75.955002 C636.496033,70.988548 633.131897,68.047615 628.145813,68.009544 C623.515320,67.974182 618.884399,68.001999 613.896301,68.001999 C614.336060,65.997726 614.686523,64.564751 614.961670,63.117439 C616.016846,57.567093 619.666565,56.166992 624.214905,59.836903 C633.525146,67.348953 642.705261,75.022171 651.950134,82.615440 C663.338928,91.969696 674.739624,101.309502 686.133850,110.657173 C687.383240,111.682175 688.623779,112.717995 690.122925,113.959564 C690.122925,99.003281 690.072632,84.083466 690.155273,69.164406 C690.178345,64.999840 691.417236,61.195747 695.577271,59.311436 C699.982483,57.316048 704.245422,57.411785 708.152649,60.775867 C709.900635,62.280853 712.007874,63.365635 713.775452,64.851234 C726.949036,75.923134 740.062439,87.066544 753.229492,98.146217 C758.167969,102.301781 763.087769,106.492668 768.212646,110.410393 C776.354675,116.634583 776.714600,124.662666 768.851440,131.250198 C748.868164,147.991684 728.842468,164.682571 708.865906,181.432007 C705.030151,184.648087 700.753906,185.336685 696.303528,183.455399 C691.873352,181.582687 690.050354,177.893738 690.082153,173.043015 C690.179138,158.259232 690.117310,143.474411 690.117310,127.989815 C682.913391,133.911942 676.234863,139.366653 669.595459,144.868668 C659.739136,153.036591 649.902222,161.227921 640.074097,169.429764 C635.658508,173.114716 631.232910,176.790482 626.904724,180.576523 C622.052124,184.821243 616.607727,185.394211 610.136719,181.603424 C608.758789,177.839935 607.382324,174.615067 607.119995,171.301971 C606.677795,165.716751 606.942139,160.075577 606.909302,154.457947 z",
+];
+
+/**
+ * Create the Skipit wordmark SVG using safe DOM methods.
+ * Colour comes from the button's `color` via currentColor.
+ */
+function createSkipitLogoSVG() {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 800 240");
+  svg.setAttribute("fill", "currentColor");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Skipit");
+  SKIPIT_LOGO_PATHS.forEach((d) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+  });
   return svg;
 }
 
@@ -937,11 +1082,9 @@ function createSkipitFAB() {
   button.className =
     "skipit-fab" +
     (isAuthenticated ? " disabled" : " locked") +
-    (currentFabStyle === "netflix" ? " style-netflix" : "");
-  button.setAttribute(
-    "aria-label",
-    isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
-  );
+    (currentFabStyle === "netflix" ? " style-netflix" : "") +
+    (currentDiscreetMode ? " discreet" : "");
+  button.setAttribute("aria-label", getFabAriaLabel());
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -949,22 +1092,54 @@ function createSkipitFAB() {
   lockIcon.style.display = isAuthenticated ? "none" : "flex";
   lockIcon.appendChild(createLockIconSVG());
 
-  // "Skipit" branding label (top line)
-  const label = document.createElement("span");
-  label.className = "skipit-fab-label";
-  label.textContent = "Skipit \u23E9\uFE0E";
+  // Branding row (top line): the wordmark, plus a mode badge in discreet mode.
+  // The wordmark contains the double-arrow, so it replaces the old
+  // "Skipit \u23E9\uFE0E" text label outright.
+  const labelRow = document.createElement("span");
+  labelRow.className = "skipit-fab-label-row";
+
+  const logo = document.createElement("span");
+  logo.className = "skipit-fab-logo";
+  logo.appendChild(createSkipitLogoSVG());
+
+  // Marks discreet mode in the states that keep their text ("No skips yet",
+  // "Sign in to skip"), which would otherwise look identical either way.
+  const badge = document.createElement("span");
+  badge.className = "skipit-discreet-badge";
+  badge.textContent = "Discreet";
+
+  labelRow.appendChild(logo);
+  labelRow.appendChild(badge);
+
+  // Same word as a caption under the wordmark on the collapsed tile, where a
+  // pill on the row would push the wordmark off centre.
+  const caption = document.createElement("span");
+  caption.className = "skipit-discreet-caption";
+  caption.textContent = "Discreet";
 
   // Skip types line (subtitle - bottom line)
+  // Always created, even in discreet mode: updateSkipitFAB bails early without it.
+  // Discreet mode hides it via CSS instead.
   const typesLine = document.createElement("span");
   typesLine.className = "skipit-fab-types";
   typesLine.textContent = isAuthenticated ? "Detecting content..." : "Sign in to skip";
 
   button.appendChild(lockIcon);
-  button.appendChild(label);
+  button.appendChild(labelRow);
   button.appendChild(typesLine);
+  button.appendChild(caption);
   button.addEventListener("click", handleSkipitFABClick);
 
   return button;
+}
+
+/**
+ * Accessible name for the FAB. Discreet mode does not change it: neither string
+ * names a category, and "Skip content with Skipit" tells a screen reader user
+ * what a logo-only button actually does.
+ */
+function getFabAriaLabel() {
+  return isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content";
 }
 
 /**
@@ -1048,6 +1223,10 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     availableSkipTypes = skipTypes;
   }
 
+  // "loading" is the only state discreet mode can't express through .active /
+  // .disabled / .locked, so it gets its own class for the pulse.
+  button.classList.remove("loading");
+
   if (isSkipping) {
     // Active skipping state - red background
     // Use activeSkippingTypes (what's actually being skipped), not availableSkipTypes
@@ -1074,6 +1253,7 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");
+    button.classList.add("loading");
     const statusText = {
       "detecting": "Detecting content...",
       "loading": "Loading skips..."
@@ -1139,7 +1319,7 @@ function updateButtonsAuthState(authenticated) {
   if (fabButton) {
     if (authenticated) {
       fabButton.classList.remove("locked");
-      fabButton.setAttribute("aria-label", "Skip content with Skipit");
+      fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "none";
 
@@ -1165,7 +1345,7 @@ function updateButtonsAuthState(authenticated) {
       }
     } else {
       fabButton.classList.add("locked");
-      fabButton.setAttribute("aria-label", "Sign in to skip content");
+      fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "flex";
       // Update FAB for locked state
@@ -1173,6 +1353,16 @@ function updateButtonsAuthState(authenticated) {
       if (typesLine) typesLine.textContent = "Sign in to skip";
     }
   }
+}
+
+/**
+ * Toggle discreet mode on an already-rendered FAB.
+ * Called when the user flips the toggle in the popup.
+ */
+function applyDiscreetModeToExistingButtons(enabled) {
+  const fabButton = document.getElementById(FAB_BUTTON_ID);
+  if (!fabButton) return;
+  fabButton.classList.toggle("discreet", enabled);
 }
 
 /**
@@ -1638,6 +1828,52 @@ function startButtonWatcher() {
 // TIMELINE SEGMENTS
 // ============================================================================
 
+const SEGMENT_DISCREET_LABEL = "Skipit ⏩︎";
+
+/**
+ * Tooltip text for a timeline segment.
+ * Discreet mode replaces the category with the Skipit wordmark.
+ */
+function getSegmentLabel(skipType, isPending) {
+  if (currentDiscreetMode) {
+    return isPending
+      ? `${SEGMENT_DISCREET_LABEL} (unverified)`
+      : SEGMENT_DISCREET_LABEL;
+  }
+
+  if (isPending) {
+    const pendingLabels = {
+      Nudity: "Nudity (unverified)",
+      nudity: "Nudity (unverified)",
+      Sex: "Sex (unverified)",
+      sex: "Sex (unverified)",
+      Gore: "Gore (unverified)",
+      gore: "Gore (unverified)",
+    };
+    return pendingLabels[skipType] || "Unverified skip";
+  }
+
+  const typeLabels = {
+    nudity: "Nudity",
+    sex: "Sex",
+    gore: "Gore",
+    default: "Skip",
+  };
+  return typeLabels[skipType] || "Skip";
+}
+
+/**
+ * Rewrite tooltip labels on segments already in the DOM.
+ * Called when discreet mode is toggled mid-playback so the change lands
+ * without waiting for a re-render.
+ */
+function refreshSegmentLabels() {
+  document.querySelectorAll(".skipit-segment").forEach((segment) => {
+    const isPending = segment.classList.contains("skipit-segment--pending");
+    segment.dataset.label = getSegmentLabel(segment.dataset.type, isPending);
+  });
+}
+
 /**
  * Get the timeline bar element and its duration
  * Returns: { timelineBar, duration } or null if not found
@@ -1715,13 +1951,7 @@ function renderTimelineSegments(timestamps) {
     const widthPercent = ((endMs - startMs) / duration) * 100;
 
     // Create human-readable label for tooltip
-    const typeLabels = {
-      nudity: "Nudity",
-      sex: "Sex",
-      gore: "Gore",
-      default: "Skip",
-    };
-    const label = typeLabels[skipType] || "Skip";
+    const label = getSegmentLabel(skipType, false);
 
     // Create segment element
     const segment = document.createElement("div");
@@ -1824,15 +2054,7 @@ function renderPendingTimelineSegments(pendingSkipsData) {
     const leftPercent = (startMs / duration) * 100;
     const widthPercent = ((endMs - startMs) / duration) * 100;
 
-    const typeLabels = {
-      Nudity: "Nudity (unverified)",
-      nudity: "Nudity (unverified)",
-      Sex: "Sex (unverified)",
-      sex: "Sex (unverified)",
-      Gore: "Gore (unverified)",
-      gore: "Gore (unverified)",
-    };
-    const label = typeLabels[skipType] || "Unverified skip";
+    const label = getSegmentLabel(skipType, true);
 
     const segment = document.createElement("div");
     segment.className = "skipit-segment skipit-segment--pending";
@@ -2268,10 +2490,12 @@ function buildNotificationContent(notification, skipType, startMs, endMs) {
   const textDiv = document.createElement("div");
   textDiv.className = "skipit-notification-text";
 
-  // Create title with type
+  // Create title with type (discreet mode drops the category name)
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
-  titleSpan.textContent = `Skipped ${formattedType} scene`;
+  titleSpan.textContent = currentDiscreetMode
+    ? "Scene skipped"
+    : `Skipped ${formattedType} scene`;
 
   // Create time range
   const timeSpan = document.createElement("span");
@@ -2402,7 +2626,10 @@ function showVotePrompt(skip) {
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
   const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
-  titleSpan.textContent = `${formattedType} scene?`;
+  // The prompt fires BEFORE the skip, so discreet wording stays forward-looking.
+  titleSpan.textContent = currentDiscreetMode
+    ? "Skip this scene?"
+    : `${formattedType} scene?`;
 
   const timeSpan = document.createElement("span");
   timeSpan.className = "skipit-notification-time";
@@ -2447,7 +2674,9 @@ function showVotePrompt(skip) {
   downIcon.appendChild(downPath);
   downvoteBtn.appendChild(downIcon);
   const downLabel = document.createElement("span");
-  downLabel.textContent = "No, it's not";
+  // "No, it's not" is short for "it's not a <category> scene", which is
+  // meaningless once the category is hidden.
+  downLabel.textContent = currentDiscreetMode ? "No, it's fine" : "No, it's not";
   downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -2709,6 +2938,14 @@ function setupMessageHandler() {
         event.data.data?.style === "netflix" ? "netflix" : "classic";
       currentFabStyle = style;
       applyFabStyleToExistingButtons(style);
+    } else if (type === "SKIPIT_SET_DISCREET_MODE") {
+      // Toggle discreet mode (hide category names on ambient surfaces)
+      const enabled = event.data.data?.enabled === true;
+      if (enabled !== currentDiscreetMode) {
+        currentDiscreetMode = enabled;
+        applyDiscreetModeToExistingButtons(enabled);
+        refreshSegmentLabels();
+      }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];

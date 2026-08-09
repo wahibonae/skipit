@@ -4,6 +4,7 @@ import { useClerk } from "../../lib/clerk";
 import { APP_URL } from "../../lib/config";
 import type { AutoDetectedContent } from "../../lib/types";
 import { FabStyleSelector } from "./FabStyleSelector";
+import { DiscreetModeToggle } from "./DiscreetModeToggle";
 import { SkipitLogo } from "./SkipitLogo";
 
 const TUTORIAL_URL = "https://youtu.be/mE_iKMKwvpE";
@@ -269,6 +270,7 @@ export const Auth = () => {
         <section className="popup-card popup-card--settings">
           <h3 className="card-title">Button style</h3>
           <FabStyleSelector />
+          <DiscreetModeToggle />
         </section>
       </main>
     </div>

@@ -12,6 +12,7 @@ import {
   checkAndPropagateAuthState,
   openAuthPopup,
   propagateFabStyle,
+  propagateDiscreetMode,
   startFabStyleWatcher,
 } from "../managers/auth-manager";
 import { showMarkingOverlay, updateOverlayContent } from "../managers/overlay-manager";
@@ -35,8 +36,9 @@ export function setupWindowMessageHandlers() {
       // Start auth state watcher to detect sign-in and update buttons
       startAuthStateWatcher();
 
-      // Send the current FAB style and listen for future changes
+      // Send the current appearance settings and listen for future changes
       propagateFabStyle();
+      propagateDiscreetMode();
       startFabStyleWatcher();
 
       // Notify background that we're ready

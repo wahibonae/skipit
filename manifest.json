@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Skipit - Skip Inappropriate Scenes on Netflix",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Skip nudity, sex, and gore scenes on Netflix movies and TV shows automatically.",
   "permissions": ["storage", "activeTab", "scripting", "tabs", "cookies"],
   "host_permissions": [
