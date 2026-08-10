@@ -103,16 +103,55 @@
   background: rgba(255, 110, 79, 1);
 }
 
-/* FAB Label - "Skipit" branding */
-.skipit-fab-label {
-  font-size: 12px;
-  font-weight: 600;
+/* FAB Label row - Skipit wordmark, plus the discreet badge when enabled */
+.skipit-fab-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #ff6f4f;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
-.skipit-fab.active .skipit-fab-label {
-  color: rgba(255, 255, 255, 0.9);
+/* Fully opaque: the wordmark inherits this as currentColor, and a dimmed logo
+   reads as washed out. The 0.9 here was a holdover from the old text label. */
+.skipit-fab.active .skipit-fab-label-row {
+  color: #ffffff;
+}
+
+/* Wordmark replaces the old "Skipit ⏩︎" text: it already contains the arrows.
+   Drawn in a single colour via currentColor, so the row's colour drives it. */
+.skipit-fab-logo {
+  display: flex;
+  align-items: center;
+}
+.skipit-fab-logo svg {
+  height: 16px;
+  width: auto;
+  display: block;
+}
+
+/* Discreet markers - both hidden unless the mode is on. The pill rides the
+   label row in the states that keep their text; the caption sits under the
+   wordmark on the collapsed tile, where a pill would break the centring. */
+.skipit-discreet-badge {
+  display: none;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.92);
+}
+.skipit-discreet-caption {
+  display: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0.72;
 }
 
 /* FAB Types - Main CTA text */
@@ -477,9 +516,13 @@
   background: var(--skipit-netflix-bg-standby, rgba(255, 255, 255, 0.92));
   color: var(--skipit-netflix-text-standby, #141414);
 }
-.skipit-fab.style-netflix .skipit-fab-label,
+.skipit-fab.style-netflix .skipit-fab-label-row,
 .skipit-fab.style-netflix .skipit-fab-types {
   color: var(--skipit-netflix-text-standby, #141414);
+}
+.skipit-fab.style-netflix .skipit-discreet-badge {
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.75);
 }
 .skipit-fab.style-netflix:hover {
   background: var(--skipit-netflix-bg-standby-hover, #ffffff);
@@ -489,8 +532,12 @@
   background: var(--skipit-netflix-bg-active, #e50914);
   color: #ffffff;
 }
-.skipit-fab.style-netflix.active .skipit-fab-label,
+.skipit-fab.style-netflix.active .skipit-fab-label-row,
 .skipit-fab.style-netflix.active .skipit-fab-types {
+  color: #ffffff;
+}
+.skipit-fab.style-netflix.active .skipit-discreet-badge {
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
@@ -517,4 +564,55 @@
 }
 .skipit-seek-btn.style-netflix:hover {
   background: var(--skipit-netflix-bg-standby-hover, #ffffff);
+}
+
+/* ==========================================================================
+   Discreet mode: the FAB collapses to the Skipit wordmark alone, so no skip
+   category is ever named on screen. Composes with both FAB styles.
+   ========================================================================== */
+
+/* The .disabled and .locked states are excluded from the tile throughout: their
+   wording ("No skips yet", "Content not recognized", "Sign in to skip") names no
+   category, and it is the only thing telling the user why the button is dead.
+   They keep the full two-line button and instead show the "Discreet" badge, so
+   the mode is still visibly on. */
+.skipit-fab.discreet.disabled .skipit-discreet-badge,
+.skipit-fab.discreet.locked .skipit-discreet-badge {
+  display: inline-flex;
+}
+
+/* Working states collapse to a tile: the status line goes, the wordmark grows,
+   and the caption takes the status line's place under it. */
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-fab-types {
+  display: none;
+}
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-discreet-caption {
+  display: block;
+}
+.skipit-fab.discreet:not(.disabled):not(.locked) .skipit-fab-logo svg {
+  height: 26px;
+}
+/* min-width sets the tile width independently of the wordmark. The two-line
+   lockup (wordmark + caption) is close enough in height to the normal button
+   that toggling the mode does not shift the stack. */
+.skipit-fab.discreet:not(.disabled):not(.locked) {
+  min-width: 160px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 26px;
+  gap: 6px;
+}
+
+/* Loading is the one state that has no colour/opacity hook of its own.
+   Needs its own keyframe: skipit-pulse peaks at opacity 1, which would
+   override a static opacity and pulse the mark up to full brightness.
+   Applied to the whole lockup so the caption pulses with the wordmark. */
+@keyframes skipit-logo-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.25; }
+}
+.skipit-fab.discreet.loading:not(.disabled):not(.locked) .skipit-fab-label-row,
+.skipit-fab.discreet.loading:not(.disabled):not(.locked) .skipit-discreet-caption {
+  animation: skipit-logo-pulse 1.6s ease-in-out infinite;
 }

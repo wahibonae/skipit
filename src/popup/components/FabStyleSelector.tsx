@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SkipitLogo } from "./SkipitLogo";
 
 const FAB_STYLES = ["classic", "netflix"] as const;
 type FabStyle = (typeof FAB_STYLES)[number];
@@ -36,11 +37,11 @@ export const FabStyleSelector = () => {
             onClick={() => handleChange(s)}
           >
             <span className={`fab-preview fab-preview--${s}`}>
-              <span className="fab-preview-label">Skipit</span>
+              <SkipitLogo className="fab-preview-logo" />
               <span className="fab-preview-types">Skip scenes</span>
             </span>
             <span className={`fab-preview fab-preview--${s} fab-preview--active`}>
-              <span className="fab-preview-label">Skipit</span>
+              <SkipitLogo className="fab-preview-logo" />
               <span className="fab-preview-types">Skipping</span>
             </span>
             <span className="fab-style-card-name">{LABELS[s]}</span>

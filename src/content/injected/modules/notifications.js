@@ -63,10 +63,12 @@ function buildNotificationContent(notification, skipType, startMs, endMs) {
   const textDiv = document.createElement("div");
   textDiv.className = "skipit-notification-text";
 
-  // Create title with type
+  // Create title with type (discreet mode drops the category name)
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
-  titleSpan.textContent = `Skipped ${formattedType} scene`;
+  titleSpan.textContent = currentDiscreetMode
+    ? "Scene skipped"
+    : `Skipped ${formattedType} scene`;
 
   // Create time range
   const timeSpan = document.createElement("span");
@@ -197,7 +199,10 @@ function showVotePrompt(skip) {
   const titleSpan = document.createElement("span");
   titleSpan.className = "skipit-notification-title";
   const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
-  titleSpan.textContent = `${formattedType} scene?`;
+  // The prompt fires BEFORE the skip, so discreet wording stays forward-looking.
+  titleSpan.textContent = currentDiscreetMode
+    ? "Skip this scene?"
+    : `${formattedType} scene?`;
 
   const timeSpan = document.createElement("span");
   timeSpan.className = "skipit-notification-time";
@@ -242,7 +247,9 @@ function showVotePrompt(skip) {
   downIcon.appendChild(downPath);
   downvoteBtn.appendChild(downIcon);
   const downLabel = document.createElement("span");
-  downLabel.textContent = "No, it's not";
+  // "No, it's not" is short for "it's not a <category> scene", which is
+  // meaningless once the category is hidden.
+  downLabel.textContent = currentDiscreetMode ? "No, it's fine" : "No, it's not";
   downvoteBtn.appendChild(downLabel);
   downvoteBtn.addEventListener("click", (e) => {
     e.stopPropagation();

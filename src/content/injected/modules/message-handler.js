@@ -98,6 +98,14 @@ function setupMessageHandler() {
         event.data.data?.style === "netflix" ? "netflix" : "classic";
       currentFabStyle = style;
       applyFabStyleToExistingButtons(style);
+    } else if (type === "SKIPIT_SET_DISCREET_MODE") {
+      // Toggle discreet mode (hide category names on ambient surfaces)
+      const enabled = event.data.data?.enabled === true;
+      if (enabled !== currentDiscreetMode) {
+        currentDiscreetMode = enabled;
+        applyDiscreetModeToExistingButtons(enabled);
+        refreshSegmentLabels();
+      }
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];

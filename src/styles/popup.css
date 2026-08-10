@@ -46,7 +46,9 @@
 body {
   width: 380px;
   min-height: 480px;
-  max-height: 580px;
+  /* 600px is Chrome's hard ceiling for extension popups; going taller just
+     reintroduces the scrollbar. The card spacing below is tuned to fit. */
+  max-height: 600px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -71,11 +73,14 @@ button {
    App shell
    ============================================ */
 
+/* Sized by its content, not by the viewport. `height: 100vh` here used to force
+   a full-height shell, which made .popup-body a fixed-height scroll container
+   that showed a track even when the content was shorter than the popup. */
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-height: 580px;
+  min-height: 480px;
+  max-height: 600px;
   background-color: var(--bg-muted);
 }
 
@@ -185,7 +190,7 @@ button {
 .popup-shell {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 0;
   background-color: transparent;
 }
 
@@ -194,7 +199,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 16px 16px;
+  padding: 16px 16px 12px;
   background-color: transparent;
   flex-shrink: 0;
 }
@@ -258,12 +263,14 @@ button {
 }
 
 /* Body */
+/* `flex: 0 1 auto` so the body takes only the height it needs and shrinks (with
+   a scrollbar) only when the content genuinely exceeds the 600px cap. */
 .popup-body {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px;
+  gap: 12px;
+  padding: 0 16px 16px;
   overflow-y: auto;
 }
 
@@ -282,11 +289,11 @@ button {
 }
 
 .popup-card--now {
-  padding: 20px 16px;
+  padding: 16px;
 }
 
 .popup-card--settings {
-  padding: 16px;
+  padding: 14px 16px;
 }
 
 /* ============================================
@@ -404,7 +411,7 @@ button {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 /* ============================================
@@ -473,11 +480,15 @@ button {
   box-sizing: border-box;
 }
 
-.fab-preview-label {
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+/* Wordmark stands in for the old text label. Forced to a single colour so it
+   stays legible on the dark Classic pill, matching the real button. */
+.fab-preview-logo {
+  height: 8px;
+  width: auto;
+  display: block;
+}
+.fab-preview-logo path {
+  fill: currentColor;
 }
 
 .fab-preview-types {
@@ -490,14 +501,14 @@ button {
   background: rgba(26, 26, 26, 0.92);
   color: #ffffff;
 }
-.fab-preview--classic .fab-preview-label {
+.fab-preview--classic .fab-preview-logo {
   color: #ff6f4f;
 }
 .fab-preview--classic.fab-preview--active {
   background: #ff6f4f;
 }
-.fab-preview--classic.fab-preview--active .fab-preview-label {
-  color: rgba(255, 255, 255, 0.9);
+.fab-preview--classic.fab-preview--active .fab-preview-logo {
+  color: #ffffff;
 }
 
 /* Netflix — white pill, black text; red when active */
@@ -506,7 +517,7 @@ button {
   color: #000000;
   border-color: var(--border);
 }
-.fab-preview--netflix .fab-preview-label {
+.fab-preview--netflix .fab-preview-logo {
   color: #000000;
 }
 .fab-preview--netflix.fab-preview--active {
@@ -514,8 +525,77 @@ button {
   color: #ffffff;
   border-color: #e50914;
 }
-.fab-preview--netflix.fab-preview--active .fab-preview-label {
+.fab-preview--netflix.fab-preview--active .fab-preview-logo {
   color: #ffffff;
+}
+
+/* ============================================
+   Discreet mode toggle
+   ============================================ */
+
+.discreet-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 8px 2px;
+  border: 1px solid transparent;
+  border-top-color: var(--border);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.discreet-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.discreet-toggle-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.discreet-toggle.enabled .discreet-toggle-name {
+  color: var(--primary-orange);
+}
+
+.discreet-toggle-hint {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.discreet-toggle-switch {
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  transition: background 0.15s ease;
+}
+
+.discreet-toggle.enabled .discreet-toggle-switch {
+  background: var(--primary-orange);
+}
+
+.discreet-toggle-knob {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.15s ease;
+}
+
+.discreet-toggle.enabled .discreet-toggle-knob {
+  transform: translateX(14px);
 }
 
 /* ============================================

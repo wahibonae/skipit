@@ -12,11 +12,9 @@ function createSkipitFAB() {
   button.className =
     "skipit-fab" +
     (isAuthenticated ? " disabled" : " locked") +
-    (currentFabStyle === "netflix" ? " style-netflix" : "");
-  button.setAttribute(
-    "aria-label",
-    isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content"
-  );
+    (currentFabStyle === "netflix" ? " style-netflix" : "") +
+    (currentDiscreetMode ? " discreet" : "");
+  button.setAttribute("aria-label", getFabAriaLabel());
 
   // Create lock icon (hidden when authenticated)
   const lockIcon = document.createElement("span");
@@ -24,22 +22,54 @@ function createSkipitFAB() {
   lockIcon.style.display = isAuthenticated ? "none" : "flex";
   lockIcon.appendChild(createLockIconSVG());
 
-  // "Skipit" branding label (top line)
-  const label = document.createElement("span");
-  label.className = "skipit-fab-label";
-  label.textContent = "Skipit \u23E9\uFE0E";
+  // Branding row (top line): the wordmark, plus a mode badge in discreet mode.
+  // The wordmark contains the double-arrow, so it replaces the old
+  // "Skipit \u23E9\uFE0E" text label outright.
+  const labelRow = document.createElement("span");
+  labelRow.className = "skipit-fab-label-row";
+
+  const logo = document.createElement("span");
+  logo.className = "skipit-fab-logo";
+  logo.appendChild(createSkipitLogoSVG());
+
+  // Marks discreet mode in the states that keep their text ("No skips yet",
+  // "Sign in to skip"), which would otherwise look identical either way.
+  const badge = document.createElement("span");
+  badge.className = "skipit-discreet-badge";
+  badge.textContent = "Discreet";
+
+  labelRow.appendChild(logo);
+  labelRow.appendChild(badge);
+
+  // Same word as a caption under the wordmark on the collapsed tile, where a
+  // pill on the row would push the wordmark off centre.
+  const caption = document.createElement("span");
+  caption.className = "skipit-discreet-caption";
+  caption.textContent = "Discreet";
 
   // Skip types line (subtitle - bottom line)
+  // Always created, even in discreet mode: updateSkipitFAB bails early without it.
+  // Discreet mode hides it via CSS instead.
   const typesLine = document.createElement("span");
   typesLine.className = "skipit-fab-types";
   typesLine.textContent = isAuthenticated ? "Detecting content..." : "Sign in to skip";
 
   button.appendChild(lockIcon);
-  button.appendChild(label);
+  button.appendChild(labelRow);
   button.appendChild(typesLine);
+  button.appendChild(caption);
   button.addEventListener("click", handleSkipitFABClick);
 
   return button;
+}
+
+/**
+ * Accessible name for the FAB. Discreet mode does not change it: neither string
+ * names a category, and "Skip content with Skipit" tells a screen reader user
+ * what a logo-only button actually does.
+ */
+function getFabAriaLabel() {
+  return isAuthenticated ? "Skip content with Skipit" : "Sign in to skip content";
 }
 
 /**
@@ -123,6 +153,10 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     availableSkipTypes = skipTypes;
   }
 
+  // "loading" is the only state discreet mode can't express through .active /
+  // .disabled / .locked, so it gets its own class for the pulse.
+  button.classList.remove("loading");
+
   if (isSkipping) {
     // Active skipping state - red background
     // Use activeSkippingTypes (what's actually being skipped), not availableSkipTypes
@@ -149,6 +183,7 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
   } else if (loadingStatus !== "ready") {
     // Still loading - show specific loading status
     button.classList.remove("active", "disabled");
+    button.classList.add("loading");
     const statusText = {
       "detecting": "Detecting content...",
       "loading": "Loading skips..."
@@ -214,7 +249,7 @@ function updateButtonsAuthState(authenticated) {
   if (fabButton) {
     if (authenticated) {
       fabButton.classList.remove("locked");
-      fabButton.setAttribute("aria-label", "Skip content with Skipit");
+      fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "none";
 
@@ -240,7 +275,7 @@ function updateButtonsAuthState(authenticated) {
       }
     } else {
       fabButton.classList.add("locked");
-      fabButton.setAttribute("aria-label", "Sign in to skip content");
+      fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "flex";
       // Update FAB for locked state
@@ -248,6 +283,16 @@ function updateButtonsAuthState(authenticated) {
       if (typesLine) typesLine.textContent = "Sign in to skip";
     }
   }
+}
+
+/**
+ * Toggle discreet mode on an already-rendered FAB.
+ * Called when the user flips the toggle in the popup.
+ */
+function applyDiscreetModeToExistingButtons(enabled) {
+  const fabButton = document.getElementById(FAB_BUTTON_ID);
+  if (!fabButton) return;
+  fabButton.classList.toggle("discreet", enabled);
 }
 
 /**
