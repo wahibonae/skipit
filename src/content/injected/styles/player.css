@@ -40,8 +40,11 @@
   font-weight: 500;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* No backdrop-filter here: blurring the backdrop makes the compositor read
+     back the pixels behind the button, and Netflix's video is a protected
+     surface (Edge uses PlayReady hardware DRM, so the readback is refused and
+     the whole player paints black while these buttons are visible). The
+     backgrounds below are near-opaque, so the blur was barely visible anyway. */
 }
 .skipit-mark-btn:hover {
   background: rgba(26, 26, 26, 0.95);
@@ -78,8 +81,7 @@
   color: white;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* No backdrop-filter - see .skipit-mark-btn above. */
   text-align: left;
   min-width: 180px;
 }
@@ -493,8 +495,7 @@
   color: white;
   opacity: 0.8;
   transition: transform 0.12s ease, background 0.2s ease, opacity 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* No backdrop-filter - see .skipit-mark-btn above. */
 }
 #skipit-buttons-wrapper:hover .skipit-seek-btn:not(.locked) {
   opacity: 1;
