@@ -7,7 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.4.0] - 2026-08-10
 
 ### Added
-- **Discreet mode.** Hide what you're skipping: words like "nudity" or "gore" no longer appear on the Skipit button, skip notifications or the timeline, so people watching with you can't see what's being skipped. Skipping works exactly the same. Turn it on in the popup.
+- **Hide what you're skipping.** With discreet mode on, words like "nudity" or "gore" no longer appear on the Skipit button, skip notifications or the timeline, so people watching with you can't see what's being skipped. Skipping works exactly the same. Turn it on in the popup. *(Thanks for the idea, Selma!)*
 
 ### Changed
 - A refreshed skip button design, plus visual polish in the popup.
@@ -20,7 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 - **A redesigned popup** that shows what you're watching at a glance.
 - **Choose your button style:** the classic Skipit look, or one that blends in with Netflix.
-- Signing in is easier: Skipit opens the sign-in page for you right after you install it.
+- Easier setup: Skipit opens the sign-in page for you right after you install it.
 
 ### Changed
 - Cleaner, shorter labels when you're skipping more than one category.
@@ -32,7 +32,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.2.0] - 2026-05-16
 
 ### Added
-- **-2s and +2s buttons** in the player, so you can pinpoint exactly where a scene starts and ends when you mark it.
+- New **-2s and +2s buttons** in the player let you pinpoint exactly where a scene starts and ends when you mark it.
 
 ## [1.1.5] - 2026-04-04
 
@@ -43,7 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.1.4] - 2026-03-04
 
 ### Changed
-- Refreshed the sign-in tutorial.
+- A refreshed tutorial to help you sign in to the extension.
 
 ## [1.1.3] - 2026-02-28
 
@@ -53,7 +53,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.1.2] - 2026-02-22
 
 ### Improved
-- **Smarter title detection.** Skipit is much better at telling apart movies and shows that share the same name.
+- Skipit is now much better at telling apart movies and shows that share the same name.
 
 ## [1.1.1] - 2026-02-21
 
@@ -63,11 +63,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.1.0] - 2026-02-21
 
 ### Added
-- **Help verify scenes while you watch.** When a scene is waiting for community review, Skipit shows it on the timeline and asks whether it's accurate, with a quick yes or no. The prompt gets out of your way on its own after a few seconds.
+- When a scene is waiting for review, Skipit shows it on the timeline and asks whether it's accurate, with a quick yes or no. The prompt gets out of your way on its own after a few seconds.
 - The skip button now tells you when a title **isn't recognized yet**, or when it's **clean** and needs no skips at all.
 
 ### Changed
-- Refreshed skip button and voting design.
+- A refreshed skip button and voting design.
 
 ### Fixed
 - Skipit picks the right title more often when several share the same name.
@@ -76,7 +76,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ## [1.0.3] - 2026-02-13
 
 ### Improved
-- **Smoother skipping.** Back-to-back and overlapping scenes are now handled seamlessly, with no flicker in between.
+- Back-to-back and overlapping scenes are now handled seamlessly, with no flicker in between.
 - Scenes you mark show up in your skips right away.
 
 ## [1.0.2] - 2026-02-05
@@ -84,25 +84,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 1.0.1 was skipped. This release follows 1.0.0 directly.
 
 ### Added
-- See how many scenes of each kind a title has in the Skipit panel, before you press play.
-- The skip button tells you what it's doing while it loads.
+- **See how many scenes of each kind a title has** in the Skipit panel, before you press play.
+- The skip button now tells you what it's doing while it loads.
 
 ### Changed
-- Bolder, easier-to-read scene markers on the timeline.
+- Bolder, easier-to-read scene markers on the Netflix timeline.
 - The popup now links to the right place: the title's page on getskipit.com while you watch, or the site itself while you browse.
 
 ### Fixed
-- The skip button no longer forgets which categories are available after you stop skipping.
+- Fixed the skip button forgetting which categories are available after you stop skipping.
 
 ## [1.0.0] - 2026-01-29
 
 Moved out of the main Skipit codebase into its own repository.
 
-- Automatically skip nudity, sex and gore on Netflix, with each category switched on or off separately.
-- Skipit recognizes the movie or episode you're watching on its own.
-- Spot something? Mark a scene as you watch and share it with the community.
-- See upcoming skips right on the Netflix timeline.
-- Works independently in every Netflix tab.
+- **Automatic skipping** of nudity, sex and gore, with each category switched on or off on its own.
+- Skipit **recognizes what you're watching** by itself, down to the episode.
+- **Mark scenes as you watch** and share them with the community, so the next viewer is covered.
+- Upcoming skips appear **right on the Netflix timeline**.
+- Every Netflix tab works independently.
 
 [1.4.0]: https://github.com/wahibonae/skipit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/wahibonae/skipit/commit/8fac4a4
