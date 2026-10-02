@@ -1,0 +1,51 @@
+# Pushing a version tag (v1.5.0) builds the extension and opens a DRAFT
+# GitHub Release. The notes are that version's CHANGELOG.md section, copied
+# word for word. Nothing is public until the draft is published by hand.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Check the tag matches manifest.json
+        run: |
+          MANIFEST=$(node -p "require('./manifest.json').version")
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$MANIFEST" != "$TAG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $MANIFEST"
+            exit 1
+          fi
+
+      - name: Extract release notes from CHANGELOG.md
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md
+
+      - run: npm ci
+
+      - name: Build and zip
+        run: |
+          npm run package
+          mv skipit-extension.zip "skipit-extension-$GITHUB_REF_NAME.zip"
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --draft \
+            --title "Skipit $GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            "skipit-extension-$GITHUB_REF_NAME.zip"

@@ -1,5 +1,7 @@
 # Skipit
 
+[![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/bappjlgdnjcakomplieifcainibfhjed?label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/skipit-skip-unwanted-scen/bappjlgdnjcakomplieifcainibfhjed) [![Users](https://img.shields.io/chrome-web-store/users/bappjlgdnjcakomplieifcainibfhjed)](https://chromewebstore.google.com/detail/skipit-skip-unwanted-scen/bappjlgdnjcakomplieifcainibfhjed) [![Latest release](https://img.shields.io/github/v/release/wahibonae/skipit)](https://github.com/wahibonae/skipit/releases)
+
 Skip nudity, sex, and gore scenes on Netflix automatically.
 
 ![Skipit](skipit-extension.jpg)
@@ -20,6 +22,10 @@ Both share the same account and database. One user, one account across the whole
 - **Netflix integration**: auto-detects content, skips seamlessly using Netflix's player API
 - **Mark scenes live**: spot something? Mark the start/end while watching and submit it
 - **Per-tab isolation**: multiple Netflix tabs work independently
+
+## What's new
+
+See [CHANGELOG.md](CHANGELOG.md) for this repository's releases, or [What's new on getskipit.com](https://getskipit.com/whats-new) for updates across the extension and the web app.
 
 ## Prerequisites
 
