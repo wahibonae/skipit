@@ -116,4 +116,8 @@ This product uses the [TMDB API](https://www.themoviedb.org/) for movie and TV s
 
 ## License
 
-This project is licensed under GPL-3.0
+Copyright (C) 2026 Mohamed Wahib ABKARI
+
+This project is licensed under GPL-3.0. See the [LICENSE](LICENSE) file.
+
+The licence covers the code in this repository only. It grants no rights to the Skipit service or its content, or to the Skipit name or logo. Use of the service is governed by the [Terms of Service](https://getskipit.com/terms).
