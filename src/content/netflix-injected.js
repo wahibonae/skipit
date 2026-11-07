@@ -1695,98 +1695,115 @@ function injectSkipitButtons() {
     updateSkipitFAB(metadata, fabSkippingActive);
   }
 
-  // Start watching visibility
-  watchButtonsVisibility();
+  // Show for a few seconds after (re)injection, then fade
+  startButtonsVisibilityWatcher();
+  noteButtonsActivity();
+}
+
+// ============================================================================
+// AUTO-HIDE
+// Visibility is worked out from the current state on every tick instead of
+// being switched by one-off events. Event-driven timers got stuck: a `pause`
+// with no matching `play` on the same element (for example if the <video> is
+// replaced, since removing a playing video fires `pause`) left the buttons on
+// screen with no hide timer until the mouse moved again.
+// ============================================================================
+
+const BUTTONS_HIDE_DELAY = 3000;
+const BUTTONS_VISIBILITY_TICK = 250;
+let buttonsLastActivity = 0;
+let buttonsVisibilityWatcherInitialized = false;
+
+/**
+ * True when the player has a video and none of them is playing. Checking every
+ * <video> (not just the first) means a leftover paused element sitting next to
+ * the one that's playing can't keep the buttons on screen.
+ */
+function isPlayerPaused(wrapper) {
+  let videos = wrapper.parentElement?.querySelectorAll("video");
+  if (!videos || videos.length === 0) videos = document.querySelectorAll("video");
+  if (videos.length === 0) return false;
+  return !Array.from(videos).some((video) => !video.paused);
+}
+
+function shouldButtonsBeVisible(wrapper) {
+  return (
+    isPlayerPaused(wrapper) ||
+    wrapper.matches(":hover") ||
+    markingState.isMarking ||
+    Date.now() - buttonsLastActivity < BUTTONS_HIDE_DELAY
+  );
+}
+
+/** Runs every tick, and right away on events that should change it quickly. */
+function updateButtonsVisibility() {
+  const wrapper = document.getElementById(WRAPPER_ID);
+  if (!wrapper) return;
+  wrapper.classList.toggle("visible", shouldButtonsBeVisible(wrapper));
+  updateSkipButtonPosition(wrapper);
+}
+
+/** Restart the hide countdown and show the buttons now. */
+function noteButtonsActivity() {
+  buttonsLastActivity = Date.now();
+  updateButtonsVisibility();
+}
+
+function onButtonsMouseMove() {
+  buttonsLastActivity = Date.now();
+  // Mousemove fires at frame rate; only do DOM work when there's something to
+  // show. The tick handles hiding.
+  const wrapper = document.getElementById(WRAPPER_ID);
+  if (wrapper && !wrapper.classList.contains("visible")) {
+    updateButtonsVisibility();
+  }
 }
 
 /**
- * Show/hide buttons based on mouse activity (like Netflix controls)
+ * On resume, keep the buttons up for the usual delay if they're already
+ * showing (paused, then played), but don't pop them up for plays nobody asked
+ * for, such as the next episode autoplaying.
  */
-function watchButtonsVisibility() {
+function onButtonsVideoPlay() {
   const wrapper = document.getElementById(WRAPPER_ID);
-  if (!wrapper) return;
-
-  const HIDE_DELAY = 4000; // 4 seconds, matches Netflix
-  let hideTimeout = null;
-  let isHoveringButtons = false;
-
-  function showButtons() {
-    wrapper.classList.add("visible");
+  if (wrapper && wrapper.classList.contains("visible")) {
+    noteButtonsActivity();
+  } else {
+    updateButtonsVisibility();
   }
+}
 
-  function hideButtons() {
-    wrapper.classList.remove("visible");
-  }
+/** Move up when Netflix's Skip Intro/Recap button is on screen. */
+function updateSkipButtonPosition(wrapper) {
+  const netflixSkipContainer = document.querySelector(
+    ".watch-video--skip-content"
+  );
+  const netflixPreplayContainer = document.querySelector(
+    ".watch-video--skip-preplay"
+  );
+  const hasNetflixSkipButton =
+    (netflixSkipContainer && netflixSkipContainer.children.length > 0) ||
+    (netflixPreplayContainer && netflixPreplayContainer.children.length > 0);
+  wrapper.classList.toggle("netflix-skip-visible", hasNetflixSkipButton);
+}
 
-  function shouldStayVisible() {
-    // Stay visible if: video paused, hovering our buttons, or marking
-    const video = document.querySelector("video");
-    const isPaused = video && video.paused;
-    return isPaused || isHoveringButtons || markingState.isMarking;
-  }
+/**
+ * Set up the auto-hide once per page. Listeners sit on `document` so they keep
+ * working when Netflix replaces the player or the <video> element, and every
+ * lookup happens at tick time, so a re-injected wrapper is picked up for free.
+ */
+function startButtonsVisibilityWatcher() {
+  if (buttonsVisibilityWatcherInitialized) return;
+  buttonsVisibilityWatcherInitialized = true;
 
-  function scheduleHide() {
-    clearTimeout(hideTimeout);
-    if (!shouldStayVisible()) {
-      hideTimeout = setTimeout(hideButtons, HIDE_DELAY);
-    }
-  }
+  document.addEventListener("mousemove", onButtonsMouseMove, { passive: true });
 
-  function onMouseMove() {
-    showButtons();
-    scheduleHide();
-  }
+  // Media events don't bubble, but the capture phase on document still sees
+  // them, whichever <video> element fired them.
+  document.addEventListener("play", onButtonsVideoPlay, true);
+  document.addEventListener("pause", updateButtonsVisibility, true);
 
-  // Track hover state on our buttons
-  wrapper.addEventListener("mouseenter", () => {
-    isHoveringButtons = true;
-    clearTimeout(hideTimeout);
-    showButtons();
-  });
-
-  wrapper.addEventListener("mouseleave", () => {
-    isHoveringButtons = false;
-    scheduleHide();
-  });
-
-  // Listen for mouse movement on the player area
-  const playerContainer =
-    document.querySelector(".watch-video") ||
-    document.querySelector(".nf-player-container") ||
-    document.body;
-
-  playerContainer.addEventListener("mousemove", onMouseMove);
-
-  // Handle video pause/play state changes
-  const video = document.querySelector("video");
-  if (video) {
-    video.addEventListener("pause", () => {
-      clearTimeout(hideTimeout);
-      showButtons();
-    });
-    video.addEventListener("play", scheduleHide);
-  }
-
-  // Check Netflix skip button position (keep this part)
-  function updateSkipButtonPosition() {
-    const netflixSkipContainer = document.querySelector(
-      ".watch-video--skip-content"
-    );
-    const netflixPreplayContainer = document.querySelector(
-      ".watch-video--skip-preplay"
-    );
-    const hasNetflixSkipButton =
-      (netflixSkipContainer && netflixSkipContainer.children.length > 0) ||
-      (netflixPreplayContainer && netflixPreplayContainer.children.length > 0);
-    wrapper.classList.toggle("netflix-skip-visible", hasNetflixSkipButton);
-  }
-
-  updateSkipButtonPosition();
-  setInterval(updateSkipButtonPosition, 500);
-
-  // Start visible, then schedule hide
-  showButtons();
-  scheduleHide();
+  setInterval(updateButtonsVisibility, BUTTONS_VISIBILITY_TICK);
 }
 
 /**
