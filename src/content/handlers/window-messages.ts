@@ -202,17 +202,28 @@ export function setupWindowMessageHandlers() {
         (response) => {
           if (chrome.runtime.lastError) {
             window.postMessage(
-              { type: "SKIPIT_VOTE_RESULT", data: { success: false } },
+              {
+                type: "SKIPIT_VOTE_RESULT",
+                data: {
+                  success: false,
+                  voteType,
+                  error: "Your vote didn't go through. Reload the page and try again.",
+                },
+              },
               "*"
             );
             return;
           }
 
-          // Forward result to injected script
+          // Forward the result and error: the player is the only surface visible during playback
           window.postMessage(
             {
               type: "SKIPIT_VOTE_RESULT",
-              data: { success: response?.success ?? false, voteType },
+              data: {
+                success: response?.success ?? false,
+                voteType,
+                error: response?.error,
+              },
             },
             "*"
           );

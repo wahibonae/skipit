@@ -21,24 +21,60 @@ async function apiCall<T>(
 
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  } catch (error) {
+    // fetch's own wording ("Failed to fetch") would otherwise reach the player verbatim
+    console.error(`[Skipit] Network error calling ${endpoint}:`, error);
+    throw new Error("Skipit could not reach the server. Check your connection and try again.");
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
       throw new Error("Authentication expired. Please sign in again.");
     }
+
+    // Below 500 the API's { error } is written for the user. At 500+ it can be a
+    // raw server exception, and a proxy's body can be an HTML page, so neither is
+    // shown: the body goes to the console only.
     const errorText = await response.text();
-    throw new Error(`API error (${response.status}): ${errorText}`);
+    let message = "";
+    try {
+      const parsed = JSON.parse(errorText);
+      if (typeof parsed?.error === "string") {
+        message = parsed.error.trim();
+      }
+    } catch {
+      // Not JSON
+    }
+
+    if (message && response.status < 500) {
+      throw new Error(message);
+    }
+
+    console.error(`[Skipit] ${response.status} from ${endpoint}:`, errorText);
+    throw new Error(
+      response.status >= 500
+        ? "Skipit is having trouble right now. Please try again in a moment."
+        : `Request failed (${response.status}). Please try again.`
+    );
   }
 
-  return response.json();
+  // A 200 can still be an HTML page (captive portal, CDN interstitial)
+  try {
+    return await response.json();
+  } catch (error) {
+    console.error(`[Skipit] Malformed response from ${endpoint}:`, error);
+    throw new Error("Skipit is having trouble right now. Please try again in a moment.");
+  }
 }
 
 /**

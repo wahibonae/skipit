@@ -17,7 +17,8 @@ import {
 export async function startSkipping(
   timestamps: Timestamp[],
   contentTitle: string,
-  netflixVideoId: string
+  netflixVideoId: string,
+  announce: boolean = false
 ) {
   try {
     // Verify we're on the correct video
@@ -60,6 +61,7 @@ export async function startSkipping(
         type: "SKIPIT_START_SKIP_CHECKING",
         data: {
           timestamps: timestampsMs,
+          announce,
         },
       },
       "*"

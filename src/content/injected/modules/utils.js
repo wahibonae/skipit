@@ -65,6 +65,68 @@ function formatSkipTypes(types) {
 }
 
 /**
+ * Round a span to a length a person would say out loud.
+ * Deliberately coarse: a skip group's bounds are re-averaged as people contribute,
+ * so rounding to 5s keeps the number stable across recalculations.
+ */
+function formatDurationMs(ms) {
+  const seconds = Math.max(0, Math.round(ms / 1000));
+
+  if (seconds < 60) {
+    // Never "0s": a sub-3s span is still a real skip
+    const rounded = Math.max(5, Math.round(seconds / 5) * 5);
+    // 58s rounds to 60, which reads as a minute
+    if (rounded < 60) return `${rounded}s`;
+  }
+
+  const minutes = seconds / 60;
+  if (minutes <= 3) {
+    const halves = Math.round(minutes * 2) / 2;
+    return `${Number.isInteger(halves) ? halves : `${Math.floor(halves)}\u00BD`} min`;
+  }
+
+  return `${Math.round(minutes)} min`;
+}
+
+/**
+ * The element Netflix's player lives in, where our overlays get appended.
+ */
+function getPlayerContainer() {
+  const video = document.querySelector("video");
+  if (!video) return null;
+
+  return (
+    video.closest(".watch-video--player-view") ||
+    video.closest('[data-uia="video-canvas"]')?.parentElement ||
+    document.querySelector(".watch-video") ||
+    video.parentElement?.parentElement?.parentElement ||
+    null
+  );
+}
+
+/**
+ * Build a single-path icon SVG.
+ * strokeWidth rounds the corners by stroking the filled shape's own edge; it is
+ * not an outline, so the fill stays.
+ */
+function createIconSVG(pathData, strokeWidth) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+  if (strokeWidth) {
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", String(strokeWidth));
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+  }
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", pathData);
+  svg.appendChild(path);
+  return svg;
+}
+
+/**
  * Create lock icon SVG using safe DOM methods
  */
 function createLockIconSVG() {

@@ -14,7 +14,9 @@ function setupMessageHandler() {
     const data = event.data.data;
 
     if (type === "SKIPIT_START_SKIP_CHECKING") {
-      startSkipChecking(data.timestamps);
+      startSkipChecking(data.timestamps, data.announce === true);
+    } else if (type === "SKIPIT_MARK_SAVED") {
+      showMarkSavedNotification();
     } else if (type === "SKIPIT_STOP_SKIP_CHECKING") {
       stopSkipChecking();
     } else if (type === "SKIPIT_GET_CURRENT_TIME") {
@@ -119,34 +121,13 @@ function setupMessageHandler() {
       // Vote result from content script
       const resultData = event.data.data;
       if (resultData?.success) {
-        showSkipNotification("default", 0, 0);
-        // Override the notification content to show "Thanks for helping!" with green circle + checkmark
-        const notification = document.getElementById(NOTIFICATION_ID);
-        if (notification) {
-          notification.textContent = "";
-
-          // Green circle with checkmark icon
-          const iconDiv = document.createElement("div");
-          iconDiv.className = "skipit-thanks-icon";
-          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          svg.setAttribute("viewBox", "0 0 24 24");
-          svg.setAttribute("fill", "currentColor");
-          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          path.setAttribute("d", "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z");
-          svg.appendChild(path);
-          iconDiv.appendChild(svg);
-
-          const text = document.createElement("span");
-          text.className = "skipit-notification-title";
-          text.textContent = "Thanks for helping!";
-
-          notification.appendChild(iconDiv);
-          notification.appendChild(text);
-          notification.classList.add("visible");
-          setTimeout(() => {
-            notification.classList.remove("visible");
-          }, NOTIFICATION_DURATION);
-        }
+        showThanksNotification();
+      } else {
+        // handleVote already hid the prompt and dropped the skip, so this is a fresh toast
+        // with no "try again". The fallback covers a worker evicted mid-response.
+        showNoticeNotification(
+          resultData?.error || "Your vote did not go through."
+        );
       }
     }
   });

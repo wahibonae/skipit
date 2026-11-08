@@ -255,88 +255,218 @@ const BUTTON_STYLES = `
   box-shadow: 0 0 6px 1px rgba(180, 180, 180, 0.6);
 }
 
-/* Skip Notification Styles */
-.skipit-notification {
+/* ===========================================
+   TOAST
+   One component for every message on the player. One mark at the head
+   (wordmark, scene colour, accent glyph, or amber warning); colour only in
+   the mark. 12px corner on one line, 20px on two (--block).
+   =========================================== */
+.skipit-toast {
   position: absolute;
   bottom: 160px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
   background: rgba(0, 0, 0, 0.85);
   color: white;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-  font-size: 14px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   pointer-events: none;
   z-index: 2147483645;
   opacity: 0;
   transition: opacity 0.25s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
-.skipit-notification.visible {
+.skipit-toast.visible {
   opacity: 1;
 }
-.skipit-notification-icon {
+
+/* --- the mark --------------------------------------------------------- */
+.skipit-toast-mark {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
   flex-shrink: 0;
 }
-.skipit-notification-icon svg {
-  width: 14px;
-  height: 14px;
+.skipit-toast-mark svg {
+  display: block;
 }
-.skipit-notification-icon--nudity {
-  background: #EC4899;
+.skipit-toast-mark--brand svg {
+  height: 17px;
+  width: auto;
+  color: #ff6f4f;
 }
-.skipit-notification-icon--sex {
-  background: #EF4444;
+.skipit-toast-mark--action {
+  color: #ff6f4f;
 }
-.skipit-notification-icon--gore {
-  background: #F97316;
+.skipit-toast-mark--action svg {
+  width: 16px;
+  height: 16px;
 }
-.skipit-notification-icon--default {
-  background: #EC4899;
+.skipit-toast-mark--warn {
+  color: #f5a524;
 }
-.skipit-notification-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.skipit-notification-title {
-  font-weight: 600;
-  font-size: 13px;
-}
-.skipit-notification-time {
-  font-size: 12px;
-  opacity: 0.8;
+.skipit-toast-mark--warn svg {
+  width: 16px;
+  height: 16px;
 }
 
-.skipit-notification-header {
+.skipit-toast-mark--scene svg {
+  width: 18px;
+  height: 18px;
+}
+.skipit-toast-mark--nudity {
+  color: #FF6EB4;
+}
+.skipit-toast-mark--sex {
+  color: #FF5A5A;
+}
+.skipit-toast-mark--gore {
+  color: #FF9500;
+}
+.skipit-toast-mark--default {
+  color: #FF6EB4;
+}
+.skipit-toast-mark--accent {
+  color: #ff6f4f;
+}
+
+/* --- the message ------------------------------------------------------- */
+.skipit-toast-gap {
+  width: 11px;
+  flex-shrink: 0;
+}
+.skipit-toast-div {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 0 13px;
+  flex-shrink: 0;
+}
+.skipit-toast-primary {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.skipit-toast-secondary {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* The only text allowed to wrap; its toast takes --block */
+.skipit-toast-message {
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 300px;
+}
+.skipit-toast--block {
+  border-radius: 20px;
+}
+.skipit-toast--block .skipit-toast-mark {
+  align-self: flex-start;
+  margin-top: 1px;
+}
+
+/* --- entrances ---------------------------------------------------------- */
+
+/* Rise: fires many times per film, so it's the quietest */
+.skipit-toast--rise {
+  transform: translateX(-50%) translateY(5px);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+.skipit-toast--rise.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Handoff: the wordmark collapses while the message unrolls, so the capsule
+   resizes in one move */
+.skipit-toast-swap {
+  display: grid;
+  grid-template-columns: 1fr;
+  opacity: 1;
+  transition: grid-template-columns 0.4s cubic-bezier(0.2, 0.8, 0.3, 1),
+    opacity 0.24s ease;
+}
+.skipit-toast-swap > span {
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 10px;
 }
-.skipit-close-btn {
+.skipit-toast--handoff.opened .skipit-toast-swap {
+  grid-template-columns: 0fr;
+  opacity: 0;
+}
+
+/* Open: the mark lands, the message unrolls from it */
+.skipit-toast-reveal {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition: grid-template-columns 0.4s cubic-bezier(0.2, 0.8, 0.3, 1),
+    opacity 0.3s ease 0.06s;
+}
+.skipit-toast-reveal > span {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.skipit-toast--open.opened .skipit-toast-reveal,
+.skipit-toast--handoff.opened .skipit-toast-reveal {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+
+/* Stamp: reserved for a marked scene */
+.skipit-toast--stamp {
+  transform: translateX(-50%) scale(0.94);
+  transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+.skipit-toast--stamp.visible {
+  transform: translateX(-50%) scale(1);
+}
+.skipit-toast--stamp .skipit-toast-mark {
+  transform: scale(2.2) rotate(-12deg);
+  opacity: 0;
+  transition: transform 0.34s cubic-bezier(0.2, 1.2, 0.3, 1), opacity 0.2s ease;
+}
+.skipit-toast--stamp.visible .skipit-toast-mark {
+  transform: scale(1) rotate(0deg);
+  opacity: 1;
+}
+.skipit-toast-ring {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  padding: 4px;
-  font-size: 16px;
-  line-height: 1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
 }
-.skipit-close-btn:hover {
-  color: white;
+.skipit-toast--stamp.visible .skipit-toast-ring {
+  animation: skipit-toast-pulse 0.62s ease-out 0.06s;
+}
+@keyframes skipit-toast-pulse {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 111, 79, 0.5);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 16px rgba(255, 111, 79, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skipit-toast,
+  .skipit-toast-reveal,
+  .skipit-toast-swap,
+  .skipit-toast--stamp .skipit-toast-mark {
+    transition-duration: 0.01ms !important;
+  }
+  .skipit-toast--stamp.visible .skipit-toast-ring {
+    animation: none;
+  }
 }
 /* Locked state for buttons when not authenticated */
 .skipit-mark-btn.locked,
@@ -386,42 +516,19 @@ const BUTTON_STYLES = `
   opacity: 1;
 }
 
-/* Vote Prompt Styles: mirrors .skipit-notification with added buttons row */
+/* Vote prompt: a --block toast with pointer events and a row of buttons */
 .skipit-vote-prompt {
-  position: absolute;
-  bottom: 160px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
-  font-size: 14px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 2147483645;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 11px 16px 12px;
 }
-.skipit-vote-prompt.visible {
-  opacity: 1;
-}
-/* Strip icon background in vote prompt — show bare icon only */
-.skipit-vote-prompt .skipit-notification-icon {
-  background: none !important;
-}
-/* Row 1: icon + text: reuses .skipit-notification-icon and .skipit-notification-text */
 .skipit-vote-header {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
-/* Row 2: centered buttons */
-.skipit-vote-buttons {
+.skipit-vote-actions {
   display: flex;
   justify-content: center;
   gap: 8px;
@@ -436,6 +543,7 @@ const BUTTON_STYLES = `
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, sans-serif;
   transition: all 0.15s ease;
 }
@@ -457,22 +565,6 @@ const BUTTON_STYLES = `
 }
 .skipit-vote-btn--downvote:hover {
   background: rgba(107, 114, 128, 0.85);
-}
-
-/* Thanks notification: green circle + checkmark */
-.skipit-thanks-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #10B981;
-  flex-shrink: 0;
-}
-.skipit-thanks-icon svg {
-  width: 12px;
-  height: 12px;
 }
 
 /* ===========================================
@@ -692,7 +784,15 @@ const NOTIFICATION_DURATION = 4000; // Auto-dismiss after 4s
 const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
 
 let notificationTimeout = null;
+// Pending reveal frame, cancelled on hide: rAF pauses in a hidden tab while setTimeout keeps firing
+let notificationFrame = null;
+// Handoff timer: the wordmark holds alone, then the message takes over
+let notificationSwapTimeout = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
+// The activation toast owns the shared element until then, so the checker can't overwrite it at once
+let announceHoldUntil = 0;
+// A skip toast waiting for the activation toast's hold to end
+let deferredSkipToastTimeout = null;
 
 // Pending skip verification state
 let pendingSkips = [];
@@ -700,6 +800,8 @@ let pendingSegmentsRendered = false;
 const VOTE_PROMPT_LEAD_TIME = 3000; // Show prompt 3s before segment
 const VOTE_PROMPT_DISPLAY_DURATION = 5000; // Auto-hide after 5s of playback
 let activeVotePromptSkipId = null;
+// Prompt reveal frame, cancelled on hide so a same-frame hide isn't undone
+let votePromptFrame = null;
 let votePromptTimeout = null;
 let votePromptShownForCurrentVisit = false; // Prevents re-show within same segment visit
 let votePromptPlayTimeElapsed = 0; // Tracks playing time since prompt was shown
@@ -773,6 +875,68 @@ function formatSkipTypes(types) {
   const formatted = typesArray.map((t) => formatSkipType(t)).filter(Boolean);
   const unique = [...new Set(formatted)];
   return unique.join("/");
+}
+
+/**
+ * Round a span to a length a person would say out loud.
+ * Deliberately coarse: a skip group's bounds are re-averaged as people contribute,
+ * so rounding to 5s keeps the number stable across recalculations.
+ */
+function formatDurationMs(ms) {
+  const seconds = Math.max(0, Math.round(ms / 1000));
+
+  if (seconds < 60) {
+    // Never "0s": a sub-3s span is still a real skip
+    const rounded = Math.max(5, Math.round(seconds / 5) * 5);
+    // 58s rounds to 60, which reads as a minute
+    if (rounded < 60) return `${rounded}s`;
+  }
+
+  const minutes = seconds / 60;
+  if (minutes <= 3) {
+    const halves = Math.round(minutes * 2) / 2;
+    return `${Number.isInteger(halves) ? halves : `${Math.floor(halves)}\u00BD`} min`;
+  }
+
+  return `${Math.round(minutes)} min`;
+}
+
+/**
+ * The element Netflix's player lives in, where our overlays get appended.
+ */
+function getPlayerContainer() {
+  const video = document.querySelector("video");
+  if (!video) return null;
+
+  return (
+    video.closest(".watch-video--player-view") ||
+    video.closest('[data-uia="video-canvas"]')?.parentElement ||
+    document.querySelector(".watch-video") ||
+    video.parentElement?.parentElement?.parentElement ||
+    null
+  );
+}
+
+/**
+ * Build a single-path icon SVG.
+ * strokeWidth rounds the corners by stroking the filled shape's own edge; it is
+ * not an outline, so the fill stays.
+ */
+function createIconSVG(pathData, strokeWidth) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+  if (strokeWidth) {
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", String(strokeWidth));
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+  }
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", pathData);
+  svg.appendChild(path);
+  return svg;
 }
 
 /**
@@ -1223,6 +1387,14 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     availableSkipTypes = skipTypes;
   }
 
+  // Signed out, the only useful action is signing in, so don't show loading/empty states.
+  // Unless already skipping: a token can expire mid-film and the click still stops it.
+  if (!isAuthenticated && !isSkipping) {
+    button.classList.remove("active", "disabled", "loading");
+    typesLine.textContent = "Sign in to skip";
+    return;
+  }
+
   // "loading" is the only state discreet mode can't express through .active /
   // .disabled / .locked, so it gets its own class for the pulse.
   button.classList.remove("loading");
@@ -1348,9 +1520,8 @@ function updateButtonsAuthState(authenticated) {
       fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "flex";
-      // Update FAB for locked state
-      const typesLine = fabButton.querySelector(".skipit-fab-types");
-      if (typesLine) typesLine.textContent = "Sign in to skip";
+      // The locked wording lives in updateSkipitFAB
+      updateSkipitFAB(null, fabSkippingActive);
     }
   }
 }
@@ -2226,7 +2397,7 @@ function mergeOverlappingTimestamps(timestamps) {
  * Start checking for timestamps to skip
  * This is the ONLY function that should activate skipping state
  */
-function startSkipChecking(timestamps) {
+function startSkipChecking(timestamps, announce = false) {
   // Get current video ID from URL and metadata
   const videoIdFromUrl = getVideoIdFromUrl();
   const metadata = extractNetflixMetadata();
@@ -2261,6 +2432,11 @@ function startSkipChecking(timestamps) {
 
   // Render timeline segments to visualize skip zones
   renderTimelineSegments(timestamps);
+
+  // After the early return above, so a start that never took effect can't claim it did
+  if (announce) {
+    showSkippingActiveNotification(types);
+  }
 
   // Check every 50ms for timestamps to skip
   skipCheckInterval = setInterval(() => {
@@ -2435,106 +2611,200 @@ function stopSkipChecking() {
   cleanupNotification();
 
   // Update FAB to show skipping is NOT active (preserves available skip types)
-  const metadata = extractNetflixMetadata();
-  if (metadata) {
-    updateSkipitFAB(metadata, false);
-  }
+  // Unconditional: the player may not be ready, and the FAB must not keep
+  // reading "Skipping" (e.g. after a sign-out stopped skipping).
+  updateSkipitFAB(extractNetflixMetadata(), false);
 }
 
 
 // ============================================================================
-// SKIP NOTIFICATIONS
+// TOASTS
+// Every message Skipit puts on the player is this one component: a mark, a
+// line of text and an entrance. See the TOAST block in styles/player.css.
 // ============================================================================
 
+const ICON_CHECK = "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z";
+const ICON_BOOKMARK = "M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z";
+const ICON_WARNING = "M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V8h2v5z";
+// Spaced 3 units apart so the 1.8 stroke doesn't weld the two triangles together
+const ICON_FORWARD = "M5 5.8 10.6 12 5 18.2Z M13.6 5.8 19.2 12 13.6 18.2Z";
+
+// A notice has to be read, not just noticed, so it stays up longer
+const NOTICE_DURATION = 8000;
+// Display guard only: stops a pathologically long message from covering the video
+const NOTICE_MAX_LENGTH = 400;
+// How long the wordmark holds alone before the message takes over (inside the duration)
+const HANDOFF_HOLD = 850;
+// How long the activation toast keeps the shared element to itself
+const ANNOUNCE_HOLD = 2000;
+
 /**
- * Get or create the notification element
+ * Get or create the shared toast element.
  */
-function getOrCreateNotification() {
-  let notification = document.getElementById(NOTIFICATION_ID);
-  if (notification) return notification;
+function getOrCreateToast() {
+  let toast = document.getElementById(NOTIFICATION_ID);
+  if (toast) return toast;
 
-  // Find player container
-  const video = document.querySelector("video");
-  if (!video) return null;
-
-  let playerContainer =
-    video.closest(".watch-video--player-view") ||
-    video.closest('[data-uia="video-canvas"]')?.parentElement ||
-    document.querySelector(".watch-video") ||
-    video.parentElement?.parentElement?.parentElement;
-
+  const playerContainer = getPlayerContainer();
   if (!playerContainer) return null;
 
-  // Create notification element
-  notification = document.createElement("div");
-  notification.id = NOTIFICATION_ID;
-  notification.className = "skipit-notification";
-
-  playerContainer.appendChild(notification);
-  return notification;
+  toast = document.createElement("div");
+  toast.id = NOTIFICATION_ID;
+  playerContainer.appendChild(toast);
+  return toast;
 }
 
 /**
- * Build notification content using safe DOM methods
+ * Build the head of a toast: the wordmark, a scene's timeline colour, or a glyph.
  */
-function buildNotificationContent(notification, skipType, startMs, endMs) {
-  // Clear existing content
-  notification.textContent = "";
+function createToastMark(mark) {
+  const wrap = document.createElement("span");
 
-  const formattedType = skipType && skipType.includes(",")
-    ? formatSkipTypes(skipType.split(","))
-    : (formatSkipType(skipType) || "content");
+  if (mark.kind === "scene") {
+    // Tinted with the scene's timeline colour so toast and segment read as one thing
+    wrap.className =
+      "skipit-toast-mark skipit-toast-mark--scene" +
+      ` skipit-toast-mark--${mark.type || "default"}`;
+    wrap.appendChild(createIconSVG(ICON_FORWARD, 1.8));
+    return wrap;
+  }
 
-  // Create header container
-  const headerDiv = document.createElement("div");
-  headerDiv.className = "skipit-notification-header";
+  wrap.className = `skipit-toast-mark skipit-toast-mark--${mark.kind}`;
+  wrap.appendChild(
+    mark.kind === "brand"
+      ? createSkipitLogoSVG()
+      : createIconSVG(mark.path, mark.stroke)
+  );
+  return wrap;
+}
 
-  // Create icon container - use first type for styling when multiple types are merged
-  const iconType = skipType && skipType.includes(",") ? skipType.split(",")[0] : (skipType || "default");
-  const iconDiv = document.createElement("div");
-  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${iconType}`;
-
-  // Create SVG icon
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "currentColor");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", "M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z");
-  svg.appendChild(path);
-  iconDiv.appendChild(svg);
-
-  // Create text container
-  const textDiv = document.createElement("div");
-  textDiv.className = "skipit-notification-text";
-
-  // Create title with type (discreet mode drops the category name)
-  const titleSpan = document.createElement("span");
-  titleSpan.className = "skipit-notification-title";
-  titleSpan.textContent = currentDiscreetMode
-    ? "Scene skipped"
-    : `Skipped ${formattedType} scene`;
-
-  // Create time range
-  const timeSpan = document.createElement("span");
-  timeSpan.className = "skipit-notification-time";
-  timeSpan.textContent = `${formatTimeMs(startMs)} \u2192 ${formatTimeMs(endMs)}`;
-
-  textDiv.appendChild(titleSpan);
-  textDiv.appendChild(timeSpan);
-
-  headerDiv.appendChild(iconDiv);
-  headerDiv.appendChild(textDiv);
-  notification.appendChild(headerDiv);
+function createToastSpan(className, text) {
+  const span = document.createElement("span");
+  span.className = className;
+  span.textContent = text;
+  return span;
 }
 
 /**
- * Show skip notification
- * @param {string} skipType - Single type string like 'nudity', 'sex', or 'gore'
- * @param {number} startMs - Start time in milliseconds
- * @param {number} endMs - End time in milliseconds
+ * Render one toast into the shared element.
+ *
+ * @param {object} spec
+ * @param {object} spec.mark      - {kind: "brand"|"scene"|"action"|"warn", type?, path?, stroke?}
+ * @param {string} [spec.primary] - the message, one line
+ * @param {string} [spec.secondary] - a muted detail after it
+ * @param {string} [spec.message] - a sentence that is allowed to wrap
+ * @param {string} [spec.entrance] - "rise" (default) | "open" | "stamp" | "handoff"
+ * @param {number} [spec.duration]
+ * @param {boolean} [spec.skipEvent] - about skipping itself, so cleared on stop
+ *
+ * The element is shared, so every toast reuses the one dismissal timer; a
+ * second timer would strip `visible` from whatever is showing when it fires.
+ */
+function renderToast(spec) {
+  const toast = getOrCreateToast();
+  if (!toast) return;
+
+  // This element no longer shows the last skipped segment, so drop its cooldown
+  lastNotifiedSegment = null;
+
+  // A message about the user's own action is newer than a held-back skip toast,
+  // so it wins (as on main) and ends the hold.
+  if (!spec.skipEvent) {
+    cancelDeferredSkipToast();
+    announceHoldUntil = 0;
+  }
+
+  if (notificationTimeout) clearTimeout(notificationTimeout);
+  if (notificationSwapTimeout) clearTimeout(notificationSwapTimeout);
+  if (notificationFrame) cancelAnimationFrame(notificationFrame);
+
+  const entrance = spec.entrance || "rise";
+  const block = Boolean(spec.message);
+
+  toast.className =
+    "skipit-toast" +
+    ` skipit-toast--${entrance}` +
+    (block ? " skipit-toast--block" : "");
+  toast.textContent = "";
+  // Only skip toasts are cleared when skipping stops; see cleanupNotification
+  toast.dataset.skipEvent = spec.skipEvent ? "true" : "";
+
+  if (entrance === "stamp") {
+    const ring = document.createElement("span");
+    ring.className = "skipit-toast-ring";
+    toast.appendChild(ring);
+  }
+
+  // Handoff: the wordmark shows alone, then collapses as the message unrolls
+  if (entrance === "handoff") {
+    const swap = document.createElement("span");
+    swap.className = "skipit-toast-swap";
+    const swapInner = document.createElement("span");
+    swapInner.appendChild(createToastMark({ kind: "brand" }));
+    swap.appendChild(swapInner);
+    toast.appendChild(swap);
+  } else {
+    toast.appendChild(createToastMark(spec.mark));
+  }
+
+  // The message either unrolls out of the mark, or simply follows it
+  let body = toast;
+  if (entrance === "open" || entrance === "handoff") {
+    const reveal = document.createElement("span");
+    reveal.className = "skipit-toast-reveal";
+    body = document.createElement("span");
+    reveal.appendChild(body);
+    toast.appendChild(reveal);
+  }
+
+  if (entrance === "handoff") {
+    body.appendChild(createToastMark(spec.mark));
+  }
+
+  // A rule after the wordmark; other marks just get a gap
+  body.appendChild(
+    createToastSpan(spec.mark.kind === "brand" ? "skipit-toast-div" : "skipit-toast-gap", "")
+  );
+
+  if (spec.message) {
+    body.appendChild(createToastSpan("skipit-toast-message", spec.message));
+  } else {
+    body.appendChild(createToastSpan("skipit-toast-primary", spec.primary));
+    if (spec.secondary) {
+      body.appendChild(createToastSpan("skipit-toast-gap", ""));
+      body.appendChild(createToastSpan("skipit-toast-secondary", spec.secondary));
+    }
+  }
+
+  // Tracked so hide can cancel it: rAF pauses in a hidden tab while the dismiss
+  // timer still fires, which would re-show the toast with no timer left.
+  notificationFrame = requestAnimationFrame(() => {
+    notificationFrame = null;
+    toast.classList.add("visible");
+    if (entrance === "open") {
+      // A second frame, so the capsule has a closed state to open from
+      notificationFrame = requestAnimationFrame(() => {
+        notificationFrame = null;
+        toast.classList.add("opened");
+      });
+    } else if (entrance === "handoff") {
+      notificationSwapTimeout = setTimeout(() => {
+        notificationSwapTimeout = null;
+        toast.classList.add("opened");
+      }, HANDOFF_HOLD);
+    }
+  });
+
+  notificationTimeout = setTimeout(hideSkipNotification, spec.duration || NOTIFICATION_DURATION);
+}
+
+/**
+ * A scene was skipped.
+ * @param {string} skipType - Type, or a comma list for merged overlapping scenes
+ * @param {number} startMs
+ * @param {number} endMs
  */
 function showSkipNotification(skipType, startMs, endMs) {
-  // Check cooldown for this specific segment
   const now = Date.now();
   if (
     lastNotifiedSegment &&
@@ -2545,171 +2815,219 @@ function showSkipNotification(skipType, startMs, endMs) {
     return;
   }
 
-  // Update last notified segment
-  lastNotifiedSegment = { start: startMs, end: endMs, timestamp: now };
-
-  const notification = getOrCreateNotification();
-  if (!notification) return;
-
-  // Clear existing timeout
-  if (notificationTimeout) {
-    clearTimeout(notificationTimeout);
+  // The activation toast still owns the element: show this one once it's done
+  // (e.g. Start pressed just before or inside a scene). Latest skip wins.
+  if (now < announceHoldUntil) {
+    lastNotifiedSegment = { start: startMs, end: endMs, timestamp: now };
+    cancelDeferredSkipToast();
+    deferredSkipToastTimeout = setTimeout(() => {
+      deferredSkipToastTimeout = null;
+      renderSkipToast(skipType, startMs, endMs);
+    }, announceHoldUntil - now);
+    return;
   }
 
-  // Build notification content
-  buildNotificationContent(notification, skipType, startMs, endMs);
+  renderSkipToast(skipType, startMs, endMs);
+}
 
-  // Show notification
-  requestAnimationFrame(() => {
-    notification.classList.add("visible");
+function cancelDeferredSkipToast() {
+  if (deferredSkipToastTimeout) {
+    clearTimeout(deferredSkipToastTimeout);
+    deferredSkipToastTimeout = null;
+  }
+}
+
+/** Render the "Skipped … scene" toast and start that segment's cooldown. */
+function renderSkipToast(skipType, startMs, endMs) {
+  // Overlapping scenes arrive merged as a comma list: the mark takes the first
+  // type, the words take all of them.
+  const types = skipType ? String(skipType).split(",") : [];
+  const formatted = formatSkipTypes(types);
+
+  renderToast({
+    mark: { kind: "scene", type: types[0] || "default" },
+    primary: currentDiscreetMode
+      ? "Scene skipped"
+      : `Skipped ${formatted || "content"} scene`,
+    secondary: `(${formatDurationMs(endMs - startMs)})`,
+    entrance: "rise",
+    skipEvent: true,
   });
 
-  // Auto-dismiss
-  notificationTimeout = setTimeout(() => {
-    hideSkipNotification();
-  }, NOTIFICATION_DURATION);
+  // renderToast clears the cooldown; restore it for this segment
+  lastNotifiedSegment = { start: startMs, end: endMs, timestamp: Date.now() };
+}
+
+/** Skipping just started. Same wording as the FAB underneath it. */
+function showSkippingActiveNotification(types) {
+  cancelDeferredSkipToast();
+  announceHoldUntil = Date.now() + ANNOUNCE_HOLD;
+
+  const typeText = formatSkipTypes(types);
+  renderToast({
+    mark: { kind: "scene", type: "accent" },
+    primary: currentDiscreetMode
+      ? "Skipping on"
+      : typeText
+        ? types.length >= 2
+          ? `Skipping ${typeText}`
+          : `Skipping ${typeText} scenes`
+        : "Skipping on",
+    entrance: "handoff",
+    skipEvent: true,
+  });
+}
+
+/** A marked scene was accepted. */
+function showMarkSavedNotification() {
+  renderToast({
+    mark: { kind: "action", path: ICON_BOOKMARK },
+    primary: "Scene marked",
+    entrance: "stamp",
+  });
+}
+
+/** A vote was recorded. */
+function showThanksNotification() {
+  renderToast({
+    // Material's check is drawn thin, so a light stroke matches the other glyphs' weight
+    mark: { kind: "action", path: ICON_CHECK, stroke: 1.1 },
+    primary: "Thanks for helping!",
+    entrance: "open",
+  });
+}
+
+/** A refusal or warning the user needs to actually read. */
+function showNoticeNotification(message) {
+  renderToast({
+    mark: { kind: "warn", path: ICON_WARNING },
+    message:
+      typeof message === "string" &&
+      message.trim() &&
+      message.length <= NOTICE_MAX_LENGTH
+        ? message
+        : "Something went wrong. Please try again.",
+    entrance: "rise",
+    duration: NOTICE_DURATION,
+  });
 }
 
 /**
- * Hide skip notification
+ * Hide whatever is on screen.
  */
 function hideSkipNotification() {
-  const notification = document.getElementById(NOTIFICATION_ID);
-  if (notification) {
-    notification.classList.remove("visible");
+  const toast = document.getElementById(NOTIFICATION_ID);
+  if (toast) {
+    toast.classList.remove("visible", "opened");
   }
 
   if (notificationTimeout) {
     clearTimeout(notificationTimeout);
     notificationTimeout = null;
   }
+  if (notificationSwapTimeout) {
+    clearTimeout(notificationSwapTimeout);
+    notificationSwapTimeout = null;
+  }
+  if (notificationFrame) {
+    cancelAnimationFrame(notificationFrame);
+    notificationFrame = null;
+  }
 }
 
 // ============================================================================
-// VOTE PROMPT FOR PENDING SKIPS
+// VOTE PROMPT
+// Same component with buttons. It owns its own element so a skip toast that
+// fires mid-decision can't replace the question.
 // ============================================================================
 
 const VOTE_PROMPT_ID = "skipit-vote-prompt";
 
+const ICON_THUMB_UP =
+  "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z";
+const ICON_THUMB_DOWN =
+  "M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z";
+
+function createVoteButton(modifier, iconPath, label, onClick) {
+  const button = document.createElement("button");
+  button.className = `skipit-vote-btn skipit-vote-btn--${modifier}`;
+  button.appendChild(createIconSVG(iconPath));
+  button.appendChild(createToastSpan("", label));
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    onClick();
+  });
+  return button;
+}
+
 /**
- * Show vote prompt for a pending skip
+ * Ask whether a pending scene is right. Keeps exact timestamps (not a rounded
+ * duration) because the user is judging a specific span.
  */
 function showVotePrompt(skip) {
-  // Don't show if already showing for this skip AND element still exists in DOM
-  // (Netflix UI updates during seeking can remove foreign DOM elements)
+  // Don't re-show for the same skip while its element is still in the DOM.
+  // Netflix's own UI updates can remove foreign elements underneath us.
   if (activeVotePromptSkipId === skip.id && document.getElementById(VOTE_PROMPT_ID)) return;
 
-  // Remove any existing prompt
   hideVotePrompt();
-
   activeVotePromptSkipId = skip.id;
 
-  // Find player container
-  const video = document.querySelector("video");
-  if (!video) return;
-
-  let playerContainer =
-    video.closest(".watch-video--player-view") ||
-    video.closest('[data-uia="video-canvas"]')?.parentElement ||
-    document.querySelector(".watch-video") ||
-    video.parentElement?.parentElement?.parentElement;
-
+  const playerContainer = getPlayerContainer();
   if (!playerContainer) return;
 
-  // Create prompt element (mirrors .skipit-notification structure)
+  const typeLabel = formatSkipType(skip.type) || "default";
+
   const prompt = document.createElement("div");
   prompt.id = VOTE_PROMPT_ID;
-  prompt.className = "skipit-vote-prompt";
+  prompt.className = "skipit-toast skipit-toast--block skipit-toast--rise skipit-vote-prompt";
 
-  // Row 1: [icon circle] [title + time] — same as active skip notification
-  const headerDiv = document.createElement("div");
-  headerDiv.className = "skipit-vote-header";
+  const header = document.createElement("span");
+  header.className = "skipit-vote-header";
+  // In discreet mode the colour must not give the category away
+  header.appendChild(
+    createToastMark({ kind: "scene", type: currentDiscreetMode ? "accent" : typeLabel })
+  );
+  header.appendChild(createToastSpan("skipit-toast-gap", ""));
+  header.appendChild(
+    createToastSpan(
+      "skipit-toast-primary",
+      // The prompt fires before the skip, so discreet wording stays forward-looking
+      currentDiscreetMode
+        ? "Skip this scene?"
+        : `${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} scene?`
+    )
+  );
+  header.appendChild(createToastSpan("skipit-toast-div", ""));
+  header.appendChild(
+    createToastSpan(
+      "skipit-toast-secondary",
+      `${formatTimeMs(skip.startTime)} → ${formatTimeMs(skip.endTime)}`
+    )
+  );
+  prompt.appendChild(header);
 
-  const typeLabel = formatSkipType(skip.type) || "default";
-  const iconDiv = document.createElement("div");
-  iconDiv.className = `skipit-notification-icon skipit-notification-icon--${typeLabel}`;
-
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "currentColor");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", "M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z");
-  svg.appendChild(path);
-  iconDiv.appendChild(svg);
-
-  const textDiv = document.createElement("div");
-  textDiv.className = "skipit-notification-text";
-
-  const titleSpan = document.createElement("span");
-  titleSpan.className = "skipit-notification-title";
-  const formattedType = typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1);
-  // The prompt fires BEFORE the skip, so discreet wording stays forward-looking.
-  titleSpan.textContent = currentDiscreetMode
-    ? "Skip this scene?"
-    : `${formattedType} scene?`;
-
-  const timeSpan = document.createElement("span");
-  timeSpan.className = "skipit-notification-time";
-  timeSpan.textContent = `${formatTimeMs(skip.startTime)} \u2192 ${formatTimeMs(skip.endTime)}`;
-
-  textDiv.appendChild(titleSpan);
-  textDiv.appendChild(timeSpan);
-
-  headerDiv.appendChild(iconDiv);
-  headerDiv.appendChild(textDiv);
-
-  // Row 2: centered buttons
-  const buttons = document.createElement("div");
-  buttons.className = "skipit-vote-buttons";
-
-  const upvoteBtn = document.createElement("button");
-  upvoteBtn.className = "skipit-vote-btn skipit-vote-btn--upvote";
-  // Thumbs up icon
-  const upIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  upIcon.setAttribute("viewBox", "0 0 24 24");
-  upIcon.setAttribute("fill", "currentColor");
-  const upPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  upPath.setAttribute("d", "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z");
-  upIcon.appendChild(upPath);
-  upvoteBtn.appendChild(upIcon);
-  const upLabel = document.createElement("span");
-  upLabel.textContent = "Yes, skip it";
-  upvoteBtn.appendChild(upLabel);
-  upvoteBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    handleVote(skip.id, 1, skip.endTime);
-  });
-
-  const downvoteBtn = document.createElement("button");
-  downvoteBtn.className = "skipit-vote-btn skipit-vote-btn--downvote";
-  // Thumbs down icon
-  const downIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  downIcon.setAttribute("viewBox", "0 0 24 24");
-  downIcon.setAttribute("fill", "currentColor");
-  const downPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  downPath.setAttribute("d", "M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z");
-  downIcon.appendChild(downPath);
-  downvoteBtn.appendChild(downIcon);
-  const downLabel = document.createElement("span");
-  // "No, it's not" is short for "it's not a <category> scene", which is
-  // meaningless once the category is hidden.
-  downLabel.textContent = currentDiscreetMode ? "No, it's fine" : "No, it's not";
-  downvoteBtn.appendChild(downLabel);
-  downvoteBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    handleVote(skip.id, -1, null);
-  });
-
-  buttons.appendChild(upvoteBtn);
-  buttons.appendChild(downvoteBtn);
-
-  prompt.appendChild(headerDiv);
-  prompt.appendChild(buttons);
+  const actions = document.createElement("span");
+  actions.className = "skipit-vote-actions";
+  actions.appendChild(
+    createVoteButton("upvote", ICON_THUMB_UP, "Yes, skip it", () =>
+      handleVote(skip.id, 1, skip.endTime)
+    )
+  );
+  actions.appendChild(
+    createVoteButton(
+      "downvote",
+      ICON_THUMB_DOWN,
+      // "No, it's not" means "not a <category> scene", meaningless once the category is hidden
+      currentDiscreetMode ? "No, it's fine" : "No, it's not",
+      () => handleVote(skip.id, -1, null)
+    )
+  );
+  prompt.appendChild(actions);
 
   playerContainer.appendChild(prompt);
 
-  // Fade in
-  requestAnimationFrame(() => {
+  votePromptFrame = requestAnimationFrame(() => {
+    votePromptFrame = null;
     prompt.classList.add("visible");
   });
 }
@@ -2718,8 +3036,16 @@ function showVotePrompt(skip) {
  * Hide the vote prompt
  */
 function hideVotePrompt() {
+  if (votePromptFrame !== null) {
+    cancelAnimationFrame(votePromptFrame);
+    votePromptFrame = null;
+  }
+
   const prompt = document.getElementById(VOTE_PROMPT_ID);
   if (prompt) {
+    // Give up the id before the fade, so a re-show within 250ms doesn't create a
+    // second element under the same id that the next hide can't find.
+    prompt.id = "";
     prompt.classList.remove("visible");
     setTimeout(() => prompt.remove(), 250);
   }
@@ -2764,13 +3090,17 @@ function handleVote(skipGroupId, voteType, seekToMs) {
  * Clean up notification on stop
  */
 function cleanupNotification() {
-  hideSkipNotification();
   lastNotifiedSegment = null;
+  announceHoldUntil = 0;
+  cancelDeferredSkipToast();
 
-  const notification = document.getElementById(NOTIFICATION_ID);
-  if (notification) {
-    notification.remove();
-  }
+  // A message about the user's own action (marked, voted, a notice) outlives a
+  // stop and dismisses itself on its own timer.
+  const toast = document.getElementById(NOTIFICATION_ID);
+  if (toast && !toast.dataset.skipEvent && notificationTimeout) return;
+
+  hideSkipNotification();
+  if (toast) toast.remove();
 }
 
 
@@ -2871,7 +3201,9 @@ function setupMessageHandler() {
     const data = event.data.data;
 
     if (type === "SKIPIT_START_SKIP_CHECKING") {
-      startSkipChecking(data.timestamps);
+      startSkipChecking(data.timestamps, data.announce === true);
+    } else if (type === "SKIPIT_MARK_SAVED") {
+      showMarkSavedNotification();
     } else if (type === "SKIPIT_STOP_SKIP_CHECKING") {
       stopSkipChecking();
     } else if (type === "SKIPIT_GET_CURRENT_TIME") {
@@ -2976,34 +3308,13 @@ function setupMessageHandler() {
       // Vote result from content script
       const resultData = event.data.data;
       if (resultData?.success) {
-        showSkipNotification("default", 0, 0);
-        // Override the notification content to show "Thanks for helping!" with green circle + checkmark
-        const notification = document.getElementById(NOTIFICATION_ID);
-        if (notification) {
-          notification.textContent = "";
-
-          // Green circle with checkmark icon
-          const iconDiv = document.createElement("div");
-          iconDiv.className = "skipit-thanks-icon";
-          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          svg.setAttribute("viewBox", "0 0 24 24");
-          svg.setAttribute("fill", "currentColor");
-          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          path.setAttribute("d", "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z");
-          svg.appendChild(path);
-          iconDiv.appendChild(svg);
-
-          const text = document.createElement("span");
-          text.className = "skipit-notification-title";
-          text.textContent = "Thanks for helping!";
-
-          notification.appendChild(iconDiv);
-          notification.appendChild(text);
-          notification.classList.add("visible");
-          setTimeout(() => {
-            notification.classList.remove("visible");
-          }, NOTIFICATION_DURATION);
-        }
+        showThanksNotification();
+      } else {
+        // handleVote already hid the prompt and dropped the skip, so this is a fresh toast
+        // with no "try again". The fallback covers a worker evicted mid-response.
+        showNoticeNotification(
+          resultData?.error || "Your vote did not go through."
+        );
       }
     }
   });

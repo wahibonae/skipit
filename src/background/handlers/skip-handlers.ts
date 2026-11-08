@@ -65,6 +65,8 @@ export async function handleActivateSkip(
       timestamps: message.timestamps,
       contentTitle: message.contentTitle,
       netflixVideoId,
+      // Only a user-triggered start announces itself; restore and re-apply stay silent.
+      announce: true,
     });
     return { success: true };
   } catch (error) {

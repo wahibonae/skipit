@@ -49,7 +49,8 @@ export async function handleVoteOnSkip(message: {
 }): Promise<{ success: boolean; data?: any; error?: string }> {
   const token = await getAuthToken();
   if (!token) {
-    return { success: false, error: "Not authenticated" };
+    // Shown on the player, so it names the way out
+    return { success: false, error: "Sign in on getskipit.com to vote." };
   }
 
   try {

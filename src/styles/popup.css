@@ -288,8 +288,11 @@ button {
   text-align: center;
 }
 
+/* Reserve the episode-state height so the card doesn't jump between states */
 .popup-card--now {
   padding: 16px;
+  min-height: 155px;
+  justify-content: center;
 }
 
 .popup-card--settings {

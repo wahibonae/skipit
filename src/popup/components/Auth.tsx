@@ -79,7 +79,8 @@ export const Auth = () => {
   const { signOut } = useClerk();
   const [detectedContent, setDetectedContent] =
     useState<AutoDetectedContent | null>(null);
-  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  // Starts true so the "no content" card doesn't flash before the effect runs
+  const [isLoadingContent, setIsLoadingContent] = useState(true);
 
   useEffect(() => {
     if (!isSignedIn) {

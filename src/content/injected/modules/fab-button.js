@@ -153,6 +153,14 @@ function updateSkipitFAB(metadata, isSkipping, skipTypes = null) {
     availableSkipTypes = skipTypes;
   }
 
+  // Signed out, the only useful action is signing in, so don't show loading/empty states.
+  // Unless already skipping: a token can expire mid-film and the click still stops it.
+  if (!isAuthenticated && !isSkipping) {
+    button.classList.remove("active", "disabled", "loading");
+    typesLine.textContent = "Sign in to skip";
+    return;
+  }
+
   // "loading" is the only state discreet mode can't express through .active /
   // .disabled / .locked, so it gets its own class for the pulse.
   button.classList.remove("loading");
@@ -278,9 +286,8 @@ function updateButtonsAuthState(authenticated) {
       fabButton.setAttribute("aria-label", getFabAriaLabel());
       const lockIcon = fabButton.querySelector(".skipit-locked-icon");
       if (lockIcon) lockIcon.style.display = "flex";
-      // Update FAB for locked state
-      const typesLine = fabButton.querySelector(".skipit-fab-types");
-      if (typesLine) typesLine.textContent = "Sign in to skip";
+      // The locked wording lives in updateSkipitFAB
+      updateSkipitFAB(null, fabSkippingActive);
     }
   }
 }

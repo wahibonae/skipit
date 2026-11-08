@@ -17,7 +17,8 @@ export function setupChromeMessageHandlers() {
       startSkipping(
         message.timestamps,
         message.contentTitle,
-        message.netflixVideoId
+        message.netflixVideoId,
+        message.announce === true
       )
         .then(() => {
           sendResponse({ success: true });

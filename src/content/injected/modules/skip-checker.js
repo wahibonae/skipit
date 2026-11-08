@@ -34,7 +34,7 @@ function mergeOverlappingTimestamps(timestamps) {
  * Start checking for timestamps to skip
  * This is the ONLY function that should activate skipping state
  */
-function startSkipChecking(timestamps) {
+function startSkipChecking(timestamps, announce = false) {
   // Get current video ID from URL and metadata
   const videoIdFromUrl = getVideoIdFromUrl();
   const metadata = extractNetflixMetadata();
@@ -69,6 +69,11 @@ function startSkipChecking(timestamps) {
 
   // Render timeline segments to visualize skip zones
   renderTimelineSegments(timestamps);
+
+  // After the early return above, so a start that never took effect can't claim it did
+  if (announce) {
+    showSkippingActiveNotification(types);
+  }
 
   // Check every 50ms for timestamps to skip
   skipCheckInterval = setInterval(() => {
@@ -243,8 +248,7 @@ function stopSkipChecking() {
   cleanupNotification();
 
   // Update FAB to show skipping is NOT active (preserves available skip types)
-  const metadata = extractNetflixMetadata();
-  if (metadata) {
-    updateSkipitFAB(metadata, false);
-  }
+  // Unconditional: the player may not be ready, and the FAB must not keep
+  // reading "Skipping" (e.g. after a sign-out stopped skipping).
+  updateSkipitFAB(extractNetflixMetadata(), false);
 }

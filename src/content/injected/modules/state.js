@@ -62,7 +62,15 @@ const NOTIFICATION_DURATION = 4000; // Auto-dismiss after 4s
 const SEGMENT_COOLDOWN = 5000; // Don't re-notify same segment for 5s
 
 let notificationTimeout = null;
+// Pending reveal frame, cancelled on hide: rAF pauses in a hidden tab while setTimeout keeps firing
+let notificationFrame = null;
+// Handoff timer: the wordmark holds alone, then the message takes over
+let notificationSwapTimeout = null;
 let lastNotifiedSegment = null; // { start, end, timestamp }
+// The activation toast owns the shared element until then, so the checker can't overwrite it at once
+let announceHoldUntil = 0;
+// A skip toast waiting for the activation toast's hold to end
+let deferredSkipToastTimeout = null;
 
 // Pending skip verification state
 let pendingSkips = [];
@@ -70,6 +78,8 @@ let pendingSegmentsRendered = false;
 const VOTE_PROMPT_LEAD_TIME = 3000; // Show prompt 3s before segment
 const VOTE_PROMPT_DISPLAY_DURATION = 5000; // Auto-hide after 5s of playback
 let activeVotePromptSkipId = null;
+// Prompt reveal frame, cancelled on hide so a same-frame hide isn't undone
+let votePromptFrame = null;
 let votePromptTimeout = null;
 let votePromptShownForCurrentVisit = false; // Prevents re-show within same segment visit
 let votePromptPlayTimeElapsed = 0; // Tracks playing time since prompt was shown

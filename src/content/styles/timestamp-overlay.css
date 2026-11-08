@@ -1,3 +1,9 @@
+/* ===========================================
+   MARK SCENE OVERLAY
+   Same type scale and ink levels as the quick panel. The scene block is
+   information, so it has no border or highlight like the pressable controls.
+   =========================================== */
+
 .skipit-overlay-backdrop {
   position: fixed;
   top: 0;
@@ -9,217 +15,295 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .skipit-overlay {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 24px;
-  min-width: 380px;
-  max-width: 450px;
-  color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --skipit-accent: #ff6f4f;
+  --skipit-warn: #f5a524;
+  --skipit-fs-title: 18px;
+  --skipit-fs-label: 16px;
+  --skipit-fs-body: 14px;
+  --skipit-fs-meta: 12px;
+  --skipit-ink-2: rgba(255, 255, 255, 0.62);
+  --skipit-ink-3: rgba(255, 255, 255, 0.45);
+  --skipit-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  width: 368px;
+  max-width: 90vw;
+  background: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 22px;
+  color: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   z-index: 2147483647;
+  font-family: Netflix Sans, "Helvetica Neue", Segoe UI, Roboto, sans-serif;
 }
 
 .skipit-overlay-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .skipit-overlay-title {
-  font-size: 18px;
+  font-size: var(--skipit-fs-title);
   font-weight: 600;
   margin: 0;
-}
-
-.skipit-overlay-subtitle {
-  font-size: 13px;
-  color: #888;
-  margin-top: 4px;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
 }
 
 .skipit-overlay-close {
   background: none;
   border: none;
-  color: #888;
+  color: var(--skipit-ink-3);
   cursor: pointer;
-  font-size: 24px;
-  padding: 0;
+  font-size: 18px;
   line-height: 1;
+  padding: 4px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .skipit-overlay-close:hover {
   color: white;
+  background: rgba(255, 255, 255, 0.09);
 }
 
-.skipit-time-display {
-  background: #2a2a2a;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
+/* --- the scene: what was captured, and of what -------------------------- */
+.skipit-scene-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.022);
 }
 
-.skipit-time-icon {
-  color: #E50914;
+.skipit-scene-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
-.skipit-time-range {
-  font-size: 16px;
-  font-weight: 500;
-  font-family: monospace;
-}
-
-.skipit-section {
-  margin-bottom: 20px;
-}
-
-.skipit-section-label {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 8px;
+.skipit-scene-mark svg {
+  width: 20px;
+  height: 20px;
+  color: var(--skipit-accent);
   display: block;
 }
 
+.skipit-scene-length {
+  font-family: var(--skipit-mono);
+  font-size: var(--skipit-fs-meta);
+  color: var(--skipit-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Past the cap, only the mark and length show the warning */
+.skipit-scene-info.over .skipit-scene-mark svg,
+.skipit-scene-info.over .skipit-scene-length {
+  color: var(--skipit-warn);
+}
+
+.skipit-scene-rule {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.skipit-scene-facts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skipit-scene-name {
+  font-size: var(--skipit-fs-label);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skipit-scene-name em {
+  font-style: normal;
+  color: var(--skipit-ink-2);
+  font-weight: 500;
+}
+
+.skipit-scene-times {
+  font-family: var(--skipit-mono);
+  font-size: var(--skipit-fs-label);
+  color: #fff;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.skipit-scene-times s {
+  text-decoration: none;
+  color: var(--skipit-ink-3);
+  margin: 0 6px;
+}
+
+.skipit-overlay-label {
+  font-size: var(--skipit-fs-body);
+  color: var(--skipit-ink-2);
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* --- scene type -------------------------------------------------------- */
 .skipit-type-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 18px;
 }
 
 .skipit-type-btn {
   flex: 1;
-  padding: 16px 20px;
-  border: 2px solid #444;
-  border-radius: 8px;
-  background: transparent;
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
+  padding: 15px 8px 13px;
+  background: #1c1c1c;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: all 0.15s ease;
-  min-height: 52px;
+  font-family: inherit;
+  color: #fff;
+  font-size: var(--skipit-fs-label);
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
 }
 
-.skipit-type-btn:hover {
-  border-color: #666;
-  background: #2a2a2a;
+.skipit-type-btn:hover:not(:disabled) {
+  background: #262626;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
-.skipit-type-btn.selected {
-  border-width: 3px;
-  border-color: #E50914;
-  background: rgba(229, 9, 20, 0.25);
-  transform: scale(1.02);
+.skipit-type-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
 }
 
-.skipit-type-btn.nudity.selected {
-  border-color: #EC4899;
-  background: rgba(236, 72, 153, 0.25);
-}
-
-.skipit-type-btn.sex.selected {
-  border-color: #EF4444;
-  background: rgba(239, 68, 68, 0.25);
-}
-
-.skipit-type-btn.gore.selected {
-  border-color: #F97316;
-  background: rgba(249, 115, 22, 0.25);
+/* Also matches on hover, which would otherwise win and make it look unselected */
+.skipit-type-btn.selected,
+.skipit-type-btn.selected:hover:not(:disabled) {
+  border-color: var(--skipit-accent);
+  background: rgba(255, 111, 79, 0.13);
 }
 
 .skipit-type-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  border-color: #333;
 }
 
-.skipit-type-btn:disabled:hover {
-  background: transparent;
-  border-color: #333;
+/* Same colour key as the timeline segments */
+.skipit-type-key {
+  width: 14px;
+  height: 5px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: block;
 }
 
-.skipit-actions {
-  margin-top: 24px;
+.skipit-type-key.nudity {
+  background: linear-gradient(180deg, #ff6eb4, #ff1493);
+  box-shadow: 0 0 5px 1px rgba(255, 20, 147, 0.55);
 }
 
-.skipit-btn {
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+.skipit-type-key.sex {
+  background: linear-gradient(180deg, #ff4d4d, #e60000);
+  box-shadow: 0 0 5px 1px rgba(230, 0, 0, 0.55);
 }
 
-.skipit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.skipit-type-key.gore {
+  background: linear-gradient(180deg, #ffaa00, #ff6600);
+  box-shadow: 0 0 5px 1px rgba(255, 102, 0, 0.55);
 }
 
+/* --- action ------------------------------------------------------------ */
 .skipit-btn-save {
   width: 100%;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #E50914 0%, #B81D24 100%);
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 10px;
+  border: none;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--skipit-fs-label);
+  font-weight: 600;
+  padding: 13px 20px;
+  border-radius: 12px;
+  background: var(--skipit-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: background 0.12s ease, transform 0.06s ease;
+}
+
+.skipit-btn-save svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .skipit-btn-save:hover:not(:disabled) {
-  transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(229, 9, 20, 0.4);
+  background: #ff8266;
+}
+
+.skipit-btn-save:active:not(:disabled) {
+  transform: scale(0.99);
 }
 
 .skipit-btn-save:disabled {
-  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.38);
   cursor: not-allowed;
-  transform: none;
+}
+
+/* --- notices ----------------------------------------------------------- */
+.skipit-warning {
+  font-size: var(--skipit-fs-body);
+  color: var(--skipit-warn);
+  margin: -8px 0 16px;
 }
 
 .skipit-error {
-  background: rgba(229, 9, 20, 0.15);
-  border: 1px solid #E50914;
-  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 12px;
   padding: 12px;
   margin-bottom: 16px;
-  font-size: 13px;
+  font-size: var(--skipit-fs-body);
   color: #ff6b6b;
 }
 
-.skipit-warning {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid #f59e0b;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: #fbbf24;
-}
-
+/* --- content loading ---------------------------------------------------- */
 .skipit-content-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 20px;
-  color: #888;
-  font-size: 14px;
+  color: var(--skipit-ink-2);
+  font-size: 16px;
 }
 
 .skipit-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid #333;
-  border-top-color: #E50914;
+  border-top-color: var(--skipit-accent);
   border-radius: 50%;
   animation: skipit-spin 0.8s linear infinite;
 }

@@ -12,6 +12,7 @@ import type {
 } from "../lib/types";
 import { injectStylesheet } from "./utils/style-injector";
 import { getCachedContent, getCachedCounts } from "./utils/cache-manager";
+import { ICON_CHECK, ICON_FORWARD, createIcon } from "./utils/icons";
 
 interface QuickPanelState {
   isOpen: boolean;
@@ -201,7 +202,6 @@ export class QuickPanel {
     this.panel.textContent = "";
 
     const { isLoading, isAuthenticated, matchedContent, error } = this.state;
-    const { title, subtitle } = this.getDisplayTitleAndSubtitle();
 
     if (!isLoading && !isAuthenticated) {
       this.renderAuthState();
@@ -209,22 +209,22 @@ export class QuickPanel {
     }
 
     if (isLoading) {
-      this.renderLoadingState(title, subtitle);
+      this.renderLoadingState();
       return;
     }
 
     if (error) {
-      this.renderErrorState(title, subtitle, error);
+      this.renderErrorState(error);
       return;
     }
 
     const counts = matchedContent?.counts || { nudity: 0, sex: 0, gore: 0, total: 0 };
     if (counts.total === 0) {
-      this.renderNoTimestampsState(title, subtitle);
+      this.renderNoTimestampsState();
       return;
     }
 
-    this.renderMainState(title, subtitle);
+    this.renderMainState();
   }
 
   private renderAuthState() {
@@ -252,29 +252,36 @@ export class QuickPanel {
     this.panel.appendChild(authDiv);
   }
 
-  private renderLoadingState(title: string, subtitle?: string) {
+  private renderLoadingState() {
     if (!this.panel) return;
 
-    this.panel.appendChild(this.createHeader(title, subtitle));
+    // Same header as the loaded panel, so loading doesn't swap screens
+    this.panel.appendChild(this.createHeader("Choose what to skip", this.getContentLine()));
 
-    const loadingDiv = document.createElement("div");
-    loadingDiv.className = "skipit-quick-loading";
+    const skeletons = document.createElement("div");
+    skeletons.className = "skipit-quick-skeletons";
+    skeletons.setAttribute("aria-hidden", "true");
 
-    const spinner = document.createElement("div");
-    spinner.className = "skipit-quick-spinner";
-    loadingDiv.appendChild(spinner);
+    for (let i = 0; i < 3; i++) {
+      const row = document.createElement("div");
+      row.className = "skipit-skeleton-row";
+      skeletons.appendChild(row);
+    }
 
-    const loadingText = document.createElement("p");
-    loadingText.textContent = "Finding skip data...";
-    loadingDiv.appendChild(loadingText);
+    this.panel.appendChild(skeletons);
 
-    this.panel.appendChild(loadingDiv);
+    // The button carries the loading status
+    const startBtn = document.createElement("button");
+    startBtn.className = "skipit-quick-start";
+    startBtn.disabled = true;
+    startBtn.textContent = "Finding skips...";
+    this.panel.appendChild(startBtn);
   }
 
-  private renderErrorState(title: string, subtitle: string | undefined, errorMessage: string) {
+  private renderErrorState(errorMessage: string) {
     if (!this.panel) return;
 
-    this.panel.appendChild(this.createHeader(title, subtitle));
+    this.panel.appendChild(this.createHeader("Choose what to skip", this.getContentLine()));
 
     const errorDiv = document.createElement("div");
     errorDiv.className = "skipit-quick-error";
@@ -296,10 +303,10 @@ export class QuickPanel {
     this.panel.appendChild(errorDiv);
   }
 
-  private renderNoTimestampsState(title: string, subtitle?: string) {
+  private renderNoTimestampsState() {
     if (!this.panel) return;
 
-    this.panel.appendChild(this.createHeader(title, subtitle));
+    this.panel.appendChild(this.createHeader("Choose what to skip", this.getContentLine()));
 
     const noTimestampsDiv = document.createElement("div");
     noTimestampsDiv.className = "skipit-quick-no-timestamps";
@@ -316,13 +323,13 @@ export class QuickPanel {
     this.panel.appendChild(noTimestampsDiv);
   }
 
-  private renderMainState(title: string, subtitle?: string) {
+  private renderMainState() {
     if (!this.panel) return;
 
     const { matchedContent, preferences } = this.state;
     const counts = matchedContent?.counts || { nudity: 0, sex: 0, gore: 0 };
 
-    this.panel.appendChild(this.createHeader(title, subtitle));
+    this.panel.appendChild(this.createHeader("Choose what to skip", this.getContentLine()));
 
     const prefsDiv = document.createElement("div");
     prefsDiv.className = "skipit-quick-prefs";
@@ -343,9 +350,18 @@ export class QuickPanel {
     const startBtn = document.createElement("button");
     startBtn.className = "skipit-quick-start";
     startBtn.disabled = selectedCount === 0;
-    startBtn.textContent = selectedCount > 0
-      ? `Start Skipping (${selectedCount} scenes)`
-      : "Start Skipping";
+
+    if (selectedCount > 0) {
+      startBtn.appendChild(createIcon(ICON_FORWARD, { strokeWidth: 1.8 }));
+      startBtn.appendChild(
+        document.createTextNode(
+          `Start skipping \u00B7 ${selectedCount} ${selectedCount === 1 ? "scene" : "scenes"}`
+        )
+      );
+    } else {
+      startBtn.textContent = "Pick a category with scenes";
+    }
+
     startBtn.addEventListener("click", () => this.handleStart());
 
     this.panel.appendChild(startBtn);
@@ -385,19 +401,25 @@ export class QuickPanel {
     label: string,
     count: number,
     checked: boolean
-  ): HTMLLabelElement {
-    const item = document.createElement("label");
-    item.className = `skipit-pref-item${count === 0 ? " disabled" : ""}`;
+  ): HTMLButtonElement {
+    // A category with nothing to skip stays listed (and keeps the user's
+    // preference) but can't be toggled
+    const unavailable = count === 0;
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = checked;
-    checkbox.disabled = count === 0;
-    checkbox.addEventListener("change", () => {
-      this.state.preferences[key] = checkbox.checked;
-      this.render();
-    });
-    item.appendChild(checkbox);
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = `skipit-pref-item${checked ? " checked" : ""}${unavailable ? " disabled" : ""}`;
+    item.disabled = unavailable;
+    item.setAttribute("aria-pressed", String(checked));
+
+    const box = document.createElement("span");
+    box.className = "skipit-pref-box";
+    box.appendChild(createIcon(ICON_CHECK, { strokeWidth: 1.1 }));
+    item.appendChild(box);
+
+    const keyEl = document.createElement("span");
+    keyEl.className = `skipit-pref-key ${key}`;
+    item.appendChild(keyEl);
 
     const labelSpan = document.createElement("span");
     labelSpan.className = "skipit-pref-label";
@@ -408,6 +430,11 @@ export class QuickPanel {
     countSpan.className = "skipit-pref-count";
     countSpan.textContent = String(count);
     item.appendChild(countSpan);
+
+    item.addEventListener("click", () => {
+      this.state.preferences[key] = !this.state.preferences[key];
+      this.render();
+    });
 
     return item;
   }
@@ -459,17 +486,21 @@ export class QuickPanel {
     return total;
   }
 
-  private getDisplayTitleAndSubtitle(): { title: string; subtitle?: string } {
+  /**
+   * The content line under the header: title plus year, or title plus episode.
+   */
+  private getContentLine(): string {
     const { metadata, matchedContent } = this.state;
+    const title = matchedContent?.title || metadata?.title || "";
 
-    const title = matchedContent?.title || metadata?.title || "Skipit";
-
-    let subtitle: string | undefined;
+    let detail = "";
     if (metadata?.type === "episode" && metadata.seasonNumber && metadata.episodeNumber) {
-      subtitle = `Season ${metadata.seasonNumber}, Episode ${metadata.episodeNumber}`;
+      detail = `S${metadata.seasonNumber} E${metadata.episodeNumber}`;
+    } else if (metadata?.year) {
+      detail = String(metadata.year);
     }
 
-    return { title, subtitle };
+    return [title, detail].filter(Boolean).join(" \u00B7 ");
   }
 
   private async checkAuth(): Promise<CheckAuthResponse> {
