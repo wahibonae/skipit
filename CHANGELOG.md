@@ -4,6 +4,11 @@ Releases of the Skipit extension from this repository, newest first. For everyth
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers are this repository's own and follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.1] - 2026-11-09
+
+### Changed
+- Skipit no longer asks Chrome for two permissions it never used. Nothing else changes.
+
 ## [1.5.0] - 2026-11-09
 
 ### Added
@@ -115,6 +120,7 @@ Moved out of the main Skipit codebase into its own repository.
 - Upcoming skips appear **right on the Netflix timeline**.
 - Every Netflix tab works independently.
 
+[1.5.1]: https://github.com/wahibonae/skipit/releases/tag/v1.5.1
 [1.5.0]: https://github.com/wahibonae/skipit/releases/tag/v1.5.0
 [1.4.0]: https://github.com/wahibonae/skipit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/wahibonae/skipit/commit/8fac4a4
