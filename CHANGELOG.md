@@ -4,6 +4,17 @@ Releases of the Skipit extension from this repository, newest first. For everyth
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers are this repository's own and follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-11-09
+
+### Added
+- **Mute swearing.** A new button in Netflix's player mutes any line with a swear word and stars the word out on screen (like "f***"). It works with subtitles on or off, in English, Spanish, French, German, Portuguese and Italian.
+
+### Changed
+- **A cleaner new look.** Skipit on Netflix has a fresh design, from the skip panel to the Mark Scene screen. Skipit also now lets you know when skipping starts and when a scene you marked is saved.
+
+### Fixed
+- **Buttons that get out of the way.** Skipit's buttons now fade out 3 seconds after you stop moving the mouse, like Netflix's own controls. Before, they could stay on screen while you watched.
+
 ## [1.4.0] - 2026-08-10
 
 ### Added
@@ -104,6 +115,7 @@ Moved out of the main Skipit codebase into its own repository.
 - Upcoming skips appear **right on the Netflix timeline**.
 - Every Netflix tab works independently.
 
+[1.5.0]: https://github.com/wahibonae/skipit/releases/tag/v1.5.0
 [1.4.0]: https://github.com/wahibonae/skipit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/wahibonae/skipit/commit/8fac4a4
 [1.2.0]: https://github.com/wahibonae/skipit/commit/931caee
