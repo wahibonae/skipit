@@ -13,6 +13,7 @@ import {
   openAuthPopup,
   propagateFabStyle,
   propagateDiscreetMode,
+  propagateProfanityMute,
   startFabStyleWatcher,
 } from "../managers/auth-manager";
 import { showMarkingOverlay, updateOverlayContent } from "../managers/overlay-manager";
@@ -39,6 +40,7 @@ export function setupWindowMessageHandlers() {
       // Send the current appearance settings and listen for future changes
       propagateFabStyle();
       propagateDiscreetMode();
+      propagateProfanityMute();
       startFabStyleWatcher();
 
       // Notify background that we're ready
@@ -163,6 +165,23 @@ export function setupWindowMessageHandlers() {
             chrome.runtime.lastError
           );
         }
+      });
+    }
+
+    // Mute chip or tip on the page turned profanity mute on/off. The storage
+    // watcher then sends the new value back to every tab.
+    if (type === "SKIPIT_SET_PROFANITY_MUTE_REQUEST") {
+      const enabled = event.data.data?.enabled;
+      if (typeof enabled !== "boolean") return;
+      chrome.storage.local.set({ profanity_mute: enabled }).catch((error) => {
+        console.warn("[Content] Error saving profanity mute:", error);
+      });
+    }
+
+    // The mute tip was shown: never show it again
+    if (type === "SKIPIT_PROFANITY_TIP_SHOWN") {
+      chrome.storage.local.set({ profanity_tip_seen: true }).catch((error) => {
+        console.warn("[Content] Error saving profanity tip state:", error);
       });
     }
 

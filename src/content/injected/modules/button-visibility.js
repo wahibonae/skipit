@@ -44,9 +44,12 @@ function injectSkipitButtons() {
   const wrapper = document.createElement("div");
   wrapper.id = WRAPPER_ID;
 
-  // Create FAB button (top)
-  const fabButton = createSkipitFAB();
-  wrapper.appendChild(fabButton);
+  // Create FAB row (top): [mute chip] [FAB]
+  const fabRow = document.createElement("div");
+  fabRow.className = "skipit-fab-row";
+  fabRow.appendChild(createProfanityChip());
+  fabRow.appendChild(createSkipitFAB());
+  wrapper.appendChild(fabRow);
 
   // Create Mark row (bottom): [-2s] [+2s] [Mark scene]
   const markRow = document.createElement("div");

@@ -86,6 +86,7 @@ function setupMessageHandler() {
       // Update auth state from content script
       const authenticated = event.data.data?.isAuthenticated || false;
       updateButtonsAuthState(authenticated);
+      setProfanityMuteAuth(authenticated);
 
       // Stop skipping and clean up pending skips when user signs out
       if (!authenticated) {
@@ -100,6 +101,7 @@ function setupMessageHandler() {
         event.data.data?.style === "netflix" ? "netflix" : "classic";
       currentFabStyle = style;
       applyFabStyleToExistingButtons(style);
+      updateProfanityControls();
     } else if (type === "SKIPIT_SET_DISCREET_MODE") {
       // Toggle discreet mode (hide category names on ambient surfaces)
       const enabled = event.data.data?.enabled === true;
@@ -108,6 +110,12 @@ function setupMessageHandler() {
         applyDiscreetModeToExistingButtons(enabled);
         refreshSegmentLabels();
       }
+    } else if (type === "SKIPIT_SET_PROFANITY_MUTE") {
+      // Toggle muting + censoring of bad words in subtitle lines
+      setProfanityMuteSetting(
+        event.data.data?.enabled === true,
+        event.data.data?.tipSeen
+      );
     } else if (type === "SKIPIT_SET_PENDING_SKIPS") {
       // Receive pending skips for verification
       const pendingSkipsData = event.data.data?.pendingSkips || [];

@@ -8,6 +8,8 @@ import { DiscreetModeToggle } from "./DiscreetModeToggle";
 import { SkipitLogo } from "./SkipitLogo";
 
 const TUTORIAL_URL = "https://youtu.be/mE_iKMKwvpE";
+const MISSING_WORD_MAILTO =
+  "mailto:contact@wahibabkari.com?subject=Skipit%20mute%3A%20missing%20word";
 
 const SignOutIcon = () => (
   <svg
@@ -273,6 +275,13 @@ export const Auth = () => {
           <FabStyleSelector />
           <DiscreetModeToggle />
         </section>
+
+        <p className="popup-footnote">
+          Swear word not muted?{" "}
+          <a href={MISSING_WORD_MAILTO} target="_blank" rel="noopener noreferrer">
+            Tell us
+          </a>
+        </p>
       </main>
     </div>
   );

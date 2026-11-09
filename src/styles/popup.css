@@ -601,6 +601,18 @@ button {
   transform: translateX(14px);
 }
 
+.popup-footnote {
+  margin: 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.popup-footnote a {
+  color: var(--primary-orange);
+  text-decoration: underline;
+}
+
 /* ============================================
    Spinner
    ============================================ */

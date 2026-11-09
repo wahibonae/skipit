@@ -24,6 +24,7 @@ const MODULE_ORDER = [
   'timeline-segments.js',
   'skip-checker.js',
   'notifications.js',
+  'profanity-mute.js',
   'video-watcher.js',
   'message-handler.js',
 ];

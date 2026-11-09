@@ -87,3 +87,36 @@ let votePromptLastCheckedTime = -1; // For seek detection
 let pendingSkipCheckInterval = null;
 const PENDING_SEGMENTS_CONTAINER_ID = "skipit-timeline-segments--pending";
 let pendingSegmentsTimelineObserver = null;
+
+// Profanity mute state (independent of skip checking - separate lifecycle)
+let profanityMuteEnabled = false;
+let profanityMuteInterval = null;
+let profanityObserver = null;
+let profanityObservedContainer = null;
+let profanityMutedByUs = false; // True only while WE muted the video (never override a user mute)
+let profanityMutedVideo = null; // The <video> we muted, so we unmute the same element
+let profanityUserTookOver = false; // User changed mute during a muted line: hands off until it ends
+let profanityVolumeAtMute = null; // Volume when we muted the line (a change means "let me hear")
+let profanityLineLang = null; // Last known subtitle language for this video (getter can blip)
+let profanityTrackSetAt = 0; // When we last set the silent track (to retry if it never confirms)
+let profanityTrackRetries = 0; // Silent track re-sets for this video (capped)
+let profanityOwnedTrackKey = null; // Silent subtitle track Skipit turned on because the user had subs off
+let profanityVideoId = null; // Video the track bookkeeping belongs to
+let profanityNextTrackAttemptAt = 0; // Backoff when no usable track exists
+let profanityTrackSetCount = 0; // Diagnostics: setTimedTextTrack calls (1 per video is expected)
+let profanityPendingFrom = null; // { key, at }: our track we just asked Netflix to switch away from (getter lags)
+let profanityGaveUpTrack = null; // { videoId, key, at }: silent track we gave up on, still ours if Netflix applies it late
+let profanityAudioRepickLang = null; // Audio language we already re-picked the silent track for (once per video)
+const PROFANITY_HIDE_CLASS = "skipit-pm-hide-subs";
+const PROFANITY_OWNED_TRACK_KEY = "skipit_pm_owned_track"; // localStorage marker prefix (+ ":" + tab id), survives reloads
+const PROFANITY_TAB_ID_KEY = "skipit_pm_tab_id"; // sessionStorage: this tab's id (kept across reloads, not shared with other tabs)
+// Muting runs only while signed in AND the setting is on. Each is null until
+// the content script has reported it, so neither alone starts (or stops) muting.
+let profanityMuteSetting = null; // chrome.storage profanity_mute
+let profanityAuthKnown = null; // Last auth state seen by the mute module
+let profanityActiveSynced = null; // Last active value acted on
+let profanityTipSeen = null; // chrome.storage profanity_tip_seen
+let profanityTipTimeout = null;
+const PROFANITY_CHIP_ID = "skipit-pm-chip";
+const PROFANITY_TIP_ID = "skipit-pm-tip";
+const PROFANITY_TIP_OPEN_CLASS = "skipit-pm-tip-open";
